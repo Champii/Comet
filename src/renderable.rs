@@ -14,6 +14,7 @@ where
             Element::Text(text) => text.clone(),
             Element::Node {
                 tag,
+                attrs,
                 events,
                 children,
             } => {
@@ -22,6 +23,9 @@ where
                 result.push_str(&format!("<{}", tag));
                 for (name, event) in events {
                     result.push_str(&format!(" on{}=\"{:?}\"", name, event));
+                }
+                for (attr_name, value) in attrs {
+                    result.push_str(&format!(" {}=\"{}\"", attr_name, value));
                 }
                 result.push_str(">");
                 for child in children {

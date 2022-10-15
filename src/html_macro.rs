@@ -1,36 +1,56 @@
 #[macro_export]
-macro_rules! html {
+macro_rules! html_arr {
     ({ $code:tt }) => {
-        Box::new(Element::Text($code.to_string()))
+        vec![Element::Text($code.to_string())]
     };
 
-    ($ident:tt $($(@$ev:ident : $evcode:expr ),+, )? $({ $($e:tt)* })?) => {{
+    ($( $ident:tt $([$($attr_name:ident : $attr_value:expr),*])? $($(@$ev:ident : $evcode:expr ),+, )? $({ $($e:tt)+ })? ),*) => {{
         use std::collections::BTreeMap;
+        vec![$(
+            {
+            let elem_str = stringify!($ident);
 
-        let elem_str = stringify!($ident);
+            if elem_str.starts_with("\"") {
+                Element::Text(elem_str.to_string())
+            } else {
+                #[allow(unused_mut, unused_assignments)]
+                let mut children = vec![];
 
-        if elem_str.starts_with("\"") {
-            Element::Text(elem_str.to_string())
-        } else {
-            #[allow(unused_mut, unused_assignments)]
-            let mut children = vec![];
+                $(
+                    children = html_arr!($($e)+);
+                )?
 
-            $(
-                children = vec![html!($($e)*)];
-            )?
+                #[allow(unused_mut, unused_assignments)]
+                let mut evcode = BTreeMap::new();
 
-            #[allow(unused_mut, unused_assignments)]
-            let mut evcode = BTreeMap::new();
+                $(
+                    evcode = [$((stringify!($ev).into(), $evcode)),*].into();
+                )?
 
-            $(
-                evcode = [$((stringify!($ev).into(), $evcode)),*].into();
-            )?
+                #[allow(unused_mut, unused_assignments)]
+                let mut attrs = BTreeMap::new();
 
-            Element::Node {
-                tag: elem_str.to_string(),
-                events: evcode,
-                children: children,
+                $(
+                    attrs = [$((stringify!($attr_name).to_string(), $attr_value.to_string())),*].into();
+                )?
+
+                Element::Node {
+                    tag: elem_str.to_string(),
+                    attrs,
+                    events: evcode,
+                    children: children,
+                }
+
             }
-        }
+            }
+
+        ),*]
+    }};
+}
+
+#[macro_export]
+macro_rules! html {
+    ($ident:tt $([$($attr_name:ident : $attr_value:expr),*])? $($(@$ev:ident : $evcode:expr ),+, )? $({ $($e:tt)+ })? ) => {{
+        html_arr!($ident $([$($attr_name : $attr_value),*])? $($(@$ev : $evcode),+,)? $({ $($e)+ })?).get(0).unwrap().clone()
     }};
 }
