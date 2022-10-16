@@ -1,3 +1,4 @@
+mod app;
 mod component;
 mod element;
 mod html_macro;
@@ -13,6 +14,12 @@ pub enum Msg {
 
 pub struct Counter {
     pub value: i32,
+}
+
+impl Counter {
+    pub fn new() -> Self {
+        Self { value: 0 }
+    }
 }
 
 impl Component<Msg> for Counter {
@@ -39,8 +46,40 @@ impl Component<Msg> for Counter {
 }
 
 fn main() {
-    let counter = Counter { value: 0 };
+    let mut app = App::new(Counter::new());
 
-    println!("{:#?}", counter.view());
-    println!("{}", counter.view().render());
+    app.run();
+}
+
+pub struct Button {
+    pub is_clicked: bool,
+}
+
+impl Button {
+    pub fn new() -> Self {
+        Self { is_clicked: false }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum ButtonMsg {
+    Click,
+}
+
+impl Component<ButtonMsg> for Button {
+    fn update(&mut self, msg: ButtonMsg) {
+        match msg {
+            ButtonMsg::Click => self.is_clicked = true,
+        }
+    }
+
+    fn view(&self) -> Element<ButtonMsg> {
+        html! {
+            button
+                [style: "background-color: red;"]
+                @click: ButtonMsg::Click, {
+                {{ self.is_clicked }}
+            }
+        }
+    }
 }
