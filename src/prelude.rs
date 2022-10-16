@@ -7,3 +7,9 @@ pub use crate::renderable::*;
 
 pub use wasm_bindgen;
 pub use wasm_bindgen::prelude::*;
+
+#[cfg(target_arch = "wasm32")]
+pub use crate::console_log;
+
+#[cfg(target_arch = "wasm32")]
+pub use crate::wasm::*;
