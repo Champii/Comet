@@ -21,11 +21,11 @@ where
                 let mut result = String::new();
 
                 result.push_str(&format!("<{}", tag));
-                for (name, event) in events {
-                    result.push_str(&format!(" on{}=\"{:?}\"", name, event));
-                }
                 for (attr_name, value) in attrs {
                     result.push_str(&format!(" {}=\"{}\"", attr_name, value));
+                }
+                for (name, event) in events {
+                    result.push_str(&format!(" on{}=\"{:?}\"", name, event));
                 }
                 result.push_str(">");
                 for child in children {

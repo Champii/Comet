@@ -10,3 +10,12 @@ pub enum Element<Msg> {
         children: Vec<Self>,
     },
 }
+
+impl<Msg, T> From<T> for Element<Msg>
+where
+    T: Into<String>,
+{
+    fn from(text: T) -> Self {
+        Element::Text(text.into())
+    }
+}
