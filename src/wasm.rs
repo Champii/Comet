@@ -17,13 +17,15 @@ impl<Msg> Renderable<Msg> for Element<Msg>
 where
     Msg: Debug,
 {
-    fn render(&self) -> web_sys::Element {
+    type Output = web_sys::Element;
+
+    fn render(&self) -> Self::Output {
         let window = web_sys::window().expect("no global `window` exists");
         let document = window.document().expect("should have a document on window");
 
         match self {
             Element::Text(text) => {
-                let elem = document.create_element("p").unwrap();
+                let elem = document.create_element("span").unwrap();
                 elem.set_inner_html(text);
                 elem.into()
             }

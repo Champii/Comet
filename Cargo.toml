@@ -4,10 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 wasm-bindgen = "0.2.83"
+clap = "2.33.3"
+env_logger = "0.9.1"
+log = "0.4.17"
+
 
 [dependencies.web-sys]
 version = "0.3.4"
@@ -18,3 +22,6 @@ features = [
   'Node',
   'Window',
 ]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.0"

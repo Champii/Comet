@@ -1,85 +1,61 @@
-mod app;
-mod component;
-mod element;
-mod html_macro;
-mod prelude;
-mod renderable;
+use std::process::Command;
 
-use prelude::*;
+use clap::{App, Arg, SubCommand};
 
-#[derive(Debug, Clone)]
-pub enum Msg {
-    Increment,
-}
-
-pub struct Counter {
-    pub value: i32,
-}
-
-impl Counter {
-    pub fn new() -> Self {
-        Self { value: 0 }
-    }
-}
-
-impl Component<Msg> for Counter {
-    fn update(&mut self, msg: Msg) {
-        match msg {
-            Msg::Increment => self.value += 1,
-        }
-    }
-
-    fn view(&self) -> Element<Msg> {
-        html! {
-            div [height: 100] {
-                span {
-                    {{ 2 }}
-                },
-                button
-                    [style: "background-color: red;"]
-                    @click: Msg::Increment, {
-                    {{ self.value }}
-                }
-            }
-        }
-    }
-}
+mod logger;
 
 fn main() {
-    let mut app = App::new(Counter::new());
+    let matches = App::new("Comet")
+        .version(env!("CARGO_PKG_VERSION"))
+        .about("Isomorphic web framework for Rust")
+        .subcommand(SubCommand::with_name("build").about("Build the current project directory"))
+        .subcommand(SubCommand::with_name("run").about("Run the current project directory"))
+        .subcommand(
+            SubCommand::with_name("new")
+                .about("Create a new empty project folder")
+                .arg(
+                    Arg::with_name("name")
+                        .required(true)
+                        .help("The name of the new project"),
+                ),
+        )
+        .get_matches();
 
-    app.run();
-}
+    logger::init_logger();
 
-pub struct Button {
-    pub is_clicked: bool,
-}
-
-impl Button {
-    pub fn new() -> Self {
-        Self { is_clicked: false }
+    if let Some(_matches) = matches.subcommand_matches("build") {
+        build();
+    } else if let Some(_matches) = matches.subcommand_matches("run") {
+        run();
+    } else if let Some(matches) = matches.subcommand_matches("new") {
+        create_project_folder(matches.value_of("name").unwrap());
+    } else {
+        println!("{}", matches.usage());
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum ButtonMsg {
-    Click,
+fn build() {
+    Command::new("cargo")
+        .args(["build"])
+        .output()
+        .expect("failed to run cargo build");
+
+    Command::new("wasm-pack")
+        .args(["build", "--target", "web"])
+        .output()
+        .expect("failed to run wasm-pack build");
 }
 
-impl Component<ButtonMsg> for Button {
-    fn update(&mut self, msg: ButtonMsg) {
-        match msg {
-            ButtonMsg::Click => self.is_clicked = true,
-        }
-    }
+fn run() {
+    Command::new("cargo")
+        .args(["run"])
+        .output()
+        .expect("failed to run cargo run");
 
-    fn view(&self) -> Element<ButtonMsg> {
-        html! {
-            button
-                [style: "background-color: red;"]
-                @click: ButtonMsg::Click, {
-                {{ self.is_clicked }}
-            }
-        }
-    }
+    Command::new("http")
+        .args(["-p", "8080"])
+        .output()
+        .expect("failed to run http");
 }
+
+fn create_project_folder(_name: &str) {}

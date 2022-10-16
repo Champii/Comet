@@ -1,7 +1,6 @@
 use crate::prelude::*;
 use std::fmt::Debug;
 
-// #[derive(Debug)]
 pub struct App<Compo, Msg>
 where
     Compo: Component<Msg>,
@@ -23,6 +22,7 @@ where
         }
     }
 
+    #[cfg(target_arch = "wasm32")]
     pub fn run(&mut self) {
         let window = web_sys::window().expect("no global `window` exists");
         let document = window.document().expect("should have a document on window");
@@ -31,5 +31,14 @@ where
         let elem = self.root.view().render();
 
         body.append_child(&elem).unwrap();
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn run(&mut self) {
+        println!("Running");
+        // TODO:
+        // setup db
+        // run static http server
+        // run websocket server
     }
 }

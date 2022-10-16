@@ -55,18 +55,23 @@ macro_rules! html {
     }};
 }
 
+#[cfg(target_arch = "wasm32")]
 #[cfg(test)]
 mod test {
-    use crate::element::Element;
-    use crate::renderable::Renderable;
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test_configure!(run_in_browser);
 
     #[derive(Debug, Clone)]
     enum Msg {
         Increment,
     }
 
-    #[test]
+    #[wasm_bindgen_test]
     fn test_html() {
+        use crate::element::Element;
+        use crate::renderable::Renderable;
+
         let elem = html!(div [height: 100] {
             button
                 [style: "background-color: red;"]
@@ -76,8 +81,8 @@ mod test {
         });
 
         assert_eq!(
-            elem.render(),
-            r#"<div height="100"><button style="background-color: red;" onclick="Increment">2</button></div>"#
+            elem.render().outer_html(),
+            r#"<div height="100"><button style="background-color: red;"><span>2</span></button></div>"# // r#"<div height="100"><button style="background-color: red;" onclick="Increment">2</button></div>"#
         );
     }
 }
