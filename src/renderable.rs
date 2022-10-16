@@ -1,39 +1,5 @@
-use crate::element::Element;
-use std::fmt::Debug;
+use web_sys::HtmlElement;
 
 pub trait Renderable<Msg> {
-    fn render(&self) -> String;
-}
-
-impl<Msg> Renderable<Msg> for Element<Msg>
-where
-    Msg: Debug,
-{
-    fn render(&self) -> String {
-        match self {
-            Element::Text(text) => text.clone(),
-            Element::Node {
-                tag,
-                attrs,
-                events,
-                children,
-            } => {
-                let mut result = String::new();
-
-                result.push_str(&format!("<{}", tag));
-                for (attr_name, value) in attrs {
-                    result.push_str(&format!(" {}=\"{}\"", attr_name, value));
-                }
-                for (name, event) in events {
-                    result.push_str(&format!(" on{}=\"{:?}\"", name, event));
-                }
-                result.push_str(">");
-                for child in children {
-                    result.push_str(&child.render());
-                }
-                result.push_str(&format!("</{}>", tag));
-                result
-            }
-        }
-    }
+    fn render(&self) -> web_sys::Element;
 }
