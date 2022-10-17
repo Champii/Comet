@@ -35,22 +35,55 @@ fn main() {
 }
 
 fn build() {
-    Command::new("cargo")
-        .args(["build"])
-        .output()
-        .expect("failed to run cargo build");
+    println!("Build");
+    println!("[ ] Building server");
 
-    Command::new("wasm-pack")
-        .args(["build", "--target", "web"])
-        .output()
-        .expect("failed to run wasm-pack build");
+    println!(
+        "{}",
+        String::from_utf8(
+            Command::new("cargo")
+                .args(["build"])
+                .output()
+                .expect("failed to run cargo build")
+                .stderr
+        )
+        .unwrap()
+    );
+
+    println!("[ ] Building client");
+
+    println!(
+        "{}",
+        String::from_utf8(
+            Command::new("wasm-pack")
+                .args(["build", "--target", "web"])
+                .output()
+                .expect("failed to run npm run build")
+                .stderr
+        )
+        .unwrap()
+    );
 }
 
 fn run() {
-    Command::new("cargo")
-        .args(["run"])
-        .output()
-        .expect("failed to run cargo run");
+    build();
+
+    println!("Run");
+    println!("[ ] Running server");
+
+    println!(
+        "{}",
+        String::from_utf8(
+            Command::new("cargo")
+                .args(["run"])
+                .output()
+                .expect("failed to run cargo run")
+                .stderr
+        )
+        .unwrap()
+    );
+
+    println!("[ ] Running client");
 
     Command::new("http")
         .args(["-p", "8080"])

@@ -1,44 +1,21 @@
 use crate::prelude::*;
-use std::fmt::Debug;
 
-pub struct App<Compo, Msg>
+pub struct App<Comp, Msg>
 where
-    Compo: Component<Msg>,
-    Msg: Debug,
+    Comp: Component<Msg>,
 {
-    pub root: Compo,
+    pub root: Comp,
     phantom: std::marker::PhantomData<Msg>,
 }
 
-impl<Compo, Msg> App<Compo, Msg>
+impl<Comp, Msg> App<Comp, Msg>
 where
-    Compo: Component<Msg>,
-    Msg: Debug,
+    Comp: Component<Msg>,
 {
-    pub fn new(root: Compo) -> Self {
+    pub fn new(root: Comp) -> Self {
         Self {
             root,
             phantom: std::marker::PhantomData,
         }
-    }
-
-    #[cfg(target_arch = "wasm32")]
-    pub fn run(&mut self) {
-        let window = web_sys::window().expect("no global `window` exists");
-        let document = window.document().expect("should have a document on window");
-        let body = document.body().expect("document should have a body");
-
-        let elem = self.root.view().render();
-
-        body.append_child(&elem).unwrap();
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn run(&mut self) {
-        println!("Running");
-        // TODO:
-        // setup db
-        // run static http server
-        // run websocket server
     }
 }

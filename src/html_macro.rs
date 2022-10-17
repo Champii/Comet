@@ -51,38 +51,6 @@ macro_rules! html_arr {
 #[macro_export]
 macro_rules! html {
     ($ident:tt $([$($attr_name:ident : $attr_value:expr),*])? $($(@$ev:ident : $evcode:expr ),+, )? $({ $($e:tt)+ })? ) => {{
-        html_arr!($ident $([$($attr_name : $attr_value),*])? $($(@$ev : $evcode),+,)? $({ $($e)+ })?).get(0).unwrap().clone()
+        html_arr!($ident $([$($attr_name : $attr_value),*])? $($(@$ev : $evcode),+,)? $({ $($e)+ })?).pop().unwrap()
     }};
-}
-
-#[cfg(target_arch = "wasm32")]
-#[cfg(test)]
-mod test {
-    use wasm_bindgen_test::*;
-
-    wasm_bindgen_test_configure!(run_in_browser);
-
-    #[derive(Debug, Clone)]
-    enum Msg {
-        Increment,
-    }
-
-    #[wasm_bindgen_test]
-    fn test_html() {
-        use crate::element::Element;
-        use crate::renderable::Renderable;
-
-        let elem = html!(div [height: 100] {
-            button
-                [style: "background-color: red;"]
-                @click: Msg::Increment, {
-                {{ 2 }}
-            }
-        });
-
-        assert_eq!(
-            elem.render().outer_html(),
-            r#"<div height="100"><button style="background-color: red;"><span>2</span></button></div>"# // r#"<div height="100"><button style="background-color: red;" onclick="Increment">2</button></div>"#
-        );
-    }
 }
