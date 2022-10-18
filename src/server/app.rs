@@ -3,6 +3,7 @@ use crate::prelude::{App, Component};
 impl<Comp, Msg> App<Comp, Msg>
 where
     Comp: Component<Msg>,
+    Msg: Clone,
 {
     pub fn run(&mut self) {
         println!("Running");

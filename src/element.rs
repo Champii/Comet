@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, fmt::Debug};
 
 #[derive(Debug, Clone)]
-pub enum Element<Msg> {
+pub enum Element<Msg: Clone> {
     Text(String),
     Node {
         tag: String,
@@ -14,6 +14,7 @@ pub enum Element<Msg> {
 impl<Msg, T> From<T> for Element<Msg>
 where
     T: Into<String>,
+    Msg: Clone,
 {
     fn from(text: T) -> Self {
         Element::Text(text.into())

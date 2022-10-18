@@ -1,12 +1,19 @@
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
 
-use crate::prelude::*;
+use crate::{element, prelude::*, renderable};
+use wasm_bindgen::closure::Closure;
 
-impl<Msg> Renderable<Msg> for Element<Msg> {
+impl<Msg, Comp> Renderable<Msg, Comp> for Element<Msg>
+where
+    Comp: Component<Msg>,
+    Msg: Clone + 'static,
+{
     type Output = web_sys::Element;
-
-    fn render(&self) -> Self::Output {
+    fn render<F>(&self, f: F) -> web_sys::Element
+    where
+        F: Fn(Msg) + Clone + 'static,
+    {
         let window = web_sys::window().expect("no global `window` exists");
         let document = window.document().expect("should have a document on window");
 
@@ -28,24 +35,30 @@ impl<Msg> Renderable<Msg> for Element<Msg> {
                     elem.set_attribute(attr_name, value).unwrap();
                 }
 
-                for (_name, _event) in events {
-                    let closure = Closure::wrap(Box::new(move || {
-                        console_log!("clicked");
-                        // inner_closure();
-                    }) as Box<dyn FnMut()>);
+                if let Some(event) = events.get("click") {
+                    let f = f.clone();
+                    let event = event.clone();
+
+                    let closure = Closure::<dyn Fn()>::wrap(Box::new(move || {
+                        f(event.clone());
+                    }));
 
                     elem.dyn_ref::<HtmlElement>()
                         .expect("#loading should be an `HtmlElement`")
                         .set_onclick(Some(closure.as_ref().unchecked_ref()));
 
+                    // FIXME: leak
                     closure.forget();
                 }
 
                 for child in children {
-                    elem.append_child(&child.render()).unwrap();
+                    let f = f.clone();
+                    elem.append_child(&<element::Element<Msg> as renderable::Renderable<
+                        Msg,
+                        Comp,
+                    >>::render::<F>(child, f))
+                        .unwrap();
                 }
-
-                console_log!("elem: {:?}", elem);
 
                 elem
             }

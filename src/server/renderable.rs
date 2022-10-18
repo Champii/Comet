@@ -1,9 +1,19 @@
-use crate::{element::Element, prelude::Renderable};
+use crate::{
+    element::Element,
+    prelude::{Component, Renderable},
+};
 
-impl<Msg> Renderable<Msg> for Element<Msg> {
+impl<Msg, Comp> Renderable<Msg, Comp> for Element<Msg>
+where
+    Comp: Component<Msg>,
+    Msg: Clone,
+{
     type Output = ();
 
-    fn render(&self) -> () {
+    fn render<F>(&self, _f: F) -> Self::Output
+    where
+        F: Fn(Msg) + Clone + 'static,
+    {
         ()
     }
 }

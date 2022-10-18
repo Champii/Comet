@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 mod app;
 mod component;
 mod element;
@@ -19,8 +21,10 @@ use prelude::*;
 
 pub fn run<Comp, Msg>(root: Comp)
 where
-    Comp: Component<Msg> + Clone,
-    Msg: Clone,
+    Comp: Component<Msg>,
+    Msg: Clone + 'static,
 {
-    App::new(root).run();
+    let root = Rc::new(RefCell::new(root));
+    let mut app = App::new(root);
+    app.run();
 }
