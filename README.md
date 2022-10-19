@@ -1,20 +1,20 @@
-* Comet
+# Comet
 
 Reactive isomorphic rust web framework.
 
-** Quick start
+## Quick start
 
     - Install Comet binary
     - Create simple counter example
     - Run it
 
-*** Install Comet Binary
+### Install Comet Binary
 
 ```bash
 $> cargo install https://github.com/Champii/Comet2 --locked
 ```
 
-*** Create simple counter example
+### Create simple counter example
 
 `src/lib.rs`
 
@@ -59,7 +59,7 @@ pub fn main() {
 }
 ```
 
-*** Run it
+### Run it
 
 ```bash
 $> comet run
@@ -67,7 +67,7 @@ $> comet run
 
 And go to [localhost:8080](http://localhost:8080)
 
-** TODO List
+## TODO List
 - Server
     - DB
 	- Macro for models
