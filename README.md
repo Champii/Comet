@@ -13,7 +13,7 @@ Work in progress.
 ### Install Comet Binary
 
 ```bash
-$> cargo install https://github.com/Champii/Comet2 --locked
+$> cargo install https://github.com/Champii/Comet --locked
 ```
 
 ### Create simple counter example

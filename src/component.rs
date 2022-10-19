@@ -1,12 +1,9 @@
 #[cfg(target_arch = "wasm32")]
 use std::{cell::RefCell, rc::Rc};
 
-/* use crate::{
-    element::{self, Element},
-    renderable,
-}; */
-
 use crate::prelude::*;
+
+pub type Shared<T> = Rc<RefCell<Box<T>>>;
 
 pub trait Component<Msg>: 'static
 where
@@ -14,20 +11,32 @@ where
 {
     fn update(&mut self, msg: Msg);
     fn view(&self) -> Element<Msg>;
-
-    #[cfg(target_arch = "wasm32")]
-    fn render(comp: Rc<RefCell<Self>>, parent: &web_sys::Element)
+    fn into_shared(self) -> Rc<RefCell<Box<Self>>>
     where
         Self: Sized,
     {
-        run_rec(comp, parent);
+        Rc::new(RefCell::new(Box::new(self)))
     }
+    fn into_shared_dyn(self) -> Rc<RefCell<Box<dyn Component<Msg>>>>
+    where
+        Self: Sized,
+    {
+        Rc::new(RefCell::new(Box::new(self)))
+    }
+
+    /* #[cfg(target_arch = "wasm32")]
+    fn render(comp: Rc<RefCell<Box<Self>>>, parent: &web_sys::Element)
+    /* where
+    Self: Sized, */
+    {
+        run_rec(comp, parent);
+    } */
 }
 
 #[cfg(target_arch = "wasm32")]
-fn run_rec<Msg, Comp>(component: Rc<RefCell<Comp>>, parent: &web_sys::Element)
+pub fn run_rec<Msg, Comp>(component: Rc<RefCell<Box<Comp>>>, parent: &web_sys::Element)
 where
-    Comp: Component<Msg>,
+    Comp: Component<Msg> + ?Sized,
     Msg: Clone + 'static,
 {
     let view = component.borrow().view();

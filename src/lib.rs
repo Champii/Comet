@@ -1,6 +1,8 @@
-#![recursion_limit = "256"]
+#![feature(associated_type_defaults)]
 
 use std::{cell::RefCell, rc::Rc};
+
+use prelude::*;
 
 mod app;
 mod component;
@@ -16,17 +18,13 @@ mod renderable;
 #[macro_use]
 pub mod wasm;
 
-#[cfg(not(target_arch = "wasm32"))]
-mod server;
-
-use prelude::*;
+/* #[cfg(not(target_arch = "wasm32"))]
+mod server; */
 
 pub fn run<Comp, Msg>(root: Comp)
 where
     Comp: Component<Msg>,
     Msg: Clone + 'static,
 {
-    let root = Rc::new(RefCell::new(root));
-    let mut app = App::new(root);
-    app.run();
+    App::new(Rc::new(RefCell::new(Box::new(root)))).run();
 }

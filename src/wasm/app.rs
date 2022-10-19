@@ -10,6 +10,6 @@ where
         let document = window.document().expect("should have a document on window");
         let body = document.body().expect("document should have a body");
 
-        Component::render(self.root.clone(), &body.into());
+        crate::component::run_rec(self.root.clone(), &body.into());
     }
 }

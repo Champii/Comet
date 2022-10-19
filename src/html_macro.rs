@@ -95,7 +95,7 @@ macro_rules! html_arr {
         {
             {
                 {
-                    @$comp:tt
+                    @$comp:tt,
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -109,7 +109,8 @@ macro_rules! html_arr {
                 }
                 [$($expanded)*
                     {
-                        $comp.view()
+                        // use std::{cell::RefCell, rc::Rc};
+                        Element::Component($comp)
                     }
                 ]
             }

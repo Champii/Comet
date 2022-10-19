@@ -17,6 +17,7 @@ where
         let document = window.document().expect("should have a document on window");
 
         match self {
+            Element::Component(_) => unreachable!(),
             Element::Text(_text) => {
                 unreachable!()
             }
@@ -61,6 +62,12 @@ where
                                 child, f
                             ))
                             .unwrap();
+                        }
+                        Element::Component(component) => {
+                            let component_container = document.create_element("span").unwrap();
+                            elem.append_child(&component_container).unwrap();
+                            let component = component.clone();
+                            crate::component::run_rec(component, &component_container);
                         }
                     };
                 }

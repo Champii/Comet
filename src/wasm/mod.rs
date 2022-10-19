@@ -30,16 +30,19 @@ mod test {
         }
 
         fn view(&self) -> Element<Msg> {
-            // let toto = InnerComponent;
-            html! {
+            let toto = InnerComponent.into_shared_dyn();
+            let elem = html! {
                 div [height: 100] {
                     span {
                         button @click: Msg::Increment, {
                             {{ self.value }}
                         }
                     }
+                    @toto,
                 }
-            }
+            };
+
+            elem
         }
     }
 
@@ -64,11 +67,11 @@ mod test {
         let document = window.document().expect("should have a document on window");
         let elem = document.create_element("div").unwrap();
 
-        Component::render(Rc::new(RefCell::new(component)), &elem);
+        crate::component::run_rec(Rc::new(RefCell::new(Box::new(component))), &elem);
 
         assert_eq!(
             elem.inner_html(),
-            r#"<div height="100"><span><button>2</button></span></div>"#
+            r#"<div height="100"><span><button>2</button></span><span><span>Inner</span></span></div>"#
         );
     }
 }

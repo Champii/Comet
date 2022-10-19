@@ -1,6 +1,8 @@
-use std::{collections::BTreeMap, fmt::Debug};
+use std::fmt::{Debug, Formatter};
+use std::{cell::RefCell, collections::BTreeMap, rc::Rc};
 
-#[derive(Debug)]
+use crate::prelude::Component;
+
 pub enum Element<Msg: Clone> {
     Text(String),
     Node {
@@ -9,6 +11,22 @@ pub enum Element<Msg: Clone> {
         events: BTreeMap<String, Msg>,
         children: Vec<Self>,
     },
+    Component(Rc<RefCell<Box<dyn Component<Msg>>>>),
+}
+
+impl<Msg: Clone> Debug for Element<Msg> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Element::Text(text) => write!(f, "Text({})", text),
+            Element::Node {
+                tag,
+                attrs,
+                events: _events,
+                children,
+            } => write!(f, "Node({} {:?} {:?})", tag, attrs, children),
+            Element::Component(_) => write!(f, "Component"),
+        }
+    }
 }
 
 impl<Msg, T> From<T> for Element<Msg>
