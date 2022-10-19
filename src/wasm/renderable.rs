@@ -35,7 +35,6 @@ where
 
                 if let Some(event) = events.get("click") {
                     let f = f.clone();
-                    let event = event.clone();
 
                     let closure = Closure::<dyn Fn()>::wrap(Box::new(move || {
                         f(event.clone());
