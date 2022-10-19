@@ -2,6 +2,8 @@
 
 Reactive isomorphic rust web framework.
 
+Work in progress.
+
 ## Quick start
 
     - Install Comet binary
@@ -24,14 +26,9 @@ pub enum Msg {
     Increment,
 }
 
+#[derive(Default)]
 pub struct Counter {
     pub value: i32,
-}
-
-impl Counter {
-    pub fn new() -> Self {
-        Self { value: 0 }
-    }
 }
 
 impl Component<Msg> for Counter {
@@ -44,10 +41,9 @@ impl Component<Msg> for Counter {
     fn view(&self) -> Element<Msg> {
         html! {
             div {
-                button
-                    @click: Msg::Increment, {
+                button @click: Msg::Increment, {
                     {{ self.value }}
-                },
+                }
             }
         }
     }
@@ -55,7 +51,7 @@ impl Component<Msg> for Counter {
 
 #[wasm_bindgen(start)]
 pub fn main() {
-    comet::run(Counter::new());
+    comet::run(Counter::default());
 }
 ```
 
@@ -68,12 +64,11 @@ $> comet run
 And go to [localhost:8080](http://localhost:8080)
 
 ## TODO List
-- Server
     - DB
 	- Macro for models
-	    - 
     - Websocket
-- Client
     - Nested components
 	- Need to have a component tree
+    - Websocket
+    - Register for queries
 
