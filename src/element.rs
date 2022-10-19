@@ -1,6 +1,6 @@
-use std::{collections::BTreeMap, fmt::Debug};
+use std::{cell::RefCell, collections::BTreeMap, fmt::Debug, rc::Rc};
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Element<Msg: Clone> {
     Text(String),
     Node {

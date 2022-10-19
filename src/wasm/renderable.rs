@@ -4,12 +4,12 @@ use web_sys::HtmlElement;
 use crate::{element, prelude::*, renderable};
 use wasm_bindgen::closure::Closure;
 
-impl<Msg, Comp> Renderable<Msg, Comp> for Element<Msg>
+impl<Msg> Renderable<Msg> for Element<Msg>
 where
-    Comp: Component<Msg>,
     Msg: Clone + 'static,
 {
     type Output = web_sys::Element;
+
     fn render<F>(&self, f: F) -> web_sys::Element
     where
         F: Fn(Msg) + Clone + 'static,
@@ -19,9 +19,7 @@ where
 
         match self {
             Element::Text(text) => {
-                let elem = document.create_element("span").unwrap();
-                elem.set_inner_html(text);
-                elem.into()
+                unreachable!()
             }
             Element::Node {
                 tag,
@@ -52,12 +50,20 @@ where
                 }
 
                 for child in children {
-                    let f = f.clone();
-                    elem.append_child(&<element::Element<Msg> as renderable::Renderable<
-                        Msg,
-                        Comp,
-                    >>::render::<F>(child, f))
-                        .unwrap();
+                    match child {
+                        Element::Text(text) => {
+                            elem.set_inner_html(text);
+                        }
+                        Element::Node { .. } => {
+                            let f = f.clone();
+                            elem.append_child(&<element::Element<Msg> as renderable::Renderable<
+                                Msg,
+                            >>::render::<F>(
+                                child, f
+                            ))
+                            .unwrap();
+                        }
+                    };
                 }
 
                 elem

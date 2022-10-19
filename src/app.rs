@@ -5,7 +5,7 @@ use crate::prelude::*;
 pub struct App<Comp, Msg>
 where
     Comp: Component<Msg>,
-    Msg: Clone,
+    Msg: Clone + 'static,
 {
     pub root: Rc<RefCell<Comp>>,
     phantom: std::marker::PhantomData<Msg>,

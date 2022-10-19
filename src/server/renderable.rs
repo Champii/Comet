@@ -3,10 +3,9 @@ use crate::{
     prelude::{Component, Renderable},
 };
 
-impl<Msg, Comp> Renderable<Msg, Comp> for Element<Msg>
+impl<Msg> Renderable<Msg> for Element<Msg>
 where
-    Comp: Component<Msg>,
-    Msg: Clone,
+    Msg: Clone + 'static,
 {
     type Output = ();
 

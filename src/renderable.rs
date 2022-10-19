@@ -1,9 +1,8 @@
 use crate::prelude::Component;
 
-pub trait Renderable<Msg, Comp>
+pub trait Renderable<Msg>
 where
-    Comp: Component<Msg>,
-    Msg: Clone,
+    Msg: Clone + 'static,
 {
     type Output;
 

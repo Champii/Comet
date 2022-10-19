@@ -1,4 +1,5 @@
 mod app;
+mod component;
 mod log_macro;
 pub mod prelude;
 mod renderable;
@@ -7,31 +8,50 @@ mod renderable;
 mod test {
 
     use crate::prelude::*;
+    use std::{cell::RefCell, rc::Rc};
     use wasm_bindgen_test::*;
 
+    use web_sys::HtmlElement;
     wasm_bindgen_test_configure!(run_in_browser);
 
-    #[derive(Clone)]
+    #[derive(Clone, Debug)]
     enum Msg {
         Increment,
     }
 
-    struct TestComponent;
+    struct TestComponent {
+        pub value: i32,
+    }
 
     impl Component<Msg> for TestComponent {
         fn update(&mut self, msg: Msg) {
             match msg {
-                Msg::Increment => {}
+                Msg::Increment => self.value += 1,
             }
         }
 
         fn view(&self) -> Element<Msg> {
+            let toto = InnerComponent;
             html! {
-                div {
-                    button
-                        @click: Msg::Increment, {
-                        "Increment"
+                div [height: 100] {
+                    span {
+                        button @click: Msg::Increment, {
+                            {{ self.value }}
+                        }
                     }
+                }
+            }
+        }
+    }
+
+    struct InnerComponent;
+    impl Component<Msg> for InnerComponent {
+        fn update(&mut self, _msg: Msg) {}
+
+        fn view(&self) -> Element<Msg> {
+            html! {
+                span {
+                    {{ "Inner" }}
                 }
             }
         }
@@ -39,24 +59,17 @@ mod test {
 
     #[wasm_bindgen_test]
     fn test_html() {
-        /* let component = TestComponent;
-        let view = component.view(); */
+        let component = TestComponent { value: 2 };
 
-        /* assert_eq!(
-            view.render(Rc::new(RefCell::new(component))).outer_html(),
-            r#"<div height="100"><button style="background-color: red;"><span>2</span></button></div>"#
-        ); // r#"<div height="100"><button style="background-color: red;" onclick="Increment">2</button></div>"# */
-        /* let elem = html!(div [height: 100] {
-            button
-                [style: "background-color: red;"]
-                @click: Msg::Increment, {
-                {{ 2 }}
-            }
-        }); */
+        let window = web_sys::window().expect("no global `window` exists");
+        let document = window.document().expect("should have a document on window");
+        let elem = document.create_element("div").unwrap();
 
-        /* assert_eq!(
-            elem.render().outer_html(),
-            r#"<div height="100"><button style="background-color: red;"><span>2</span></button></div>"# // r#"<div height="100"><button style="background-color: red;" onclick="Increment">2</button></div>"#
-        ); */
+        Component::render(Rc::new(RefCell::new(component)), &elem);
+
+        assert_eq!(
+            elem.inner_html(),
+            r#"<div height="100"><span><button>2</button></span></div>"#
+        );
     }
 }

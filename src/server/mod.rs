@@ -25,7 +25,7 @@ mod test {
                 div {
                     button
                         @click: Msg::Increment, {
-                        "Increment"
+                        {{ "Increment" }}
                     }
                 }
             }
@@ -42,4 +42,3 @@ mod test {
         // assert_eq!(view.render()), (),);
     }
 }
-
