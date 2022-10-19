@@ -1,5 +1,4 @@
 use wasm_bindgen::JsCast;
-use web_sys::HtmlElement;
 
 use crate::{element, prelude::*, renderable};
 use wasm_bindgen::closure::Closure;
@@ -18,7 +17,7 @@ where
         let document = window.document().expect("should have a document on window");
 
         match self {
-            Element::Text(text) => {
+            Element::Text(_text) => {
                 unreachable!()
             }
             Element::Node {
@@ -35,12 +34,13 @@ where
 
                 if let Some(event) = events.get("click") {
                     let f = f.clone();
+                    let event = event.clone();
 
                     let closure = Closure::<dyn Fn()>::wrap(Box::new(move || {
                         f(event.clone());
                     }));
 
-                    elem.dyn_ref::<HtmlElement>()
+                    elem.dyn_ref::<web_sys::HtmlElement>()
                         .expect("#loading should be an `HtmlElement`")
                         .set_onclick(Some(closure.as_ref().unchecked_ref()));
 

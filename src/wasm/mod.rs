@@ -11,7 +11,6 @@ mod test {
     use std::{cell::RefCell, rc::Rc};
     use wasm_bindgen_test::*;
 
-    use web_sys::HtmlElement;
     wasm_bindgen_test_configure!(run_in_browser);
 
     #[derive(Clone, Debug)]
@@ -31,7 +30,7 @@ mod test {
         }
 
         fn view(&self) -> Element<Msg> {
-            let toto = InnerComponent;
+            // let toto = InnerComponent;
             html! {
                 div [height: 100] {
                     span {

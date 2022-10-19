@@ -1,5 +1,3 @@
-use crate::prelude::Component;
-
 pub trait Renderable<Msg>
 where
     Msg: Clone + 'static,

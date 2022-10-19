@@ -1,9 +1,12 @@
+#[cfg(target_arch = "wasm32")]
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{
+/* use crate::{
     element::{self, Element},
     renderable,
-};
+}; */
+
+use crate::prelude::*;
 
 pub trait Component<Msg>: 'static
 where
@@ -38,7 +41,7 @@ where
         run_rec(component.clone(), &parent3);
     };
 
-    let elem = <element::Element<Msg> as renderable::Renderable<Msg>>::render::<_>(&view, cb);
+    let elem = <Element<Msg> as Renderable<Msg>>::render::<_>(&view, cb);
 
     parent.set_inner_html("");
     parent.append_child(&elem).unwrap();

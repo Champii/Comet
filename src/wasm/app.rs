@@ -1,5 +1,4 @@
-use crate::{element, prelude::*, renderable};
-use std::{cell::RefCell, rc::Rc};
+use crate::prelude::*;
 
 impl<Comp, Msg> App<Comp, Msg>
 where

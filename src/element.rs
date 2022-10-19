@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::BTreeMap, fmt::Debug, rc::Rc};
+use std::{collections::BTreeMap, fmt::Debug};
 
 #[derive(Debug)]
 pub enum Element<Msg: Clone> {

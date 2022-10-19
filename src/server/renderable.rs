@@ -1,7 +1,4 @@
-use crate::{
-    element::Element,
-    prelude::{Component, Renderable},
-};
+use crate::{element::Element, prelude::Renderable};
 
 impl<Msg> Renderable<Msg> for Element<Msg>
 where

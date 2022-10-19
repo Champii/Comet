@@ -134,28 +134,43 @@ macro_rules! html_arr {
         vec![$($expanded),*]
     };
 
-    // base rule
-    // This is last, else it causes an infinite recursion as it matches with itself right away
+    // Entry point, base rule
+    // This is defined last, else it causes an infinite recursion as it matches with itself right away
     (
         $( $e:tt )*
     ) => {
         html_arr! {{
-            {{ $( $e )* }[]}
+            {
+                {
+                    $( $e )*
+                }
+                []
+            }
         }}
     };
-
-
 }
 
+// Conveinience macro to get the root element of the defined dom
 #[macro_export]
 macro_rules! html {
-    ($($e:tt)*) => {
-        html_arr! {
-            $($e)*
-        }.pop().unwrap()
+    (
+        $( $e:tt )*
+    ) => {
+        {
+            let mut arr = html_arr! {
+                $($e)*
+            };
+
+            if arr.len() != 1 {
+                panic!("The html macro must have exactly one root element");
+            }
+
+            arr.pop().unwrap()
+        }
     };
 }
 
+#[cfg(target_arch = "wasm32")]
 #[cfg(test)]
 mod html_test {
     use crate::{element, prelude::*, renderable};
@@ -163,8 +178,61 @@ mod html_test {
     use wasm_bindgen_test::*;
     wasm_bindgen_test_configure!(run_in_browser);
 
-    #[derive(Clone)]
+    #[derive(Clone, Debug)]
     struct Msg;
+
+    fn assert_html(view: &Element<Msg>, expected: &str) {
+        let elem =
+            <element::Element<Msg> as renderable::Renderable<Msg>>::render::<_>(&view, |_| {});
+
+        assert_eq!(elem.outer_html(), expected);
+    }
+
+    #[wasm_bindgen_test]
+    fn mono_element() {
+        let view = html! {
+            div {
+            }
+        };
+
+        assert_html(&view, "<div></div>");
+    }
+
+    #[wasm_bindgen_test]
+    fn one_level_nested() {
+        let view = html! {
+            div {
+                div {}
+            }
+        };
+
+        assert_html(&view, "<div><div></div></div>");
+    }
+
+    #[wasm_bindgen_test]
+    fn two_level_nested() {
+        let view = html! {
+            div {
+                div {
+                    div {}
+                }
+            }
+        };
+
+        assert_html(&view, "<div><div><div></div></div></div>");
+    }
+
+    #[wasm_bindgen_test]
+    fn one_sibling() {
+        let view = html! {
+            div {
+                span {}
+                span {}
+            }
+        };
+
+        assert_html(&view, "<div><span></span><span></span></div>");
+    }
 
     #[wasm_bindgen_test]
     fn test_html() {
@@ -176,9 +244,6 @@ mod html_test {
             }
         };
 
-        let elem =
-            <element::Element<Msg> as renderable::Renderable<Msg>>::render::<_>(&view, |_| {});
-
-        assert_eq!(elem.outer_html(), "<div><button>Increment</button></div>");
+        assert_html(&view, "<div><button>Increment</button></div>");
     }
 }
