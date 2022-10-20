@@ -1,4 +1,79 @@
 #[macro_export]
+macro_rules! replace_self {
+    (
+        $self:ident,
+        {
+            {
+                {
+                    self.
+                    $($rest:tt)*
+                }
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        replace_self! {$self, {
+            {
+                {
+                    $($rest)*
+                }
+                [$($expanded)*
+                    $self.
+                ]
+            }
+        }}
+    };
+
+    (
+        $self:ident,
+        {
+            {
+                {
+                    $chunk:tt
+                    $($rest:tt)*
+                }
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        replace_self! {$self, {
+            {
+                {
+                    $($rest)*
+                }
+                [$($expanded)*
+                    $chunk
+                ]
+            }
+        }}
+    };
+
+    // Result
+    (
+        $self:ident,
+        {
+            {
+                {}
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        $($expanded)*
+    };
+
+    // Entry point
+    (
+        $self:ident,
+        $($e:tt)*
+    ) => {
+        replace_self! {$self, {
+            {{ $($e)* }[]}
+        }}
+    };
+
+}
+
+#[macro_export]
 macro_rules! html_arr {
     // tag
     (
@@ -72,7 +147,7 @@ macro_rules! html_arr {
         {
             {
                 {
-                    {{ self.$code:ident }}
+                    {{ $($code:tt)* }}
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -86,7 +161,12 @@ macro_rules! html_arr {
                 }
                 [$($expanded)*
                     {
-                        Element::Text($self.$code.to_string())
+                        Element::Text(
+                            replace_self!(
+                                $self,
+                                $($code)*
+                            ).to_string()
+                        )
                     }
                 ]
             }
@@ -294,7 +374,7 @@ macro_rules! extract_msg {
         {
             {
                 {
-                    {{ self.$code:ident }}
+                    {{ $($code:tt)* }}
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -428,7 +508,7 @@ macro_rules! extract_update {
         {
             {
                 {
-                    {{ self.$code:ident }}
+                    {{ $($code:tt)* }}
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -560,7 +640,7 @@ mod lol {
     }
 
     component! { Counter,
-        button @click: self.increment(), {
+        button {
             {{ self.value }}
         }
     }
