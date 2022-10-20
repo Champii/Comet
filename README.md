@@ -21,6 +21,8 @@ $> cargo install https://github.com/Champii/Comet --locked
 `src/lib.rs`
 
 ```rust
+use comet::prelude::*;
+
 #[derive(Clone)]
 pub enum Msg {
     Increment,

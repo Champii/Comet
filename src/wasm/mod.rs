@@ -4,7 +4,7 @@ mod log_macro;
 pub mod prelude;
 mod renderable;
 
-#[cfg(test)]
+/* #[cfg(test)]
 mod test {
 
     use crate::prelude::*;
@@ -74,4 +74,4 @@ mod test {
             r#"<div height="100"><span><button>2</button></span><span><span>Inner</span></span></div>"#
         );
     }
-}
+} */

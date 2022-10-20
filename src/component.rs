@@ -3,6 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::prelude::*;
 
+#[cfg(target_arch = "wasm32")]
 pub type Shared<T> = Rc<RefCell<Box<T>>>;
 
 pub trait Component<Msg>: 'static
@@ -11,12 +12,16 @@ where
 {
     fn update(&mut self, msg: Msg);
     fn view(&self) -> Element<Msg>;
+
+    #[cfg(target_arch = "wasm32")]
     fn into_shared(self) -> Rc<RefCell<Box<Self>>>
     where
         Self: Sized,
     {
         Rc::new(RefCell::new(Box::new(self)))
     }
+
+    #[cfg(target_arch = "wasm32")]
     fn into_shared_dyn(self) -> Rc<RefCell<Box<dyn Component<Msg>>>>
     where
         Self: Sized,

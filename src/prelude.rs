@@ -1,6 +1,9 @@
 pub use crate::app::*;
+pub use crate::component;
 pub use crate::component::*;
 pub use crate::element::*;
+pub use crate::extract_msg;
+pub use crate::extract_update;
 pub use crate::html;
 pub use crate::html_arr;
 pub use crate::renderable::*;
