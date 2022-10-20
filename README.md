@@ -28,12 +28,9 @@ pub struct Counter {
     pub value: i32,
 }
 
-component! {
-    Counter,
-    div {
-	button @click: { self.value += 1 }, {
-	    {{ self.value }}
-	}
+component! { Counter,
+    button @click: { self.value += 1 }, {
+	{{ self.value }}
     }
 }
 
