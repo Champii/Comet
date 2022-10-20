@@ -1,5 +1,6 @@
 pub use paste::paste;
 pub use std::{cell::RefCell, rc::Rc};
+pub use web_sys;
 
 pub use crate::app::*;
 pub use crate::component;

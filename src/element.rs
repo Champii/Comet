@@ -11,7 +11,7 @@ pub enum Element<Msg: Clone> {
         events: BTreeMap<String, Msg>,
         children: Vec<Self>,
     },
-    Component(Rc<RefCell<Box<dyn Component<Msg>>>>),
+    // Component(Rc<RefCell<Box<dyn Component<Msg>>>>),
 }
 
 impl<Msg: Clone> Debug for Element<Msg> {
@@ -24,7 +24,7 @@ impl<Msg: Clone> Debug for Element<Msg> {
                 events: _events,
                 children,
             } => write!(f, "Node({} {:?} {:?})", tag, attrs, children),
-            Element::Component(_) => write!(f, "Component"),
+            // Element::Component(_) => write!(f, "Component"),
         }
     }
 }

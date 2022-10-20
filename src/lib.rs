@@ -5,7 +5,7 @@ use std::{cell::RefCell, rc::Rc};
 use prelude::*;
 
 mod app;
-mod component;
+pub mod component;
 mod element;
 
 #[macro_use]

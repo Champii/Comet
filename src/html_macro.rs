@@ -81,6 +81,7 @@ macro_rules! html_arr {
     // tag
     (
         $self:ident,
+        $f:ident,
         {
             {
                 {
@@ -95,7 +96,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, {
+        html_arr! {$self, $f, {
             {
                 {
                     $($rest)*
@@ -103,18 +104,30 @@ macro_rules! html_arr {
                 [$($expanded)*
                     {
                         use std::collections::BTreeMap;
+                        use wasm_bindgen::JsCast;
 
                         {
+                            let window = web_sys::window().expect("no global `window` exists");
+                            let document = window.document().expect("should have a document on window");
+
                             let elem_str = stringify!($tag);
 
+                            let elem = document.create_element(elem_str).unwrap();
                             if elem_str.starts_with("\"") {
-                                Element::Text(elem_str.to_string())
+                                elem.set_inner_html(elem_str);
+
+                                elem
                             } else {
+
                                 #[allow(unused_mut, unused_assignments)]
-                                let mut children = vec![];
 
-                                children = html_arr!($self, $($e)*);
-
+                                let children = html_arr!($self, $f, $($e)*);
+                                 for child in children {
+                                    elem.append_child(
+                                        &child
+                                    )
+                                    .unwrap();
+                                };
                                 #[allow(unused_mut, unused_assignments)]
                                 let mut attrs = BTreeMap::new();
 
@@ -122,20 +135,35 @@ macro_rules! html_arr {
                                     attrs = [$((stringify!($attr_name).to_string(), $attr_value.to_string())),*].into();
                                 )?
 
+                                for (attr_name, value) in attrs {
+                                    elem.set_attribute(attr_name, value).unwrap();
+                                }
+
                                 #[allow(unused_mut, unused_assignments)]
-                                let mut evcode = BTreeMap::new();
+                                let mut evcode: BTreeMap<String, Msg> = BTreeMap::new();
 
                                 $(
                                     evcode = [($(stringify!($ev).into(), Msg::$ev),*)].into();
 
                                 )?
 
-                                Element::Node {
-                                    tag: elem_str.to_string(),
-                                    attrs,
-                                    events: evcode,
-                                    children: children,
+                                if let Some(event) = evcode.get("click") {
+                                    let f = $f.clone();
+                                    let event = event.clone();
+
+                                    let closure = Closure::<dyn Fn()>::wrap(Box::new(move || {
+                                        f(event.clone());
+                                    }));
+
+                                    elem.dyn_ref::<web_sys::HtmlElement>()
+                                        .expect("#should be an `HtmlElement`")
+                                        .set_onclick(Some(closure.as_ref().unchecked_ref()));
+
+                                    // FIXME: leak
+                                    closure.forget();
                                 }
+
+                                elem
                             }
                         }
                     }
@@ -147,6 +175,7 @@ macro_rules! html_arr {
     // Text
     (
         $self:ident,
+        $f:ident,
         {
             {
                 {
@@ -157,19 +186,24 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, {
+        html_arr! {$self, $f, {
             {
                 {
                     $($rest)*
                 }
                 [$($expanded)*
                     {
-                        Element::Text(
-                            replace_self!(
-                                $self,
-                                $($code)*
-                            ).to_string()
-                        )
+                        let window = web_sys::window().expect("no global `window` exists");
+                        let document = window.document().expect("should have a document on window");
+
+                        let elem = document.create_element("span").unwrap();
+
+                        elem.set_inner_html(&replace_self!(
+                            $self,
+                            $($code)*
+                        ).to_string());
+
+                        elem
                     }
                 ]
             }
@@ -179,6 +213,7 @@ macro_rules! html_arr {
     // Component
     (
         $self:ident,
+        $f:ident,
         {
             {
                 {
@@ -189,17 +224,23 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, {
+        html_arr! {$self, $f, {
             {
                 {
                     $($rest)*
                 }
                 [$($expanded)*
                     {
-                        Element::Component(replace_self!(
+                        let window = web_sys::window().expect("no global `window` exists");
+                        let document = window.document().expect("should have a document on window");
+
+                        let component_container = document.create_element("span").unwrap();
+                        let component = replace_self!(
                             $self,
                             $($comp)+
-                        ))
+                        ).clone();
+                        comet::component::run_rec(component, &component_container);
+                        component_container
                     }
                 ]
             }
@@ -215,6 +256,7 @@ macro_rules! html_arr {
     // Final case, where we return the vec with all the elements
     (
         $self:ident,
+        $f:ident,
         {
             {
                 {}
@@ -229,9 +271,10 @@ macro_rules! html_arr {
     // This is defined last, else it causes an infinite recursion as it matches with itself right away
     (
         $self:ident,
+        $f:ident,
         $( $e:tt )*
     ) => {
-        html_arr! {$self, {
+        html_arr! {$self, $f, {
             {
                 {
                     $( $e )*
@@ -605,8 +648,8 @@ macro_rules! component {
                         extract_update!{self, msg, $type, $($e)+}
                     }
 
-                    fn view(&self) -> Element<Msg> {
-                        html! {self, $($e)+ }
+                    fn view<F>(&self, f: F) -> web_sys::Element where F: Fn(Msg) + Clone + 'static {
+                        html! {self, f, $($e)+ }
                     }
                 }
             }
