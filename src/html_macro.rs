@@ -5,7 +5,7 @@ macro_rules! replace_self {
         {
             {
                 {
-                    self.
+                    self
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -18,7 +18,7 @@ macro_rules! replace_self {
                     $($rest)*
                 }
                 [$($expanded)*
-                    $self.
+                    $self
                 ]
             }
         }}
