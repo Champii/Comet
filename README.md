@@ -37,10 +37,7 @@ component! {
     }
 }
 
-#[wasm_bindgen(start)]
-pub fn main() {
-    comet::run(Counter::default());
-}
+comet!(Counter::default());
 ```
 
 ### Run it

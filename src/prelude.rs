@@ -7,6 +7,7 @@ pub use crate::extract_update;
 pub use crate::html;
 pub use crate::html_arr;
 pub use crate::replace_self;
+pub use crate::comet;
 pub use crate::renderable::*;
 
 // These are safe to be in both client and server
