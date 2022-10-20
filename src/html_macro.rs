@@ -83,7 +83,7 @@ macro_rules! html_arr {
                 {
                     $tag:ident
                         $([$($attr_name:ident : $attr_value:expr),*])?
-                        $($(@$ev:ident : self.$evcode:ident() ),+, )?
+                        $($(@$ev:ident : {$($evcode:tt)*} , )+ )?
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -345,7 +345,7 @@ macro_rules! extract_msg {
                 {
                     $tag:ident
                         $([$($attr_name:ident : $attr_value:expr),*])?
-                        $($(@$ev:ident : self.$evcode:ident() ),+,)?
+                        $($(@$ev:ident : {$($evcode:tt)*} , )+ )?
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -474,7 +474,7 @@ macro_rules! extract_update {
                 {
                     $tag:ident
                         $([$($attr_name:ident : $attr_value:expr),*])?
-                        $($(@$ev:ident : self.$evcode:ident() ),+,)?
+                        $($(@$ev:ident : {$($evcode:tt)*} , )+ )?
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -492,7 +492,7 @@ macro_rules! extract_update {
                 [$($expanded)*
                     $($(
                         {
-                            $ev, $self.$evcode()
+                            $ev, replace_self!($self, $($evcode)*)
                         }
                     )*)?
                 ]
@@ -628,22 +628,9 @@ mod lol {
         value: i32,
     }
 
-    impl Counter {
-        pub fn new() -> Self {
-            Self { value: 0 }
-        }
-
-        pub fn increment(&mut self) {
-            self.value += 1;
-        }
-
-    }
-
     component! { Counter,
-        button {
+        button @click: {self.value += 1}, {
             {{ self.value }}
         }
     }
-
-    // comet!(Counter);
 }

@@ -23,31 +23,17 @@ $> cargo install https://github.com/Champii/Comet --locked
 ```rust
 use comet::prelude::*;
 
-#[derive(Clone)]
-pub enum Msg {
-    Increment,
-}
-
 #[derive(Default)]
 pub struct Counter {
     pub value: i32,
 }
 
-impl Component<Msg> for Counter {
-    fn update(&mut self, msg: Msg) {
-        match msg {
-            Msg::Increment => self.value += 1,
-        }
-    }
-
-    fn view(&self) -> Element<Msg> {
-        html! {
-            div {
-                button @click: Msg::Increment, {
-                    {{ self.value }}
-                }
-            }
-        }
+component! {
+    Counter,
+    div {
+	button @click: { self.value += 1 }, {
+	    {{ self.value }}
+	}
     }
 }
 
