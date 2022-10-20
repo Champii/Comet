@@ -1,5 +1,8 @@
+use paste::paste;
+
 #[macro_export]
 macro_rules! replace_self {
+    // Actually replace any self in the token stream
     (
         $self:ident,
         {
@@ -24,6 +27,7 @@ macro_rules! replace_self {
         }}
     };
 
+    // Do nothing if there is no self
     (
         $self:ident,
         {
@@ -70,7 +74,6 @@ macro_rules! replace_self {
             {{ $($e)* }[]}
         }}
     };
-
 }
 
 #[macro_export]
@@ -179,7 +182,7 @@ macro_rules! html_arr {
         {
             {
                 {
-                    @$comp:tt,
+                    @{$($comp:tt)+}
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -193,8 +196,10 @@ macro_rules! html_arr {
                 }
                 [$($expanded)*
                     {
-                        // use std::{cell::RefCell, rc::Rc};
-                        Element::Component($comp)
+                        Element::Component(replace_self!(
+                            $self,
+                            $($comp)+
+                        ))
                     }
                 ]
             }
@@ -361,9 +366,9 @@ macro_rules! extract_msg {
                     $($e)*
                 }
                 [$($expanded)*
-                            $($({
-                                $ev
-                            })+)?
+                    $($({
+                        $ev
+                    })+)?
                 ]
             }
         }}
@@ -396,7 +401,7 @@ macro_rules! extract_msg {
         {
             {
                 {
-                    @$comp:tt,
+                    @{$($comp:tt)+}
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -434,16 +439,6 @@ macro_rules! extract_msg {
                 $name
             ),*
         }
-
-        /* fn update(&mut self, msg: Msg) {
-            match msg {
-                $(
-                    Msg::$expanded => {
-                        $code
-                    }
-                ),*
-            }
-        } */
     };
 
     // Entry point, base rule
@@ -533,7 +528,7 @@ macro_rules! extract_update {
         {
             {
                 {
-                    @$comp:tt,
+                    @{$($comp:tt)+}
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -568,21 +563,13 @@ macro_rules! extract_update {
             }
         }
     ) => {
-        /* #[derive(Clone)]
-        enum Msg {
+        match $msg {
             $(
-                $name
+                Msg::$name =>{
+                    $code
+                }
             ),*
-        } */
-
-                match $msg {
-                    $(
-                        Msg::$name =>{
-                            $code
-                        }
-                    ),*
-            }
-
+        }
     };
 
     // Entry point, base rule
@@ -607,20 +594,27 @@ macro_rules! extract_update {
 #[macro_export]
 macro_rules! component {
     ($type:ty, $($e:tt)+) => {
-        extract_msg!{$($e)+}
+        paste! {
+            mod [<__component_ $type:lower>] {
+                use super::*;
 
-        impl Component<Msg> for $type {
-            fn update(&mut self, msg: Msg) {
-                extract_update!{self, msg, $type, $($e)+}
+                extract_msg!{$($e)+}
+
+                impl Component<Msg> for $type {
+                    fn update(&mut self, msg: Msg) {
+                        extract_update!{self, msg, $type, $($e)+}
+                    }
+
+                    fn view(&self) -> Element<Msg> {
+                        html! {self, $($e)+ }
+                    }
+                }
             }
 
-            fn view(&self) -> Element<Msg> {
-                html! {self, $($e)+ }
-            }
+            use [<__component_ $type:lower>]::Msg as [<$type Msg>];
         }
     };
 }
-
 
 #[macro_export]
 macro_rules! comet {
@@ -645,3 +639,4 @@ mod lol {
         }
     }
 }
+

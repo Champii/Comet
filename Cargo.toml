@@ -13,6 +13,7 @@ env_logger = "0.9.1"
 log = "0.4.17"
 wasm-bindgen-futures = "0.4.30"
 futures = { version = "0.3"}
+paste = "1.0.9"
 
 
 [dependencies.web-sys]

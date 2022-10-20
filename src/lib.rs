@@ -26,5 +26,6 @@ where
     Comp: Component<Msg>,
     Msg: Clone + 'static,
 {
+    #[cfg(target_arch = "wasm32")]
     App::new(Rc::new(RefCell::new(Box::new(root)))).run();
 }
