@@ -1,5 +1,3 @@
-use paste::paste;
-
 #[macro_export]
 macro_rules! replace_self {
     // Actually replace any self in the token stream
@@ -653,8 +651,6 @@ macro_rules! component {
                     }
                 }
             }
-
-            use [<__component_ $type:lower>]::Msg as [<$type Msg>];
         }
     };
 }

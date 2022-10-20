@@ -2,7 +2,7 @@ mod app;
 mod component;
 mod log_macro;
 pub mod prelude;
-mod renderable;
+// mod renderable;
 
 /* #[cfg(test)]
 mod test {
