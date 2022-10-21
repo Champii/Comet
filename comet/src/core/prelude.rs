@@ -1,4 +1,5 @@
-pub use comet_macros;
+pub use comet_macro_procs;
+pub use comet_macro_rules;
 pub use paste::paste;
 pub use std::{cell::RefCell, rc::Rc};
 pub use web_sys;
@@ -8,17 +9,17 @@ pub use crate::core::component::*;
 pub use crate::core::shared::*;
 
 // macros
-pub use crate::_gen_full_variant;
-pub use crate::_gen_variant;
-pub use crate::comet;
-pub use crate::component;
-pub use crate::extract_msg;
-pub use crate::extract_update;
-pub use crate::gen_full_variant;
-pub use crate::gen_variant;
-pub use crate::html;
-pub use crate::html_arr;
-pub use crate::replace_self;
+pub use comet_macro_rules::_gen_full_variant;
+pub use comet_macro_rules::_gen_variant;
+pub use comet_macro_rules::gen_full_variant;
+pub use comet_macro_rules::gen_variant;
+pub use comet_macro_rules::extract_msg;
+pub use comet_macro_rules::comet;
+pub use comet_macro_rules::component;
+pub use comet_macro_rules::extract_update;
+pub use comet_macro_rules::html;
+pub use comet_macro_rules::html_arr;
+pub use comet_macro_rules::replace_self;
 
 // These are safe to be in both client and server
 pub use wasm_bindgen;

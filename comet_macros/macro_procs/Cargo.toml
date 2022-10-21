@@ -1,5 +1,5 @@
 [package]
-name = "comet_macros"
+name = "comet_macro_procs"
 version = "0.1.1"
 authors = ["Erlend Tobiassen <erlend.tobiassen@gmail.com>"]
 description = "Creates unique identifiers for macros using procedural macros "

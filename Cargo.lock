@@ -74,7 +74,8 @@ dependencies = [
 name = "comet"
 version = "0.1.1"
 dependencies = [
- "comet_macros",
+ "comet_macro_procs",
+ "comet_macro_rules",
  "futures",
  "paste",
  "wasm-bindgen",
@@ -93,13 +94,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "comet_macros"
+name = "comet_macro_procs"
 version = "0.1.1"
 dependencies = [
  "proc-macro2 0.4.30",
  "quote 0.6.13",
  "syn 0.15.44",
 ]
+
+[[package]]
+name = "comet_macro_rules"
+version = "0.1.0"
 
 [[package]]
 name = "console_error_panic_hook"
