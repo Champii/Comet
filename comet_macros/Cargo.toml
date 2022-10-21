@@ -1,0 +1,20 @@
+[package]
+name = "gensym"
+version = "0.1.0"
+authors = ["Erlend Tobiassen <erlend.tobiassen@gmail.com>"]
+description = "Creates unique identifiers for macros using procedural macros "
+repository = "https://github.com/regiontog/gensym"
+documentation = "https://docs.rs/gensym/0.1.0/gensym/"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+edition = "2018"
+
+[lib]
+path = "src/lib.rs"
+proc-macro = true
+
+[dependencies]
+uuid = { version = "0.7", features = ["v4"] }
+syn = { version = "0.15", features = ["full", "extra-traits"] }
+proc-macro2 = "0.4"
+quote = "0.6"
