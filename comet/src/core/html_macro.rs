@@ -120,7 +120,7 @@ macro_rules! html_arr {
             {
                 {
                     $tag:ident
-                        $([$($attr_name:ident : $attr_value:expr),*])?
+                        $([$($attr_name:ident : {$($attr_value:tt)*} ),*])?
                         $($(@$ev:ident : {$($evcode:tt)*} ),+ )?
                         { $($e:tt)* }
 
@@ -166,12 +166,10 @@ macro_rules! html_arr {
                                 let mut attrs: BTreeMap<String, String> = BTreeMap::new();
 
                                 $(
-                                    attrs = [$((stringify!($attr_name).to_string(), $attr_value.to_string())),*].into();
+                                    attrs = [$((stringify!($attr_name).to_string(), replace_self!($self, $($attr_value)*).to_string())),*].into();
                                 )?
 
-                                for (attr_name, value) in attrs {
-                                    elem.set_attribute(attr_name.as_str(), value.as_str()).unwrap();
-                                }
+                                elem.set_attribute("style", &attrs.iter().map(|(k, v)| format!("{}: {};", k, v)).collect::<Vec<_>>().join("")).unwrap();
 
                                 #[allow(unused_mut, unused_assignments)]
                                 let mut evcode: BTreeMap<String, Msg> = BTreeMap::new();
@@ -437,7 +435,7 @@ macro_rules! extract_msg {
             {
                 {
                     $tag:ident
-                        $([$($attr_name:ident : $attr_value:expr),*])?
+                        $([$($attr_name:ident : {$($attr_value:tt)*} ),*])?
                         $($(@$ev:ident : {$($evcode:tt)*} ),+ )?
                         { $($e:tt)* }
 
@@ -555,7 +553,7 @@ macro_rules! extract_update {
             {
                 {
                     $tag:ident
-                        $([$($attr_name:ident : $attr_value:expr),*])?
+                        $([$($attr_name:ident : {$($attr_value:tt)*} ),*])?
                         $($(@$ev:ident : {$($evcode:tt)*}  ),+ )?
                         { $($e:tt)* }
 
@@ -694,7 +692,10 @@ macro_rules! component {
                         extract_update!{self, msg, $type, $($e)+}
                     }
 
-                    fn view<F>(&self, f: F) -> web_sys::Element where F: Fn(Msg) + Clone + 'static {
+                    fn view<F>(&self, f: F) -> web_sys::Element
+                    where
+                        F: Fn(Msg) + Clone + 'static
+                    {
                         html! {self, f, $($e)+ }
                     }
                 }
