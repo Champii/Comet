@@ -1,23 +1,23 @@
-pub use paste::paste;
 pub use gensym;
+pub use paste::paste;
 pub use std::{cell::RefCell, rc::Rc};
 pub use web_sys;
 
-pub use crate::app::*;
+pub use crate::core::app::*;
+pub use crate::core::component::*;
+
+// macros
+pub use crate::_gen_full_variant;
+pub use crate::_gen_variant;
+pub use crate::comet;
 pub use crate::component;
-pub use crate::component::*;
-// pub use crate::element::*;
 pub use crate::extract_msg;
 pub use crate::extract_update;
+pub use crate::gen_full_variant;
+pub use crate::gen_variant;
 pub use crate::html;
 pub use crate::html_arr;
 pub use crate::replace_self;
-pub use crate::gen_full_variant;
-pub use crate::_gen_full_variant;
-pub use crate::gen_variant;
-pub use crate::_gen_variant;
-pub use crate::comet;
-// pub use crate::renderable::*;
 
 // These are safe to be in both client and server
 pub use wasm_bindgen;

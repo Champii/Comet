@@ -1,14 +1,10 @@
 #![feature(associated_type_defaults)]
 
+pub mod core;
+pub mod prelude {
+    pub use crate::core::prelude::*;
+}
 use prelude::*;
-
-mod app;
-pub mod component;
-
-#[macro_use]
-pub mod html_macro;
-
-pub mod prelude;
 
 #[cfg(target_arch = "wasm32")]
 #[macro_use]
@@ -25,4 +21,3 @@ where
     #[cfg(target_arch = "wasm32")]
     App::new(Rc::new(RefCell::new(Box::new(_root)))).run();
 }
-

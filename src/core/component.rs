@@ -45,4 +45,3 @@ where
     parent.set_inner_html("");
     parent.append_child(&view).unwrap();
 }
-

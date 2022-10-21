@@ -105,10 +105,8 @@ macro_rules! replace_self {
 #[macro_export]
 macro_rules! new_ident {
     ($before:ident,  $ident:expr) => {
-        paste! {
-            Msg:: hash!($ident)
-        }
-    }
+        Msg::hash!($ident)
+    };
 }
 
 #[macro_export]
@@ -280,7 +278,7 @@ macro_rules! html_arr {
                             $($comp)+
                         ).clone();
 
-                        comet::component::run_rec(component, &component_container);
+                        comet::core::component::run_rec(component, &component_container);
 
                         component_container
                     }
@@ -729,4 +727,3 @@ mod lol {
         }
     }
 }
-
