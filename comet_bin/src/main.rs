@@ -117,18 +117,14 @@ fn create_project_folder(name: &str) {
         "src/lib.rs",
         r#"use comet::prelude::*;
 
-#[derive(Default)]
-pub struct Counter {
-    pub value: i32,
-}
-
-component! { Counter,
-    button @click: { self.value += 1 } {
-        {{ self.value }}
+component! {
+    i32,
+    button @click: { *self += 1 } {
+        {{ self }}
     }
 }
 
-comet!(Counter::default());
+comet!(0);
 "#,
     );
 

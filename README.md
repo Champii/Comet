@@ -25,20 +25,19 @@ $> comet new my_counter && cd my_counter
 The default generated file `src/lib.rs` :
 
 ```rust
+// The mandatory imports
 use comet::prelude::*;
 
-#[derive(Default)]
-pub struct Counter {
-    pub value: i32,
-}
-
-component! { Counter,
-    button @click: { self.value += 1 } {
-	{{ self.value }}
+// We create a component that is an `i32` and which we can increment with a button
+component! {
+    i32,
+    button @click: { *self += 1 } {
+	{{ self }}
     }
 }
 
-comet!(Counter::default());
+// We run the application with a start value
+comet!(0);
 ```
 
 ### Run it
