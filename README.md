@@ -10,6 +10,8 @@ Work in progress.
     - Create simple counter example
     - Run it
 
+Visit the [example](https://github.com/Champii/Comet/tree/examples) folder, this is the only documentation for now
+
 ### Install Comet Binary
 
 ```bash

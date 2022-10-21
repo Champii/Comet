@@ -1,6 +1,7 @@
 use std::ops::Deref;
 use std::{cell::RefCell, rc::Rc};
 
+#[derive(Default)]
 pub struct Shared<T>(pub Rc<RefCell<Box<T>>>);
 
 impl<T> Clone for Shared<T> {
