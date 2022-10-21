@@ -34,7 +34,7 @@ use comet::prelude::*;
 component! {
     i32,
     button @click: { *self += 1 } {
-	{{ self }}
+	{ self }
     }
 }
 
@@ -56,4 +56,5 @@ And go to [http://localhost:8080](http://localhost:8080)
 - Websocket
 - Register for queries
 - Allow for `if`, `for` and iterators inside html
+- Allow intermix of attributes, styles and events
 

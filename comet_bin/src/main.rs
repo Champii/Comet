@@ -120,7 +120,7 @@ fn create_project_folder(name: &str) {
 component! {
     i32,
     button @click: { *self += 1 } {
-        {{ self }}
+        { self }
     }
 }
 

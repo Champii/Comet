@@ -3,7 +3,7 @@ use comet::prelude::*;
 component! {
     i32,
     button @click: { *self += 1 } {
-        {{ self }}
+        { self }
     }
 }
 
@@ -13,7 +13,8 @@ pub struct App {
     counter2: Shared<i32>,
 }
 
-component! { App,
+component! {
+    App,
     div {
         @{self.counter}
         @{self.counter2}

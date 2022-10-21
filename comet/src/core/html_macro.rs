@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! gen_full_variant {
     ($($a:tt)*) => {
-        comet_macros::gensym!{ _gen_full_variant!{ $($a)* } }
+        comet_macros::generate_hash!{ _gen_full_variant!{ $($a)* } }
     };
 }
 
@@ -213,7 +213,7 @@ macro_rules! html_arr {
         {
             {
                 {
-                    {{ $($code:tt)* }}
+                    { $($code:tt)* }
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -465,7 +465,7 @@ macro_rules! extract_msg {
         {
             {
                 {
-                    {{ $($code:tt)* }}
+                    { $($code:tt)* }
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -588,7 +588,7 @@ macro_rules! extract_update {
         {
             {
                 {
-                    {{ $($code:tt)* }}
+                    { $($code:tt)* }
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -722,8 +722,8 @@ mod lol {
     }
 
     component! { Counter,
-        button @click: {self.value += 1} {
-            {{ self.value }}
+        button @click: { self.value += 1 } {
+            { self.value }
         }
     }
 }
