@@ -121,7 +121,7 @@ macro_rules! html_arr {
                 {
                     $tag:ident
                         $([$($attr_name:ident : $attr_value:expr),*])?
-                        $($(@$ev:ident : {$($evcode:tt)*} , )+ )?
+                        $($(@$ev:ident : {$($evcode:tt)*} ),+ )?
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -438,7 +438,7 @@ macro_rules! extract_msg {
                 {
                     $tag:ident
                         $([$($attr_name:ident : $attr_value:expr),*])?
-                        $($(@$ev:ident : {$($evcode:tt)*} , )+ )?
+                        $($(@$ev:ident : {$($evcode:tt)*} ),+ )?
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -556,7 +556,7 @@ macro_rules! extract_update {
                 {
                     $tag:ident
                         $([$($attr_name:ident : $attr_value:expr),*])?
-                        $($(@$ev:ident : {$($evcode:tt)*} , )+ )?
+                        $($(@$ev:ident : {$($evcode:tt)*}  ),+ )?
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -721,7 +721,7 @@ mod lol {
     }
 
     component! { Counter,
-        button @click: {self.value += 1}, {
+        button @click: {self.value += 1} {
             {{ self.value }}
         }
     }

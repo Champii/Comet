@@ -54,7 +54,7 @@ fn generate_msg_call(mcall: syn::Expr) -> Result<proc_macro2::TokenStream> {
     let idents = args
         .elems
         .iter()
-        .map(|x| syn::Ident::new(&format!("__gensym_{}", hash(&x)), Span::call_site()))
+        .map(|x| syn::Ident::new(&format!("Event{}", hash(&x)), Span::call_site()))
         .collect::<Vec<_>>();
 
     let tt = quote! {
@@ -78,7 +78,7 @@ pub fn generate_update(input: TokenStream) -> TokenStream {
 fn generate_update_call(mcall: syn::Expr) -> Result<proc_macro2::TokenStream> {
     use quote::ToTokens;
 
-    let sym = syn::Ident::new(&format!("__gensym_{}", hash(&mcall)), Span::call_site());
+    let sym = syn::Ident::new(&format!("Event{}", hash(&mcall)), Span::call_site());
 
     let tt = quote! {
             Msg::#sym
@@ -103,7 +103,7 @@ fn alter_macro(mut mcall: syn::Macro) -> Result<proc_macro2::TokenStream> {
     use quote::ToTokens;
 
     let first_arg: Expr = mcall.parse_body().unwrap();
-    let sym = syn::Ident::new(&format!("__gensym_{}", hash(&first_arg)), Span::call_site());
+    let sym = syn::Ident::new(&format!("Event{}", hash(&first_arg)), Span::call_site());
 
     let mut inserted_gensym: proc_macro2::TokenStream = parse_quote!(#sym, );
 

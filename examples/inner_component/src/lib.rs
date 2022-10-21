@@ -6,7 +6,7 @@ pub struct Counter {
 }
 
 component! { Counter,
-    button @click: {self.value += 1}, {
+    button @click: { self.value += 1 } {
         {{ self.value }}
     }
 }
@@ -30,11 +30,11 @@ component! { App,
         @{self.counter}
         @{self.counter2}
         button
-            @click: {self.counter.borrow_mut().value += 42}, {
+            @click: {self.counter.borrow_mut().value += 42} {
             {{ "counter1" }}
         }
         button
-            @click: {self.counter2.borrow_mut().value += 42}, {
+            @click: {self.counter2.borrow_mut().value += 42} {
             {{ "counter2" }}
         }
     }

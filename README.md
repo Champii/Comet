@@ -39,7 +39,7 @@ pub struct Counter {
 }
 
 component! { Counter,
-    button @click: { self.value += 1 }, {
+    button @click: { self.value += 1 } {
 	{{ self.value }}
     }
 }
