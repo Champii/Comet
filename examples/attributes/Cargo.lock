@@ -31,7 +31,8 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 name = "comet"
 version = "0.1.1"
 dependencies = [
- "comet_macros",
+ "comet_macro_procs",
+ "comet_macro_rules",
  "futures",
  "paste",
  "wasm-bindgen",
@@ -40,13 +41,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "comet_macros"
+name = "comet_macro_procs"
 version = "0.1.1"
 dependencies = [
  "proc-macro2 0.4.30",
  "quote 0.6.13",
  "syn 0.15.44",
 ]
+
+[[package]]
+name = "comet_macro_rules"
+version = "0.1.0"
 
 [[package]]
 name = "futures"
