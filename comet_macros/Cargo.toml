@@ -1,6 +1,6 @@
 [package]
 name = "comet_macros"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Erlend Tobiassen <erlend.tobiassen@gmail.com>"]
 description = "Creates unique identifiers for macros using procedural macros "
 repository = "https://github.com/regiontog/gensym"
