@@ -56,34 +56,34 @@ macro_rules! html_arr {
 
                                 $(
                                     attrs = [$((stringify!($attr_name).to_string(), replace_self!($self, $($attr_value)*).to_string())),*].into();
-                                )?
 
-                                elem.set_attribute("style", &attrs.iter().map(|(k, v)| format!("{}: {};", k, v)).collect::<Vec<_>>().join("")).unwrap();
+                                    elem.set_attribute("style", &attrs.iter().map(|(k, v)| format!("{}: {};", k, v)).collect::<Vec<_>>().join("")).unwrap();
+                                )?
 
                                 #[allow(unused_mut, unused_assignments)]
                                 let mut evcode: BTreeMap<String, Msg> = BTreeMap::new();
 
                                 $(
-                                        evcode = [($(stringify!($ev).into(),
-                                           gen_full_variant!($($evcode)*)
-                                        ),+)].into();
+                                    evcode = [($(stringify!($ev).into(),
+                                       gen_full_variant!($($evcode)*)
+                                    ),+)].into();
+
+                                    if let Some(event) = evcode.get("click") {
+                                        let f = $f.clone();
+                                        let event = event.clone();
+
+                                        let closure = Closure::<dyn Fn()>::wrap(Box::new(move || {
+                                            f(event.clone());
+                                        }));
+
+                                        elem.dyn_ref::<web_sys::HtmlElement>()
+                                            .expect("#should be an `HtmlElement`")
+                                            .set_onclick(Some(closure.as_ref().unchecked_ref()));
+
+                                        // FIXME: leak
+                                        closure.forget();
+                                    }
                                 )?
-
-                                if let Some(event) = evcode.get("click") {
-                                    let f = $f.clone();
-                                    let event = event.clone();
-
-                                    let closure = Closure::<dyn Fn()>::wrap(Box::new(move || {
-                                        f(event.clone());
-                                    }));
-
-                                    elem.dyn_ref::<web_sys::HtmlElement>()
-                                        .expect("#should be an `HtmlElement`")
-                                        .set_onclick(Some(closure.as_ref().unchecked_ref()));
-
-                                    // FIXME: leak
-                                    closure.forget();
-                                }
 
                                 elem
                             }

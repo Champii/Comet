@@ -2,7 +2,18 @@ mod app;
 pub mod component;
 mod shared;
 
-#[macro_use]
-pub mod html_macro;
-
 pub mod prelude;
+
+mod just_to_test {
+    use crate::prelude::*;
+
+    pub struct Counter {
+        value: i32,
+    }
+
+    component! { Counter,
+        button @click: { self.value += 1 } {
+            { self.value }
+        }
+    }
+}

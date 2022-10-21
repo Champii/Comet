@@ -1,6 +1,10 @@
 #![feature(associated_type_defaults)]
 
 pub mod core;
+
+#[cfg(test)]
+mod tests;
+
 pub mod prelude {
     pub use crate::core::prelude::*;
 }
