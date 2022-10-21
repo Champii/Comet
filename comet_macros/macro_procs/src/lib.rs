@@ -2,21 +2,23 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 
-mod macro_procs;
+mod generate_hash;
+mod generate_msg;
+mod generate_update;
 
 mod utils;
 
 #[proc_macro]
 pub fn generate_msg(input: TokenStream) -> TokenStream {
-    macro_procs::generate_msg::perform(input)
+    generate_msg::perform(input)
 }
 
 #[proc_macro]
 pub fn generate_update(input: TokenStream) -> TokenStream {
-    macro_procs::generate_update::perform(input)
+    generate_update::perform(input)
 }
 
 #[proc_macro]
 pub fn generate_hash(input: TokenStream) -> TokenStream {
-    macro_procs::generate_hash::perform(input)
+    generate_hash::perform(input)
 }
