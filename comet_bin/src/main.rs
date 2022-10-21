@@ -1,4 +1,9 @@
-use std::process::Command;
+use std::{
+    fs::{self, File},
+    io::Write,
+    path::Path,
+    process::Command,
+};
 
 use clap::{App, Arg, SubCommand};
 
@@ -91,4 +96,77 @@ fn run() {
         .expect("failed to run http");
 }
 
-fn create_project_folder(_name: &str) {}
+fn create_project_folder(name: &str) {
+    let path = Path::new(name);
+
+    if path.exists() {
+        println!("Error: {} already exists", name);
+
+        return;
+    }
+
+    fs::create_dir(path).expect("Failed to create project folder");
+    fs::create_dir(path.join("src")).expect("Failed to create project src folder");
+
+    let create_file = |new_path: &str, content: &str| {
+        let mut file = File::create(path.join(new_path)).expect("Failed to create file");
+        file.write(content.as_bytes()).unwrap();
+    };
+
+    create_file(
+        "src/lib.rs",
+        r#"use comet::prelude::*;
+
+#[derive(Default)]
+pub struct Counter {
+    pub value: i32,
+}
+
+component! { Counter,
+    button @click: { self.value += 1 } {
+        {{ self.value }}
+    }
+}
+
+comet!(Counter::default());
+"#,
+    );
+
+    create_file(
+        "Cargo.toml",
+        &r#"[package]
+name = "{{name}}"
+version = "0.1.0"
+edition = "2021"
+
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+comet = { git = "https://github.com/Champii/Comet" }
+        "#
+        .replace("{{name}}", name),
+    );
+
+    create_file(
+        "index.html",
+        &r#"<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
+  </head>
+  <body>
+    <script type="module">
+      import init from './pkg/{{name}}.js';
+
+      async function run() {
+        await init();
+      }
+      run();
+    </script>
+  </body>
+</html>
+        "#
+        .replace("{{name}}", name),
+    );
+}

@@ -18,17 +18,11 @@ $> cargo install --git https://github.com/Champii/Comet --locked
 
 ### Create simple counter example
 
-`Cargo.toml`
-
-```toml
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[dependencies]
-comet = { git = "https://github.com/Champii/Comet" }
+```bash
+$> comet new my_counter && cd my_counter
 ```
 
-`src/lib.rs`
+The default generated file `src/lib.rs` :
 
 ```rust
 use comet::prelude::*;
@@ -61,5 +55,4 @@ And go to [http://localhost:8080](http://localhost:8080)
 - Websocket
 - Register for queries
 - Allow for `if`, `for` and iterators inside html
-- `comet new` subcommand
 
