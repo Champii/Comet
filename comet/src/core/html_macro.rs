@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! gen_full_variant {
     ($($a:tt)*) => {
-        gensym::gensym!{ _gen_full_variant!{ $($a)* } }
+        comet_macros::gensym!{ _gen_full_variant!{ $($a)* } }
     };
 }
 
@@ -15,7 +15,7 @@ macro_rules! _gen_full_variant {
 #[macro_export]
 macro_rules! gen_variant {
     ($($a:tt)*) => {
-        gensym::gensym!{ _gen_variant!{ $($a)* } }
+        comet_macros::gensym!{ _gen_variant!{ $($a)* } }
     };
 }
 
@@ -163,14 +163,14 @@ macro_rules! html_arr {
                                     .unwrap();
                                 };
                                 #[allow(unused_mut, unused_assignments)]
-                                let mut attrs = BTreeMap::new();
+                                let mut attrs: BTreeMap<String, String> = BTreeMap::new();
 
                                 $(
                                     attrs = [$((stringify!($attr_name).to_string(), $attr_value.to_string())),*].into();
                                 )?
 
                                 for (attr_name, value) in attrs {
-                                    elem.set_attribute(attr_name, value).unwrap();
+                                    elem.set_attribute(attr_name.as_str(), value.as_str()).unwrap();
                                 }
 
                                 #[allow(unused_mut, unused_assignments)]
@@ -456,7 +456,6 @@ macro_rules! extract_msg {
                 [$($expanded)*
                     $($({
                         $($evcode)*
-                        // __gensym_17809694987333504126
                     })+)?
                 ]
             }
@@ -522,7 +521,7 @@ macro_rules! extract_msg {
             }
         }
     ) => {
-        gensym::generate_msg! {
+        comet_macros::generate_msg! {
             [$(
                 $($name)*
             ),*]
@@ -653,7 +652,7 @@ macro_rules! extract_update {
     ) => {
         match $msg {
             $(
-                gensym::generate_update! {
+                comet_macros::generate_update! {
                         $($name)*
                 } => {
                     $($code)*

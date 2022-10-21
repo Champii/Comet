@@ -1,4 +1,4 @@
-pub use gensym;
+pub use comet_macros;
 pub use paste::paste;
 pub use std::{cell::RefCell, rc::Rc};
 pub use web_sys;

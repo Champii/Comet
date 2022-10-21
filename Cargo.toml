@@ -1,32 +1,7 @@
-[package]
-name = "comet"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[dependencies]
-wasm-bindgen = "0.2.83"
-clap = "2.33.3"
-env_logger = "0.9.1"
-log = "0.4.17"
-wasm-bindgen-futures = "0.4.30"
-futures = { version = "0.3"}
-paste = "1.0.9"
-gensym = { path = "../gensym" }
-
-
-[dependencies.web-sys]
-version = "0.3.4"
-features = [
-  'Document',
-  'Text',
-  'Element',
-  'HtmlElement',
-  'Node',
-  'Window',
+members = [
+    "comet",
+    "comet_macros",
+    "comet_bin",
 ]
-
-[dev-dependencies]
-wasm-bindgen-test = "0.3.0"
