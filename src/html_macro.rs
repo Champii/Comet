@@ -1,3 +1,34 @@
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
+#[macro_export]
+macro_rules! gen_full_variant {
+    ($($a:tt)*) => {
+        gensym::gensym!{ _gen_full_variant!{ $($a)* } }
+    };
+}
+
+#[macro_export]
+macro_rules! _gen_full_variant {
+    ($gensym:ident, $($a:tt)*) => {
+        Msg::$gensym
+    };
+}
+
+#[macro_export]
+macro_rules! gen_variant {
+    ($($a:tt)*) => {
+        gensym::gensym!{ _gen_variant!{ $($a)* } }
+    };
+}
+
+#[macro_export]
+macro_rules! _gen_variant {
+    ($gensym:ident, $($a:tt)*) => {
+        $gensym
+    };
+}
+
 #[macro_export]
 macro_rules! replace_self {
     // Actually replace any self in the token stream
@@ -75,11 +106,21 @@ macro_rules! replace_self {
 }
 
 #[macro_export]
+macro_rules! new_ident {
+    ($before:ident,  $ident:expr) => {
+        paste! {
+            Msg:: hash!($ident)
+        }
+    }
+}
+
+#[macro_export]
 macro_rules! html_arr {
     // tag
     (
         $self:ident,
         $f:ident,
+        $id:expr,
         {
             {
                 {
@@ -94,7 +135,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, {
+        html_arr! {$self, $f, $id + 1, {
             {
                 {
                     $($rest)*
@@ -119,7 +160,7 @@ macro_rules! html_arr {
 
                                 #[allow(unused_mut, unused_assignments)]
 
-                                let children = html_arr!($self, $f, $($e)*);
+                                let children = html_arr!($self, $f, $id + 10000, $($e)*);
                                  for child in children {
                                     elem.append_child(
                                         &child
@@ -141,8 +182,9 @@ macro_rules! html_arr {
                                 let mut evcode: BTreeMap<String, Msg> = BTreeMap::new();
 
                                 $(
-                                    evcode = [($(stringify!($ev).into(), Msg::$ev),*)].into();
-
+                                        evcode = [($(stringify!($ev).into(),
+                                           gen_full_variant!($($evcode)*)
+                                        ),+)].into();
                                 )?
 
                                 if let Some(event) = evcode.get("click") {
@@ -174,6 +216,7 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $id:expr,
         {
             {
                 {
@@ -184,7 +227,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, {
+        html_arr! {$self, $f, $id, {
             {
                 {
                     $($rest)*
@@ -212,6 +255,7 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $id:expr,
         {
             {
                 {
@@ -222,7 +266,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, {
+        html_arr! {$self, $f, $id, {
             {
                 {
                     $($rest)*
@@ -233,11 +277,14 @@ macro_rules! html_arr {
                         let document = window.document().expect("should have a document on window");
 
                         let component_container = document.create_element("span").unwrap();
+
                         let component = replace_self!(
                             $self,
                             $($comp)+
                         ).clone();
+
                         comet::component::run_rec(component, &component_container);
+
                         component_container
                     }
                 ]
@@ -255,6 +302,7 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $id:expr,
         {
             {
                 {}
@@ -270,9 +318,10 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $id:expr,
         $( $e:tt )*
     ) => {
-        html_arr! {$self, $f, {
+        html_arr! {$self, $f, $id, {
             {
                 {
                     $( $e )*
@@ -288,11 +337,14 @@ macro_rules! html_arr {
 macro_rules! html {
     (
         $self:ident,
+        $f:ident,
         $( $e:tt )*
     ) => {
         {
             let mut arr = html_arr! {
                 $self,
+                $f,
+                0,
                 $($e)*
             };
 
@@ -408,7 +460,8 @@ macro_rules! extract_msg {
                 }
                 [$($expanded)*
                     $($({
-                        $ev
+                        $($evcode)*
+                        // __gensym_17809694987333504126
                     })+)?
                 ]
             }
@@ -470,15 +523,14 @@ macro_rules! extract_msg {
         {
             {
                 {}
-                [$({$name:ident})*]
+                [$({$($name:tt)*})*]
             }
         }
     ) => {
-        #[derive(Clone)]
-        pub enum Msg {
-            $(
-                $name
-            ),*
+        gensym::generate_msg! {
+            [$(
+                $($name)*
+            ),*]
         }
     };
 
@@ -528,7 +580,7 @@ macro_rules! extract_update {
                 [$($expanded)*
                     $($(
                         {
-                            $ev, replace_self!($self, $($evcode)*)
+                            {$( $evcode )*} , replace_self!($self, $($evcode)*)
                         }
                     )*)?
                 ]
@@ -600,17 +652,26 @@ macro_rules! extract_update {
         {
             {
                 {}
-                [$({ $name:ident,  $code:expr })*]
+                [$({ {$($name:tt)*},  $($code:tt)* })*]
             }
         }
     ) => {
         match $msg {
             $(
-                Msg::$name =>{
-                    $code
+                gensym::generate_update! {
+                        $($name)*
+                } => {
+                    $($code)*
                 }
             ),*
         }
+        /* match $msg {
+            $(
+                Msg::$($name)* =>{
+                    $($code)*
+                }
+            ),*
+        } */
     };
 
     // Entry point, base rule

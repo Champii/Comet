@@ -1,4 +1,5 @@
 pub use paste::paste;
+pub use gensym;
 pub use std::{cell::RefCell, rc::Rc};
 pub use web_sys;
 
@@ -11,6 +12,10 @@ pub use crate::extract_update;
 pub use crate::html;
 pub use crate::html_arr;
 pub use crate::replace_self;
+pub use crate::gen_full_variant;
+pub use crate::_gen_full_variant;
+pub use crate::gen_variant;
+pub use crate::_gen_variant;
 pub use crate::comet;
 // pub use crate::renderable::*;
 

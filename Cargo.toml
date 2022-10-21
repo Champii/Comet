@@ -14,6 +14,7 @@ log = "0.4.17"
 wasm-bindgen-futures = "0.4.30"
 futures = { version = "0.3"}
 paste = "1.0.9"
+gensym = { path = "../gensym" }
 
 
 [dependencies.web-sys]
