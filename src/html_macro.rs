@@ -1,6 +1,3 @@
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
-
 #[macro_export]
 macro_rules! gen_full_variant {
     ($($a:tt)*) => {
@@ -665,13 +662,6 @@ macro_rules! extract_update {
                 }
             ),*
         }
-        /* match $msg {
-            $(
-                Msg::$($name)* =>{
-                    $($code)*
-                }
-            ),*
-        } */
     };
 
     // Entry point, base rule
