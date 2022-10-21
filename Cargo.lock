@@ -72,7 +72,7 @@ dependencies = [
 
 [[package]]
 name = "comet"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "comet_macros",
  "futures",
@@ -85,7 +85,7 @@ dependencies = [
 
 [[package]]
 name = "comet_bin"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "env_logger",
@@ -94,7 +94,7 @@ dependencies = [
 
 [[package]]
 name = "comet_macros"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "proc-macro2 0.4.30",
  "quote 0.6.13",
