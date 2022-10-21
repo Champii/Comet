@@ -29,10 +29,12 @@ component! { App,
     div {
         @{self.counter}
         @{self.counter2}
-        button [style: "height: 100"] @click: {self.counter.borrow_mut().value += 42}, {
+        button
+            @click: {self.counter.borrow_mut().value += 42}, {
             {{ "counter1" }}
         }
-        button @click: {self.counter2.borrow_mut().value += 42}, {
+        button
+            @click: {self.counter2.borrow_mut().value += 42}, {
             {{ "counter2" }}
         }
     }
