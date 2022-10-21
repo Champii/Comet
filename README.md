@@ -50,13 +50,13 @@ comet!(Counter::default());
 $> comet run
 ```
 
-And go to [localhost:8080](http://localhost:8080)
+And go to [http://localhost:8080](http://localhost:8080)
 
 ## TODO List
 - DB
     - Macro for models
 - Websocket
-- Nested components
-    - Need to have a component tree
 - Register for queries
 - Allow for `if`, `for` and iterators inside html
+- `comet new` subcommand
+
