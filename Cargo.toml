@@ -5,3 +5,7 @@ members = [
     "comet_macros",
     "comet_bin",
 ]
+
+exclude = [
+    "examples"
+]
