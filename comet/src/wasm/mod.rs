@@ -1,5 +1,5 @@
 mod app;
-mod component;
+// mod component;
 mod log_macro;
 pub mod prelude;
 // mod renderable;

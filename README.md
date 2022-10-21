@@ -13,14 +13,16 @@ Work in progress.
 ### Install Comet Binary
 
 ```bash
-$> cargo install https://github.com/Champii/Comet/tree/comet_bin --locked
+$> cargo install --git https://github.com/Champii/Comet --locked
 ```
 
 ### Create simple counter example
 
+`Cargo.toml`
+
 ```toml
 [dependencies]
-comet = { git = "https://github.com/Champii/Comet/tree/comet" }
+comet = { git = "https://github.com/Champii/Comet" }
 ```
 
 `src/lib.rs`
