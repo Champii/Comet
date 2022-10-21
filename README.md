@@ -21,6 +21,9 @@ $> cargo install --git https://github.com/Champii/Comet --locked
 `Cargo.toml`
 
 ```toml
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 comet = { git = "https://github.com/Champii/Comet" }
 ```

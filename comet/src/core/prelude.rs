@@ -5,6 +5,7 @@ pub use web_sys;
 
 pub use crate::core::app::*;
 pub use crate::core::component::*;
+pub use crate::core::shared::*;
 
 // macros
 pub use crate::_gen_full_variant;

@@ -19,8 +19,8 @@ pub struct App {
 impl App {
     fn new() -> Self {
         Self {
-            counter: Counter::default().into_shared(),
-            counter2: Counter::default().into_shared(),
+            counter: Counter::default().into(),
+            counter2: Counter::default().into(),
         }
     }
 }

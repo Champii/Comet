@@ -8,4 +8,4 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-comet = { git = "https://github.com/Champii/Comet" }
+comet = { path = "../../comet" }
