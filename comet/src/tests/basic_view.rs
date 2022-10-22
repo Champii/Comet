@@ -134,4 +134,46 @@ mod html_test {
             "<div style=\"background: red;height: 0;\"><span>0</span></div>",
         );
     }
+
+    #[wasm_bindgen_test]
+    fn class_shortcut() {
+        component! {
+            i32,
+            div.class1.class2 {
+                { "test" }
+            }
+        };
+
+        assert_html::<_, _, __component_i32::Msg>(
+            0,
+            "<div class=\"class1 class2\"><span>test</span></div>",
+        );
+    }
+
+    #[wasm_bindgen_test]
+    fn id_shortcut() {
+        component! {
+            i32,
+            div #my_id {
+                { "test" }
+            }
+        };
+
+        assert_html::<_, _, __component_i32::Msg>(0, "<div id=\"my_id\"><span>test</span></div>");
+    }
+
+    #[wasm_bindgen_test]
+    fn class_and_id_shortcut() {
+        component! {
+            i32,
+            div #my_id.class1.class2 {
+                { "test" }
+            }
+        };
+
+        assert_html::<_, _, __component_i32::Msg>(
+            0,
+            "<div id=\"my_id\" class=\"class1 class2\"><span>test</span></div>",
+        );
+    }
 }

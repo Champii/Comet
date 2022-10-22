@@ -24,6 +24,7 @@ features = [
   'HtmlElement',
   'Node',
   'Window',
+  'DomTokenList',
 ]
 
 [dev-dependencies]

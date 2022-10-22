@@ -60,7 +60,7 @@ macro_rules! extract_msg {
         {
             {
                 {
-                    $tag:ident
+                    $tag:ident $(#$id_name:ident)? $(.$class_name:ident)*
                         $([$($attr_name:ident : {$($attr_value:tt)*} ),*])?
                         $($(@$ev:ident : {$($evcode:tt)*} ),+ )?
                         { $($e:tt)* }

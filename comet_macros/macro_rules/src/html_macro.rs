@@ -65,7 +65,7 @@ macro_rules! html_arr {
                         let elem = document.create_element("span").unwrap();
 
                         for ($($predicate)*) in replace_self!($self, $($iter)*) {
-                            elem.append_child(&html! { $self, $f, $($e)* });
+                            elem.append_child(&html! { $self, $f, $($e)* }).unwrap();
                         }
 
                         elem
@@ -81,7 +81,7 @@ macro_rules! html_arr {
         {
             {
                 {
-                    $tag:ident
+                    $tag:ident $(#$id_name:ident)? $(.$class_name:ident)*
                         $([$($attr_name:ident : {$($attr_value:tt)*} ),*])?
                         $($(@$ev:ident : {$($evcode:tt)*} ),+ )?
                         { $($e:tt)* }
@@ -109,21 +109,30 @@ macro_rules! html_arr {
                             let elem_str = stringify!($tag);
 
                             let elem = document.create_element(elem_str).unwrap();
+
                             if elem_str.starts_with("\"") {
                                 elem.set_inner_html(elem_str);
 
                                 elem
                             } else {
+                                $(
+                                    elem.set_id(&stringify!($id_name));
+                                )?
 
-                                #[allow(unused_mut, unused_assignments)]
+                                $(
+                                    elem.class_list().add_1(&stringify!($class_name)).unwrap();
+                                )*
+
 
                                 let children = html_arr!($self, $f, $($e)*);
+
                                  for child in children {
                                     elem.append_child(
                                         &child
                                     )
                                     .unwrap();
                                 };
+
                                 #[allow(unused_mut, unused_assignments)]
                                 let mut attrs: BTreeMap<String, String> = BTreeMap::new();
 
