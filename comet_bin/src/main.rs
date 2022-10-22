@@ -90,10 +90,17 @@ fn run() {
 
     println!("[ ] Running client");
 
-    Command::new("http")
-        .args(["-p", "8080"])
-        .output()
-        .expect("failed to run http");
+    println!(
+        "{}",
+        String::from_utf8(
+            Command::new("python3")
+                .args(["-m", "http.server", "-P", "8080"])
+                .output()
+                .expect("failed to run http server")
+                .stderr
+        )
+        .unwrap()
+    );
 }
 
 fn create_project_folder(name: &str) {

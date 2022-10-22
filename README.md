@@ -18,6 +18,11 @@ Visit the [example](https://github.com/Champii/Comet/tree/master/examples) folde
 $> cargo install --git https://github.com/Champii/Comet --locked
 ```
 
+You will need
+- [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
+- [python3](https://www.python.org/downloads/) for the `http-server` module  
+  (for a basic static http server, will not be needed when we'll roll our own)
+
 ### Create simple counter example
 
 ```bash
@@ -47,6 +52,13 @@ comet!(0);
 ```bash
 $> comet run
 ```
+
+If you prefer to compile and run it manually:
+
+```bash
+wasm-pack build --target web && http-serve 8080
+```
+
 
 And go to [http://localhost:8080](http://localhost:8080)
 

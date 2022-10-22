@@ -27,6 +27,7 @@ where
         component2
             .borrow_mut()
             .update_bindings(bindings_clone.clone());
+
         if let Some(msg) = msg {
             component2.borrow_mut().update(msg);
         }
