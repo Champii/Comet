@@ -103,9 +103,12 @@ mod html_test {
         );
     }
 
+    // FIXME: Why the component doesnt have access to this struct when declared inside the
+    // test function ?
     pub struct Test {
         pub i: i32,
     }
+
     #[wasm_bindgen_test]
     fn self_usage() {
         impl Test {
