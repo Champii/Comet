@@ -112,7 +112,7 @@ macro_rules! html_arr {
                             ),+))?].into(),
                         );
 
-                        let children: [HtmlNode;_] = html_arr! {$self, $f, $($e)*};
+                        let children: Vec<HtmlNode> = html_arr! {$self, $f, $($e)*};
 
                         for child in children {
                             child.append_to(&elem);
@@ -211,7 +211,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        [$($expanded),*]
+        vec![$($expanded),*]
     };
 
     // Entry point, base rule
@@ -251,7 +251,7 @@ macro_rules! html {
                 panic!("The html macro must have exactly one root element");
             }
 
-            arr[0].clone()
+            arr.pop().unwrap()
         }
     };
 }

@@ -1,5 +1,4 @@
 #![recursion_limit = "256"]
-#![feature(associated_type_defaults, generic_arg_infer)]
 
 pub mod core;
 
