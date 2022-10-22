@@ -66,7 +66,6 @@ component! {
         button @click: { self.new_todo() } {
             { "Add" }
         }
-        { self.title }
     }
 }
 
