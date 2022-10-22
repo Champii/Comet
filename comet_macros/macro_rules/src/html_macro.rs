@@ -99,77 +99,30 @@ macro_rules! html_arr {
                 }
                 [$($expanded)*
                     {
-                        use std::collections::BTreeMap;
-                        use wasm_bindgen::JsCast;
 
-                        {
-                            let window = web_sys::window().expect("no global `window` exists");
-                            let document = window.document().expect("should have a document on window");
+                        let mut id_name: Option<&str> = None;
+                        $(
+                            let id_name = Some(stringify!($id_name));
+                        )?
 
-                            let elem_str = stringify!($tag);
+                        let elem = crate::core::create_element(
+                            $f.clone(),
+                            stringify!($tag),
+                            id_name,
+                            vec![$(stringify!($class_name)),*],
+                            [$($((stringify!($attr_name).to_string(), replace_self!($self, $($attr_value)*).to_string())),*)?].into(),
+                            [$(($(stringify!($ev).into(),
+                               gen_full_variant!($($evcode)*)
+                            ),+))?].into(),
+                        );
 
-                            let elem = document.create_element(elem_str).unwrap();
+                        let children = html_arr! {$self, $f, $($e)*};
 
-                            if elem_str.starts_with("\"") {
-                                elem.set_outer_html(elem_str);
-
-                                elem
-                            } else {
-                                $(
-                                    elem.set_id(&stringify!($id_name));
-                                )?
-
-                                $(
-                                    elem.class_list().add_1(&stringify!($class_name)).unwrap();
-                                )*
-
-
-                                let children = html_arr!($self, $f, $($e)*);
-
-                                 for child in children {
-                                    elem.append_child(
-                                        &child
-                                    )
-                                    .unwrap();
-                                };
-
-                                #[allow(unused_mut, unused_assignments)]
-                                let mut attrs: BTreeMap<String, String> = BTreeMap::new();
-
-                                $(
-                                    attrs = [$((stringify!($attr_name).to_string(), replace_self!($self, $($attr_value)*).to_string())),*].into();
-
-                                    elem.set_attribute("style", &attrs.iter().map(|(k, v)| format!("{}: {};", k, v)).collect::<Vec<_>>().join("")).unwrap();
-                                )?
-
-                                #[allow(unused_mut, unused_assignments)]
-                                let mut evcode: BTreeMap<String, Msg> = BTreeMap::new();
-
-                                $(
-                                    evcode = [($(stringify!($ev).into(),
-                                       gen_full_variant!($($evcode)*)
-                                    ),+)].into();
-
-                                    if let Some(event) = evcode.get("click") {
-                                        let f = $f.clone();
-                                        let event = event.clone();
-
-                                        let closure = Closure::<dyn Fn()>::wrap(Box::new(move || {
-                                            f(event.clone());
-                                        }));
-
-                                        elem.dyn_ref::<web_sys::HtmlElement>()
-                                            .expect("#should be an `HtmlElement`")
-                                            .set_onclick(Some(closure.as_ref().unchecked_ref()));
-
-                                        // FIXME: leak
-                                        closure.forget();
-                                    }
-                                )?
-
-                                elem
-                            }
+                        for child in children {
+                            elem.append_child(&child).unwrap();
                         }
+
+                        elem
                     }
                 ]
             }
