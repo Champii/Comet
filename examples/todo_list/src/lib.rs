@@ -62,7 +62,7 @@ component! {
                 @{todo}
             }
         }
-        input {} // todo
+        input @value: { self.title } {} // todo
         button @click: { self.new_todo() } {
             { "Add" }
         }

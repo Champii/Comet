@@ -168,7 +168,7 @@ macro_rules! extract_update {
                 comet_macro_procs::generate_update! {
                         $($name)*
                 } => {
-                    $($code)*
+                    $($code)*;
                 }
             ),*
         }

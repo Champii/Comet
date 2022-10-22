@@ -149,8 +149,10 @@ component! {
 ## TODO List
 - DB
     - Macro for models
+    - Register for queries
 - Websocket
-- Register for queries
-- Allow for `if`, `for` and iterators inside html
-- Allow intermix of attributes, styles and events
+- Allow for iterators inside html
+- Allow to mix attributes, styles and events
+- Allow for value binding for input element
+- Find a way for global inter-component message passing
 
