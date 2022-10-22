@@ -1,5 +1,79 @@
 #[macro_export]
 macro_rules! html_arr {
+    // if
+    (
+        $self:ident,
+        $f:ident,
+        {
+            {
+                {
+                    if
+                        ($($predicate:tt)*)
+                        { $($e:tt)* }
+
+                    $($rest:tt)*
+                }
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        html_arr! {$self, $f, {
+            {
+                {
+                    $($rest)*
+                }
+                [$($expanded)*
+                    {
+                    if
+                        replace_self!($self, $($predicate)*)
+                        { html! { $self, $f, $($e)* } }
+                    else
+                        { html! { $self, $f, span {}} }
+                    }
+                ]
+            }
+        }}
+    };
+    // for
+    (
+        $self:ident,
+        $f:ident,
+        {
+            {
+                {
+                    for
+                        ($($predicate:tt)*)
+                        { $($e:tt)* }
+
+                    $($rest:tt)*
+                }
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        html_arr! {$self, $f, {
+            {
+                {
+                    $($rest)*
+                }
+                [$($expanded)*
+                    {
+
+                        let window = web_sys::window().expect("no global `window` exists");
+                        let document = window.document().expect("should have a document on window");
+
+                        let elem = document.create_element("span").unwrap();
+
+                        for $($predicate)* {
+                            elem.append_child(&html! { $self, $f, $($e)* });
+                        }
+
+                        elem
+                    }
+                ]
+            }
+        }}
+    };
     // tag
     (
         $self:ident,
@@ -228,7 +302,7 @@ macro_rules! html {
                 panic!("The html macro must have exactly one root element");
             }
 
-            arr.pop().unwrap()
+            arr.pop().unwrap().into()
         }
     };
 }

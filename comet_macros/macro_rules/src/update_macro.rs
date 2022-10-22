@@ -1,5 +1,38 @@
 #[macro_export]
 macro_rules! extract_update {
+    // if
+    (
+        $self:ident,
+        $msg:ident,
+        $type:ty,
+        {
+            {
+                {
+                    if
+                        ($($predicate:tt)*)
+                        { $($e:tt)* }
+
+                    $($rest:tt)*
+                }
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        extract_update! {$self, $msg, $type, {
+            {
+                {
+                    $($rest)*
+                    $($e)*
+                }
+                [$($expanded)*
+                ]
+            }
+        }}
+    };
+
+    // TODO: For is not handled for now, as it would produce some identical events
+    //       See #1
+
     // tag
     (
         $self:ident,

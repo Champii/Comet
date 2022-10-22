@@ -1,5 +1,35 @@
 #[macro_export]
 macro_rules! extract_msg {
+    // if
+    (
+        {
+            {
+                {
+                    if
+                        ($($predicate:tt)*)
+                        { $($e:tt)* }
+
+                    $($rest:tt)*
+                }
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        extract_msg! {{
+            {
+                {
+                    $($rest)*
+                    $($e)*
+                }
+                [$($expanded)*
+                ]
+            }
+        }}
+    };
+
+    // TODO: For is not handled for now, as it would produce some identical events
+    //       See #1
+
     // tag
     (
         {
