@@ -7,6 +7,7 @@ pub use web_sys;
 pub use crate::core::app::*;
 pub use crate::core::component::*;
 pub use crate::core::create_element;
+pub use crate::core::document;
 pub use crate::core::shared::*;
 
 // macros

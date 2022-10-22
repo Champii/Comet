@@ -128,7 +128,7 @@ mod html_test {
 
         assert_html::<_, _, __component_test::Msg>(
             Test { i: 0 },
-            "<div style=\"background: red;height: 0;\">0</div>",
+            "<div style=\"height: 0;background: red;\">0</div>",
         );
     }
 

@@ -49,15 +49,17 @@ where
         elem.class_list().add_1(class_name).unwrap();
     }
 
-    elem.set_attribute(
-        "style",
-        &attrs
-            .iter()
-            .map(|(k, v)| format!("{}: {};", k, v))
-            .collect::<Vec<_>>()
-            .join(""),
-    )
-    .unwrap();
+    if !attrs.is_empty() {
+        elem.set_attribute(
+            "style",
+            &attrs
+                .iter()
+                .map(|(k, v)| format!("{}: {};", k, v))
+                .collect::<Vec<_>>()
+                .join(""),
+        )
+        .unwrap();
+    }
 
     for (event_name, event) in events {
         let f = f.clone();
@@ -71,4 +73,11 @@ where
     }
 
     elem
+}
+
+pub fn document() -> web_sys::Document {
+    web_sys::window()
+        .expect("no global `window` exists")
+        .document()
+        .expect("should have a document on window")
 }

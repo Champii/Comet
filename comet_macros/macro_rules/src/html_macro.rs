@@ -150,10 +150,7 @@ macro_rules! html_arr {
                 }
                 [$($expanded)*
                     {
-                        let window = web_sys::window().expect("no global `window` exists");
-                        let document = window.document().expect("should have a document on window");
-
-                        let component_container = document.create_element("span").unwrap();
+                        let component_container = document().create_element("span").unwrap();
 
                         let component = replace_self!(
                             $self,
