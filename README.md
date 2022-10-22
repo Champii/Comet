@@ -173,6 +173,6 @@ component! {
 - Websocket
 - Allow for iterators inside html
 - Allow to mix attributes, styles and events
-- Allow for value binding for input element
 - Find a way for global inter-component message passing
+- Allow for real time value binding for input element without losing focus (might need a real virtual dom for this one)
 

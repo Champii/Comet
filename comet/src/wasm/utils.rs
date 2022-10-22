@@ -37,6 +37,21 @@ where
         .unwrap();
     }
 
+    let mut events = events
+        .into_iter()
+        .map(|(event_name, event)| (event_name, Some(event)))
+        .collect::<Vec<(_, _)>>();
+
+    if let Some(binding) = &binding {
+        if tag == "input" {
+            let input: &web_sys::HtmlInputElement = elem.dyn_ref().unwrap();
+
+            input.set_value(binding);
+
+            events.push(("blur".to_string(), None));
+        }
+    }
+
     for (event_name, event) in events {
         let mut event_name = event_name;
         if event_name == "click" {
@@ -46,7 +61,7 @@ where
         let f = f.clone();
 
         let closure = Closure::wrap(Box::new(move || {
-            f(Some(event.clone()));
+            f(event.clone());
         }) as Box<dyn FnMut()>);
 
         elem.add_event_listener_with_callback(&event_name, closure.as_ref().unchecked_ref())
@@ -54,27 +69,6 @@ where
 
         // FIXME: leak
         closure.forget();
-    }
-
-    if let Some(binding) = binding {
-        if tag == "input" {
-            let input: &web_sys::HtmlInputElement = elem.dyn_ref().unwrap();
-
-            input.set_value(&binding);
-
-            let f = f.clone();
-
-            let closure = Closure::wrap(Box::new(move || {
-                f(None);
-            }) as Box<dyn FnMut()>);
-
-            elem.add_event_listener_with_callback("blur", closure.as_ref().unchecked_ref())
-                .unwrap();
-
-            // FIXME: leak
-            closure.forget();
-            // TODO: add event listener for change
-        }
     }
 
     elem
