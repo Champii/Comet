@@ -16,12 +16,10 @@ macro_rules! component {
                     where
                         F: Fn(Msg) + Clone + 'static
                     {
-                        html! {self, f, $($e)+ }
+                        html! {self, f, $($e)+ }.into_element()
                     }
                 }
             }
         }
     };
 }
-
-

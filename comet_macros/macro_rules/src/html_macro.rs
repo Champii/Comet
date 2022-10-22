@@ -58,17 +58,13 @@ macro_rules! html_arr {
                 }
                 [$($expanded)*
                     {
-
-                        let window = web_sys::window().expect("no global `window` exists");
-                        let document = window.document().expect("should have a document on window");
-
-                        let elem = document.create_element("span").unwrap();
+                        let elem = document().create_element("span").unwrap();
 
                         for ($($predicate),*) in replace_self!($self, $($iter)*) {
-                            elem.append_child(&html! { $self, $f, $($e)* }).unwrap();
+                            elem.append_child(&html! { $self, $f, $($e)* }.into_element()).unwrap();
                         }
 
-                        elem
+                        HtmlNode::Element(elem)
                     }
                 ]
             }
@@ -105,7 +101,7 @@ macro_rules! html_arr {
                             let id_name = Some(stringify!($id_name));
                         )?
 
-                        let elem = crate::core::create_element(
+                        let elem = create_element(
                             $f.clone(),
                             stringify!($tag),
                             id_name,
@@ -116,13 +112,13 @@ macro_rules! html_arr {
                             ),+))?].into(),
                         );
 
-                        let children = html_arr! {$self, $f, $($e)*};
+                        let children: [HtmlNode;_] = html_arr! {$self, $f, $($e)*};
 
                         for child in children {
-                            elem.append_child(&child).unwrap();
+                            child.append_to(&elem);
                         }
 
-                        elem
+                        HtmlNode::Element(elem)
                     }
                 ]
             }
@@ -159,7 +155,7 @@ macro_rules! html_arr {
 
                         comet::core::component::run_rec(component, &component_container);
 
-                        component_container
+                        HtmlNode::Element(component_container)
                     }
                 ]
             }
@@ -187,24 +183,17 @@ macro_rules! html_arr {
                 }
                 [$($expanded)*
                     {
-                        let window = web_sys::window().expect("no global `window` exists");
-                        let document = window.document().expect("should have a document on window");
-
                         let res = &replace_self!(
                             $self,
                             $($code)+
                         ).to_string();
 
-                        let text_node = document.create_text_node(res);
-
-                        text_node
+                        HtmlNode::Text(document().create_text_node(res))
                     }
                 ]
             }
         }}
     };
-
-
 
     // Empty rule, to handle the case where there is no children
     () => {
@@ -222,7 +211,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        vec![$($expanded),*]
+        [$($expanded),*]
     };
 
     // Entry point, base rule
@@ -262,7 +251,7 @@ macro_rules! html {
                 panic!("The html macro must have exactly one root element");
             }
 
-            arr.pop().unwrap().into()
+            arr[0].clone()
         }
     };
 }

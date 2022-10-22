@@ -227,4 +227,20 @@ mod html_test {
             "<div><span><div>1</div><div>2</div><div>3</div></span></div>",
         );
     }
+
+    #[wasm_bindgen_test]
+    fn mixed_text_and_node() {
+        component! {
+            i32,
+            div {
+                { "test" }
+                div {
+                    { "test" }
+                }
+                { "test" }
+            }
+        };
+
+        assert_html::<_, _, __component_i32::Msg>(0, "<div>test<div>test</div>test</div>");
+    }
 }

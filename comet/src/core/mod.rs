@@ -81,3 +81,25 @@ pub fn document() -> web_sys::Document {
         .document()
         .expect("should have a document on window")
 }
+
+#[derive(Clone)]
+pub enum HtmlNode {
+    Text(web_sys::Text),
+    Element(web_sys::Element),
+}
+
+impl HtmlNode {
+    pub fn into_element(self) -> web_sys::Element {
+        match self {
+            HtmlNode::Text(text) => panic!("Expected element, got text: {:?}", text),
+            HtmlNode::Element(elem) => elem,
+        }
+    }
+
+    pub fn append_to(self, parent: &web_sys::Element) {
+        match self {
+            HtmlNode::Text(text) => parent.append_child(&text).unwrap(),
+            HtmlNode::Element(elem) => parent.append_child(&elem).unwrap(),
+        };
+    }
+}

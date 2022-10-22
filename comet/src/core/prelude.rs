@@ -9,6 +9,7 @@ pub use crate::core::component::*;
 pub use crate::core::create_element;
 pub use crate::core::document;
 pub use crate::core::shared::*;
+pub use crate::core::HtmlNode;
 
 // macros
 pub use comet_macro_rules::_gen_full_variant;
