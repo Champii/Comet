@@ -70,6 +70,7 @@ macro_rules! extract_update {
                     $tag:ident $(#$id_name:ident)? $(.$class_name:ident)*
                         $([$($attr_name:ident : {$($attr_value:tt)*} ),*])?
                         $($(@$ev:ident : {$($evcode:tt)*} ),+ )?
+                        $(={ $($binding:tt)* })?
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -87,7 +88,7 @@ macro_rules! extract_update {
                 [$($expanded)*
                     $($(
                         {
-                            {$( $evcode )*} , replace_self!($self, $($evcode)*)
+                            {$( $evcode )*} , {replace_self!($self, $($evcode)*)}
                         }
                     )*)?
                 ]
@@ -160,6 +161,7 @@ macro_rules! extract_update {
             {
                 {}
                 [$({ {$($name:tt)*},  $($code:tt)* })*]
+                $({$($binding:tt)*})?
             }
         }
     ) => {
@@ -171,6 +173,9 @@ macro_rules! extract_update {
                     $($code)*;
                 }
             ),*
+            $(
+                    $($binding)* = value;
+            )?
         }
     };
 

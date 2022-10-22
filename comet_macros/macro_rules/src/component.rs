@@ -8,15 +8,19 @@ macro_rules! component {
                 extract_msg!{$($e)+}
 
                 impl Component<Msg> for $type {
+                    fn update_bindings(&mut self, elems: Shared<Vec<web_sys::Element>>) {
+                        extract_bindings!{self, elems, $($e)+}
+
+                    }
                     fn update(&mut self, msg: Msg) {
                         extract_update!{self, msg, $type, $($e)+}
                     }
 
-                    fn view<F>(&self, f: F) -> web_sys::Element
+                    fn view<F>(&self, f: F, bindings: Shared<Vec<web_sys::Element>>) -> web_sys::Element
                     where
-                        F: Fn(Msg) + Clone + 'static
+                        F: Fn(Option<Msg>) + Clone + 'static
                     {
-                        html! {self, f, $($e)+ }.into_element()
+                        html! {self, f, bindings, $($e)+ }.into_element()
                     }
                 }
             }

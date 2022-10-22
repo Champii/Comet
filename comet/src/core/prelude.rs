@@ -8,11 +8,14 @@ pub use crate::core::app::*;
 pub use crate::core::component::*;
 pub use crate::core::shared::*;
 
+pub use crate::core::*;
+
 // macros
 pub use comet_macro_rules::_gen_full_variant;
 pub use comet_macro_rules::_gen_variant;
 pub use comet_macro_rules::comet;
 pub use comet_macro_rules::component;
+pub use comet_macro_rules::extract_bindings;
 pub use comet_macro_rules::extract_msg;
 pub use comet_macro_rules::extract_update;
 pub use comet_macro_rules::gen_full_variant;

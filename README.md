@@ -117,6 +117,26 @@ component! {
 }
 ```
 
+### Bind you variables to `input` fields that react to events
+
+This is exclusive to `input` fields for now  
+The whole component is re-rendered on input's blur event (unfocus).  
+Each binding should be unique, as in a different variable for each one
+
+```rust
+struct MyStruct {
+    value: String,
+}
+
+component! {
+    MyStruct,
+    div {
+	input ={ self.value } {}
+	{ self.value }
+    }
+}
+```
+
 ### Embed your components between them
 
 ```rust

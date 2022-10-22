@@ -4,6 +4,7 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $bindings:ident,
         {
             {
                 {
@@ -17,7 +18,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, {
+        html_arr! {$self, $f, $bindings, {
             {
                 {
                     $($rest)*
@@ -26,9 +27,9 @@ macro_rules! html_arr {
                     {
                     if
                         replace_self!($self, $($predicate)*)
-                        { html! { $self, $f, $($e)* } }
+                        { html! { $self, $f, $bindings, $($e)* } }
                     else
-                        { html! { $self, $f, {""}} }
+                        { html! { $self, $f, $bindings, {""}} }
                     }
                 ]
             }
@@ -38,6 +39,7 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $bindings:ident,
         {
             {
                 {
@@ -51,7 +53,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, {
+        html_arr! {$self, $f, $bindings, {
             {
                 {
                     $($rest)*
@@ -61,7 +63,7 @@ macro_rules! html_arr {
                         let elem = document().create_element("span").unwrap();
 
                         for ($($predicate),*) in replace_self!($self, $($iter)*) {
-                            elem.append_child(&html! { $self, $f, $($e)* }.into_element()).unwrap();
+                            elem.append_child(&html! { $self, $f, $bindings, $($e)* }.into_element()).unwrap();
                         }
 
                         HtmlNode::Element(elem)
@@ -74,12 +76,14 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $bindings:ident,
         {
             {
                 {
                     $tag:ident $(#$id_name:ident)? $(.$class_name:ident)*
                         $([$($attr_name:ident : {$($attr_value:tt)*} ),*])?
                         $($(@$ev:ident : {$($evcode:tt)*} ),+ )?
+                        $(={ $($binding:tt)* })?
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -88,7 +92,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, {
+        html_arr! {$self, $f, $bindings, {
             {
                 {
                     $($rest)*
@@ -101,6 +105,11 @@ macro_rules! html_arr {
                             let id_name = Some(stringify!($id_name));
                         )?
 
+                        let mut binding: Option<String> = None;
+                        $(
+                            let binding = Some(replace_self!($self, $($binding)*).to_string());
+                        )?
+
                         let elem = create_element(
                             $f.clone(),
                             stringify!($tag),
@@ -110,9 +119,14 @@ macro_rules! html_arr {
                             [$(($(stringify!($ev).into(),
                                gen_full_variant!($($evcode)*)
                             ),+))?].into(),
+                            binding.clone(),
                         );
 
-                        let children: Vec<HtmlNode> = html_arr! {$self, $f, $($e)*};
+                        if binding.is_some() {
+                            $bindings.borrow_mut().push(elem.clone());
+                        }
+
+                        let children: Vec<HtmlNode> = html_arr! {$self, $f, $bindings, $($e)*};
 
                         for child in children {
                             child.append_to(&elem);
@@ -129,6 +143,7 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $bindings:ident,
         {
             {
                 {
@@ -139,7 +154,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, {
+        html_arr! {$self, $f, $bindings, {
             {
                 {
                     $($rest)*
@@ -166,6 +181,7 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $bindings:ident,
         {
             {
                 {
@@ -176,7 +192,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, {
+        html_arr! {$self, $f, $bindings, {
             {
                 {
                     $($rest)*
@@ -204,6 +220,7 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $bindings:ident,
         {
             {
                 {}
@@ -219,9 +236,10 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
+        $bindings:ident,
         $( $e:tt )*
     ) => {
-        html_arr! {$self, $f, {
+        html_arr! {$self, $f, $bindings, {
             {
                 {
                     $( $e )*
@@ -238,12 +256,14 @@ macro_rules! html {
     (
         $self:ident,
         $f:ident,
+        $bindings:ident,
         $( $e:tt )*
     ) => {
         {
             let mut arr = html_arr! {
                 $self,
                 $f,
+                $bindings,
                 $($e)*
             };
 

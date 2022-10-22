@@ -37,7 +37,7 @@ impl App {
 
         Self {
             list,
-            ..Default::default()
+            title: "Haha".into(),
         }
     }
 
@@ -62,10 +62,11 @@ component! {
                 @{todo}
             }
         }
-        input @value: { self.title } {} // todo
+        input ={ self.title } {}
         button @click: { self.new_todo() } {
             { "Add" }
         }
+        { self.title }
     }
 }
 

@@ -1,7 +1,9 @@
 #[macro_export]
-macro_rules! extract_msg {
+macro_rules! extract_bindings {
     // if
     (
+        $self:ident,
+        $bindings:ident,
         {
             {
                 {
@@ -15,7 +17,7 @@ macro_rules! extract_msg {
             }
         }
     ) => {
-        extract_msg! {{
+        extract_bindings! {$self, $bindings, {
             {
                 {
                     $($rest)*
@@ -29,6 +31,8 @@ macro_rules! extract_msg {
 
     // for
     (
+        $self:ident,
+        $bindings:ident,
         {
             {
                 {
@@ -42,7 +46,7 @@ macro_rules! extract_msg {
             }
         }
     ) => {
-        extract_msg! {{
+        extract_bindings! {$self, $bindings, {
             {
                 {
                     $($rest)*
@@ -53,9 +57,10 @@ macro_rules! extract_msg {
             }
         }}
     };
-
     // tag
     (
+        $self:ident,
+        $bindings:ident,
         {
             {
                 {
@@ -71,23 +76,26 @@ macro_rules! extract_msg {
             }
         }
     ) => {
-        extract_msg! {{
+        extract_bindings! {$self, $bindings, {
             {
                 {
                     $($rest)*
                     $($e)*
                 }
                 [$($expanded)*
-                    $($({
-                        $($evcode)*
-                    })+)?
+                    $(
+                        {
+                            replace_self!($self, $($binding)*)
+                        }
+                    )?
                 ]
             }
         }}
     };
-
     // Component
     (
+        $self:ident,
+        $bindings:ident,
         {
             {
                 {
@@ -98,7 +106,7 @@ macro_rules! extract_msg {
             }
         }
     ) => {
-        extract_msg! {{
+        extract_bindings! {$self, $bindings, {
             {
                 {
                     $($rest)*
@@ -108,19 +116,22 @@ macro_rules! extract_msg {
         }}
     };
 
+
     // Text
     (
+        $self:ident,
+        $bindings:ident,
         {
             {
                 {
-                    { $($code:tt)+ }
+                    { $($code:tt)* }
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
             }
         }
     ) => {
-        extract_msg! {{
+        extract_bindings! {$self, $bindings, {
             {
                 {
                     $($rest)*
@@ -129,6 +140,7 @@ macro_rules! extract_msg {
             }
         }}
     };
+
 
     // Empty rule, to handle the case where there is no children
     () => {
@@ -137,26 +149,34 @@ macro_rules! extract_msg {
 
     // Final case, where we return the vec with all the elements
     (
+        $self:ident,
+        $bindings:ident,
         {
             {
                 {}
-                [$({$($name:tt)*})*]
+                [$({ $($binding:tt)* })*]
             }
         }
     ) => {
-        comet_macro_procs::generate_msg! {
-            [$(
-                $($name)*
-            ),*]
-        }
+        use wasm_bindgen::JsCast;
+        use web_sys::HtmlInputElement;
+        let mut bindings = $bindings.borrow().clone();
+        bindings.reverse();
+        $(
+            let elem = bindings.pop().unwrap();
+            let input_elem: HtmlInputElement = elem.dyn_into().unwrap();
+            $($binding)* = input_elem.value();
+        )*
     };
 
     // Entry point, base rule
     // This is defined last, else it causes an infinite recursion as it matches with itself right away
     (
+        $self:ident,
+        $bindings:ident,
         $( $e:tt )*
     ) => {
-        extract_msg! {{
+        extract_bindings! {$self, $bindings, {
             {
                 {
                     $( $e )*

@@ -15,7 +15,7 @@ mod html_test {
     ) {
         let view = view.into();
 
-        let elem = view.borrow().view(|_| {});
+        let elem = view.borrow().view(|_| {}, vec![].into());
 
         assert_eq!(elem.outer_html(), expected);
     }
@@ -242,5 +242,18 @@ mod html_test {
         };
 
         assert_html::<_, _, __component_i32::Msg>(0, "<div>test<div>test</div>test</div>");
+    }
+
+    #[wasm_bindgen_test]
+    fn bindings() {
+        component! {
+            String,
+            div {
+                input ={ *self } {}
+            }
+        };
+
+        // FIXME: Need better test for that
+        assert_html::<_, _, __component_string::Msg>("lol".to_string(), "<div><input></div>");
     }
 }
