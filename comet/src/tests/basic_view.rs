@@ -196,4 +196,44 @@ mod html_test {
             "<div><div><span>test</span></div><div><span>test</span></div></div>",
         );
     }
+
+    #[wasm_bindgen_test]
+    fn test_if() {
+        component! {
+            i32,
+            div {
+                if (*self > 0) {
+                    div {
+                        { "test" }
+                    }
+                }
+            }
+        };
+
+        assert_html::<_, _, __component_i32::Msg>(0, "<div><span></span></div>");
+        assert_html::<_, _, __component_i32::Msg>(1, "<div><div><span>test</span></div></div>");
+    }
+
+    struct Test2 {
+        arr: Vec<i32>,
+    }
+
+    #[wasm_bindgen_test]
+    fn test_for() {
+        component! {
+            Test2,
+            div {
+                for _i, item in (self.arr.iter().enumerate()) {
+                    div {
+                        { item }
+                    }
+                }
+            }
+        };
+
+        assert_html::<_, _, __component_test2::Msg>(
+            Test2 { arr: vec![1, 2, 3] },
+            "<div><span><div><span>1</span></div><div><span>2</span></div><div><span>3</span></div></span></div>",
+        );
+    }
 }

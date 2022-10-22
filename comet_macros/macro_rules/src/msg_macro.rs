@@ -33,7 +33,7 @@ macro_rules! extract_msg {
             {
                 {
                     for
-                        (($($predicate:tt)*) in $($iter:tt)*)
+                        $($predicate:ident),+ in ($($iter:tt)*)
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -85,28 +85,6 @@ macro_rules! extract_msg {
         }}
     };
 
-    // Text
-    (
-        {
-            {
-                {
-                    { $($code:tt)* }
-                    $($rest:tt)*
-                }
-                [$($expanded:tt)*]
-            }
-        }
-    ) => {
-        extract_msg! {{
-            {
-                {
-                    $($rest)*
-                }
-                [$($expanded)*]
-            }
-        }}
-    };
-
     // Component
     (
         {
@@ -129,6 +107,27 @@ macro_rules! extract_msg {
         }}
     };
 
+    // Text
+    (
+        {
+            {
+                {
+                    { $($code:tt)+ }
+                    $($rest:tt)*
+                }
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        extract_msg! {{
+            {
+                {
+                    $($rest)*
+                }
+                [$($expanded)*]
+            }
+        }}
+    };
 
     // Empty rule, to handle the case where there is no children
     () => {

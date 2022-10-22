@@ -11,9 +11,12 @@ mod just_to_test {
         value: i32,
     }
 
-    component! { Counter,
+    component! {
+        Counter,
         button @click: { self.value += 1 } {
-            { self.value }
+            for i in (0..10) {
+                { i }
+            }
         }
     }
 }

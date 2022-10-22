@@ -42,7 +42,7 @@ macro_rules! html_arr {
             {
                 {
                     for
-                        (($($predicate:tt)*) in $($iter:tt)*)
+                        $($predicate:ident),+ in ($($iter:tt)*)
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -64,7 +64,7 @@ macro_rules! html_arr {
 
                         let elem = document.create_element("span").unwrap();
 
-                        for ($($predicate)*) in replace_self!($self, $($iter)*) {
+                        for ($($predicate),*) in replace_self!($self, $($iter)*) {
                             elem.append_child(&html! { $self, $f, $($e)* }).unwrap();
                         }
 
@@ -176,44 +176,6 @@ macro_rules! html_arr {
         }}
     };
 
-    // Text
-    (
-        $self:ident,
-        $f:ident,
-        {
-            {
-                {
-                    { $($code:tt)* }
-                    $($rest:tt)*
-                }
-                [$($expanded:tt)*]
-            }
-        }
-    ) => {
-        html_arr! {$self, $f, {
-            {
-                {
-                    $($rest)*
-                }
-                [$($expanded)*
-                    {
-                        let window = web_sys::window().expect("no global `window` exists");
-                        let document = window.document().expect("should have a document on window");
-
-                        let elem = document.create_element("span").unwrap();
-
-                        elem.set_inner_html(&replace_self!(
-                            $self,
-                            $($code)*
-                        ).to_string());
-
-                        elem
-                    }
-                ]
-            }
-        }}
-    };
-
     // Component
     (
         $self:ident,
@@ -253,6 +215,45 @@ macro_rules! html_arr {
             }
         }}
     };
+
+    // Text
+    (
+        $self:ident,
+        $f:ident,
+        {
+            {
+                {
+                    { $($code:tt)* }
+                    $($rest:tt)*
+                }
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        html_arr! {$self, $f, {
+            {
+                {
+                    $($rest)*
+                }
+                [$($expanded)*
+                    {
+                        let window = web_sys::window().expect("no global `window` exists");
+                        let document = window.document().expect("should have a document on window");
+
+                        let elem = document.create_element("span").unwrap();
+
+                        elem.set_inner_html(&replace_self!(
+                            $self,
+                            $($code)+
+                        ).to_string());
+
+                        elem
+                    }
+                ]
+            }
+        }}
+    };
+
 
 
     // Empty rule, to handle the case where there is no children

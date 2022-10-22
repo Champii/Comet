@@ -57,7 +57,7 @@ impl App {
 component! {
     App,
     div {
-        for ((todo) in self.list.iter()) {
+        for todo in (self.list.iter()) {
             div {
                 @{todo}
             }

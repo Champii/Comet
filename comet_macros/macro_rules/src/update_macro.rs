@@ -39,7 +39,7 @@ macro_rules! extract_update {
             {
                 {
                     for
-                        (($($predicate:tt)*) in $($iter:tt)*)
+                        $($predicate:ident),+ in ($($iter:tt)*)
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -69,7 +69,7 @@ macro_rules! extract_update {
                 {
                     $tag:ident $(#$id_name:ident)? $(.$class_name:ident)*
                         $([$($attr_name:ident : {$($attr_value:tt)*} ),*])?
-                        $($(@$ev:ident : {$($evcode:tt)*}  ),+ )?
+                        $($(@$ev:ident : {$($evcode:tt)*} ),+ )?
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -94,8 +94,7 @@ macro_rules! extract_update {
             }
         }}
     };
-
-    // Text
+    // Component
     (
         $self:ident,
         $msg:ident,
@@ -103,7 +102,7 @@ macro_rules! extract_update {
         {
             {
                 {
-                    { $($code:tt)* }
+                    @{$($comp:tt)+}
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]
@@ -120,7 +119,8 @@ macro_rules! extract_update {
         }}
     };
 
-    // Component
+
+    // Text
     (
         $self:ident,
         $msg:ident,
@@ -128,7 +128,7 @@ macro_rules! extract_update {
         {
             {
                 {
-                    @{$($comp:tt)+}
+                    { $($code:tt)* }
                     $($rest:tt)*
                 }
                 [$($expanded:tt)*]

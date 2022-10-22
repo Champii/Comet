@@ -84,7 +84,7 @@ component! {
 ```rust
 struct MyComponent {
     show: bool,
-    value: Vec<i32>,
+    value: HashMap<String, i32>,
 }
 
 component! {
@@ -92,6 +92,7 @@ component! {
     div {
 	div {
 	    // Conditional rendering with if
+	    // The parenthesis are necessary
 	    if (self.show) {
 		{ "Visible !" }
 	    }
@@ -100,9 +101,11 @@ component! {
 	    }
 	}
 	div {
-	    // Use a for-like loop
-	    for ((value) in self.value) {
+	    // Use a for-like loop.
+	    // The parenthesis are necessary around the last part
+	    for key, value in (self.value) {
 		div {
+		    { key }
 		    { value }
 		}
 	    }
