@@ -61,7 +61,7 @@ struct MyStruct {
 }
 
 component! {
-    i32,
+    MyStruct,
     // Here #my_id defined the id,
     // and the dot .class1 and .class2 add some classes to the element
     // The #id must always preceed the classes, if any
