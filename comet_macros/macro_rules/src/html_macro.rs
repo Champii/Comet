@@ -4,7 +4,6 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
-        $id:expr,
         {
             {
                 {
@@ -19,7 +18,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, $id + 1, {
+        html_arr! {$self, $f, {
             {
                 {
                     $($rest)*
@@ -44,7 +43,7 @@ macro_rules! html_arr {
 
                                 #[allow(unused_mut, unused_assignments)]
 
-                                let children = html_arr!($self, $f, $id + 10000, $($e)*);
+                                let children = html_arr!($self, $f, $($e)*);
                                  for child in children {
                                     elem.append_child(
                                         &child
@@ -98,7 +97,6 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
-        $id:expr,
         {
             {
                 {
@@ -109,7 +107,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, $id, {
+        html_arr! {$self, $f, {
             {
                 {
                     $($rest)*
@@ -137,7 +135,6 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
-        $id:expr,
         {
             {
                 {
@@ -148,7 +145,7 @@ macro_rules! html_arr {
             }
         }
     ) => {
-        html_arr! {$self, $f, $id, {
+        html_arr! {$self, $f, {
             {
                 {
                     $($rest)*
@@ -184,7 +181,6 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
-        $id:expr,
         {
             {
                 {}
@@ -200,10 +196,9 @@ macro_rules! html_arr {
     (
         $self:ident,
         $f:ident,
-        $id:expr,
         $( $e:tt )*
     ) => {
-        html_arr! {$self, $f, $id, {
+        html_arr! {$self, $f, {
             {
                 {
                     $( $e )*
@@ -226,7 +221,6 @@ macro_rules! html {
             let mut arr = html_arr! {
                 $self,
                 $f,
-                0,
                 $($e)*
             };
 
