@@ -80,10 +80,7 @@ mod html_test {
             }
         };
 
-        assert_html::<_, _, __component_i32::Msg>(
-            0,
-            "<div><button><span>Increment</span></button></div>",
-        );
+        assert_html::<_, _, __component_i32::Msg>(0, "<div><button>Increment</button></div>");
     }
 
     #[wasm_bindgen_test]
@@ -99,7 +96,7 @@ mod html_test {
 
         assert_html::<_, _, __component_i32::Msg>(
             0,
-            "<div style=\"height: 100;\"><button style=\"margin: 10;\"><span>Increment</span></button></div>",
+            "<div style=\"height: 100;\"><button style=\"margin: 10;\">Increment</button></div>",
         );
     }
 
@@ -131,7 +128,7 @@ mod html_test {
 
         assert_html::<_, _, __component_test::Msg>(
             Test { i: 0 },
-            "<div style=\"background: red;height: 0;\"><span>0</span></div>",
+            "<div style=\"background: red;height: 0;\">0</div>",
         );
     }
 
@@ -144,10 +141,7 @@ mod html_test {
             }
         };
 
-        assert_html::<_, _, __component_i32::Msg>(
-            0,
-            "<div class=\"class1 class2\"><span>test</span></div>",
-        );
+        assert_html::<_, _, __component_i32::Msg>(0, "<div class=\"class1 class2\">test</div>");
     }
 
     #[wasm_bindgen_test]
@@ -159,7 +153,7 @@ mod html_test {
             }
         };
 
-        assert_html::<_, _, __component_i32::Msg>(0, "<div id=\"my_id\"><span>test</span></div>");
+        assert_html::<_, _, __component_i32::Msg>(0, "<div id=\"my_id\">test</div>");
     }
 
     #[wasm_bindgen_test]
@@ -173,7 +167,7 @@ mod html_test {
 
         assert_html::<_, _, __component_i32::Msg>(
             0,
-            "<div id=\"my_id\" class=\"class1 class2\"><span>test</span></div>",
+            "<div id=\"my_id\" class=\"class1 class2\">test</div>",
         );
     }
 
@@ -191,10 +185,7 @@ mod html_test {
             }
         };
 
-        assert_html::<_, _, __component_i32::Msg>(
-            0,
-            "<div><div><span>test</span></div><div><span>test</span></div></div>",
-        );
+        assert_html::<_, _, __component_i32::Msg>(0, "<div><div>test</div><div>test</div></div>");
     }
 
     #[wasm_bindgen_test]
@@ -210,8 +201,8 @@ mod html_test {
             }
         };
 
-        assert_html::<_, _, __component_i32::Msg>(0, "<div><span></span></div>");
-        assert_html::<_, _, __component_i32::Msg>(1, "<div><div><span>test</span></div></div>");
+        assert_html::<_, _, __component_i32::Msg>(0, "<div></div>");
+        assert_html::<_, _, __component_i32::Msg>(1, "<div><div>test</div></div>");
     }
 
     struct Test2 {
@@ -233,7 +224,7 @@ mod html_test {
 
         assert_html::<_, _, __component_test2::Msg>(
             Test2 { arr: vec![1, 2, 3] },
-            "<div><span><div><span>1</span></div><div><span>2</span></div><div><span>3</span></div></span></div>",
+            "<div><span><div>1</div><div>2</div><div>3</div></span></div>",
         );
     }
 }

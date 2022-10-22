@@ -28,7 +28,7 @@ macro_rules! html_arr {
                         replace_self!($self, $($predicate)*)
                         { html! { $self, $f, $($e)* } }
                     else
-                        { html! { $self, $f, span {}} }
+                        { html! { $self, $f, {""}} }
                     }
                 ]
             }
@@ -111,7 +111,7 @@ macro_rules! html_arr {
                             let elem = document.create_element(elem_str).unwrap();
 
                             if elem_str.starts_with("\"") {
-                                elem.set_inner_html(elem_str);
+                                elem.set_outer_html(elem_str);
 
                                 elem
                             } else {
@@ -240,14 +240,14 @@ macro_rules! html_arr {
                         let window = web_sys::window().expect("no global `window` exists");
                         let document = window.document().expect("should have a document on window");
 
-                        let elem = document.create_element("span").unwrap();
-
-                        elem.set_inner_html(&replace_self!(
+                        let res = &replace_self!(
                             $self,
                             $($code)+
-                        ).to_string());
+                        ).to_string();
 
-                        elem
+                        let text_node = document.create_text_node(res);
+
+                        text_node
                     }
                 ]
             }
