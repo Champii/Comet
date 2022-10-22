@@ -64,7 +64,7 @@ component! {
     i32,
     // Here #my_id defined the id,
     // and the dot .class1 and .class2 add some classes to the element
-    // The #id must always preceeds the classes, if any
+    // The #id must always preceed the classes, if any
     div #my_id.class1.class2 {
 	span {
 	    // You can access your context anywhere
@@ -79,25 +79,36 @@ component! {
 
 ```
 
-### Define actions directly from within the view
+### Use conditional rendering and loops directly from within the view
 
 ```rust
 struct MyComponent {
+    show: bool,
     value: Vec<i32>,
 }
 
 component! {
     MyComponent,
     div {
-	// Use a for-like loop
-	for ((value) in self.value) {
-	    div {
-		{ value }
+	div {
+	    // Conditional rendering with if
+	    if (self.show) {
+		{ "Visible !" }
+	    }
+	    button @click: { self.show = !self.show } {
+		{ "Toggle" }
 	    }
 	}
-	// Setup your actions
-	button @click: { self.value.push(42) } {
-	    { "Add a number" }
+	div {
+	    // Use a for-like loop
+	    for ((value) in self.value) {
+		div {
+		    { value }
+		}
+	    }
+	    button @click: { self.value.push(42) } {
+		{ "Add a number" }
+	    }
 	}
     }
 }
@@ -119,7 +130,7 @@ component! {
 
 struct Parent {
     // You need to wrap your components with a Shared<T> that is basically a Rc<RefCell<T>>
-    // This is necessary if you want your states to persist and still be available
+    // This is necessary for your states to persist and be available between each render
     child: Shared<Child>,
 }
 
