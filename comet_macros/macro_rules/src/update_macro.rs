@@ -32,7 +32,34 @@ macro_rules! extract_update {
 
     // TODO: For is not handled for now, as it would produce some identical events
     //       See #1
+    // for
+    (
+        $self:ident,
+        $msg:ident,
+        $type:ty,
+        {
+            {
+                {
+                    for
+                        (($($predicate:tt)*) in $($iter:tt)*)
+                        { $($e:tt)* }
 
+                    $($rest:tt)*
+                }
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        extract_update! {$self, $msg, $type, {
+            {
+                {
+                    $($rest)*
+                }
+                [$($expanded)*
+                ]
+            }
+        }}
+    };
     // tag
     (
         $self:ident,

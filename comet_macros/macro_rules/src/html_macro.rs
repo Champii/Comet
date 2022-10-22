@@ -42,7 +42,7 @@ macro_rules! html_arr {
             {
                 {
                     for
-                        ($($predicate:tt)*)
+                        (($($predicate:tt)*) in $($iter:tt)*)
                         { $($e:tt)* }
 
                     $($rest:tt)*
@@ -64,7 +64,7 @@ macro_rules! html_arr {
 
                         let elem = document.create_element("span").unwrap();
 
-                        for $($predicate)* {
+                        for ($($predicate)*) in replace_self!($self, $($iter)*) {
                             elem.append_child(&html! { $self, $f, $($e)* });
                         }
 

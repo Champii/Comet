@@ -29,6 +29,31 @@ macro_rules! extract_msg {
 
     // TODO: For is not handled for now, as it would produce some identical events
     //       See #1
+    // for
+    (
+        {
+            {
+                {
+                    for
+                        (($($predicate:tt)*) in $($iter:tt)*)
+                        { $($e:tt)* }
+
+                    $($rest:tt)*
+                }
+                [$($expanded:tt)*]
+            }
+        }
+    ) => {
+        extract_msg! {{
+            {
+                {
+                    $($rest)*
+                }
+                [$($expanded)*
+                ]
+            }
+        }}
+    };
 
     // tag
     (
