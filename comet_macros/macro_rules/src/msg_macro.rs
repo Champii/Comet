@@ -27,8 +27,6 @@ macro_rules! extract_msg {
         }}
     };
 
-    // TODO: For is not handled for now, as it would produce some identical events
-    //       See #1
     // for
     (
         {
@@ -48,6 +46,7 @@ macro_rules! extract_msg {
             {
                 {
                     $($rest)*
+                    $($e)*
                 }
                 [$($expanded)*
                 ]

@@ -17,3 +17,4 @@ proc-macro = true
 syn = { version = "0.15", features = ["full", "extra-traits"] }
 proc-macro2 = "0.4"
 quote = "0.6"
+itertools = "0.10.5"

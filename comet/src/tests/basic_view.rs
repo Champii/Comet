@@ -176,4 +176,24 @@ mod html_test {
             "<div id=\"my_id\" class=\"class1 class2\"><span>test</span></div>",
         );
     }
+
+    #[wasm_bindgen_test]
+    fn duplicated_event() {
+        component! {
+            i32,
+            div {
+                div @click: { *self += 1 } {
+                    { "test" }
+                }
+                div @click: { *self += 1 } {
+                    { "test" }
+                }
+            }
+        };
+
+        assert_html::<_, _, __component_i32::Msg>(
+            0,
+            "<div><div><span>test</span></div><div><span>test</span></div></div>",
+        );
+    }
 }

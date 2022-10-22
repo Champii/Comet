@@ -30,8 +30,6 @@ macro_rules! extract_update {
         }}
     };
 
-    // TODO: For is not handled for now, as it would produce some identical events
-    //       See #1
     // for
     (
         $self:ident,
@@ -54,6 +52,7 @@ macro_rules! extract_update {
             {
                 {
                     $($rest)*
+                    $($e)*
                 }
                 [$($expanded)*
                 ]

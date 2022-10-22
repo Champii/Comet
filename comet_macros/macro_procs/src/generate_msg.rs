@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 
@@ -26,6 +27,7 @@ pub fn exprs_to_idents(mcall: syn::Expr) -> Result<proc_macro2::TokenStream> {
                 Span::call_site(),
             )
         })
+        .unique()
         .collect::<Vec<_>>();
 
     let tt = quote! {
