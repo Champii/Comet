@@ -31,7 +31,11 @@ pub async fn run() {
         .route("/ws", get(handler))
         .merge(SpaRouter::new("/assets", "dist"));
 
-    axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
+    let addr = "0.0.0.0:8080";
+
+    println!(" -> Listening on {}", addr);
+
+    axum::Server::bind(&addr.parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
