@@ -1,6 +1,7 @@
 mod app;
 pub mod component;
 mod shared;
+mod utils;
 
 pub mod prelude;
 

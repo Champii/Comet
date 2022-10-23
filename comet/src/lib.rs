@@ -14,8 +14,8 @@ use prelude::*;
 #[macro_use]
 pub mod wasm;
 
-/* #[cfg(not(target_arch = "wasm32"))]
-mod server; */
+#[cfg(not(target_arch = "wasm32"))]
+pub mod server;
 
 pub fn run<Comp, Msg>(_root: Comp)
 where

@@ -1,6 +1,6 @@
-use crate::prelude::{App, Component};
+// use crate::prelude::{App, Component};
 
-impl<Comp, Msg> App<Comp, Msg>
+/* impl<Comp, Msg> App<Comp, Msg>
 where
     Comp: Component<Msg>,
     Msg: Clone,
@@ -12,4 +12,4 @@ where
         // run static http server
         // run websocket server
     }
-}
+} */

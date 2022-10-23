@@ -1,11 +1,10 @@
-use itertools::Itertools;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use std::sync::{Arc, RwLock};
 
 use quote::quote;
-use syn::{parse::Result, parse_macro_input, parse_quote, ExprArray};
+use syn::{parse::Result, parse_macro_input};
 
 lazy_static! {
     pub static ref MODELS: Arc<RwLock<Vec<String>>> = Arc::new(RwLock::new(Vec::new()));
@@ -63,7 +62,7 @@ pub fn impl_model(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
     use quote::ToTokens;
 
     let name = mcall.ident.clone();
-    let name_id = syn::Ident::new(&format!("{}Id", name).to_string(), Span::call_site());
+    let _name_id = syn::Ident::new(&format!("{}Id", name).to_string(), Span::call_site());
 
     let tt = quote! {
         impl #name {

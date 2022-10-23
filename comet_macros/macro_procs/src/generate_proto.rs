@@ -1,11 +1,8 @@
-use itertools::Itertools;
-use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use std::sync::{Arc, RwLock};
 
 use quote::quote;
-use syn::{parse::Result, parse_macro_input, parse_quote, ExprArray};
+use syn::parse::Result;
 
 pub fn perform(input: TokenStream) -> TokenStream {
     proc_macro::TokenStream::from(
@@ -13,7 +10,7 @@ pub fn perform(input: TokenStream) -> TokenStream {
     )
 }
 
-pub fn exprs_to_idents(mcall: TokenStream) -> Result<proc_macro2::TokenStream> {
+pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> {
     use quote::ToTokens;
 
     let (models, inner): (Vec<_>, Vec<_>) = crate::db_macro::MODELS

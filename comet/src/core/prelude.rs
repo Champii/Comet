@@ -8,6 +8,7 @@ pub use crate::core::app::*;
 pub use crate::core::component::*;
 pub use crate::core::shared::*;
 
+pub use crate::core::utils::*;
 pub use crate::core::*;
 
 // macros
@@ -33,5 +34,5 @@ pub use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 pub use crate::wasm::prelude::*;
 
-/* #[cfg(not(target_arch = "wasm32"))]
-pub use crate::server::prelude::*; */
+#[cfg(not(target_arch = "wasm32"))]
+pub use crate::server::prelude::*;
