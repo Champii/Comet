@@ -4,7 +4,7 @@ use std::{
     fs::{self, File},
     io::Write,
     path::Path,
-    process::Command,
+    process::{Command, Stdio},
 };
 
 use clap::{App, Arg, SubCommand};
@@ -53,12 +53,18 @@ fn print_ok(log: &str) {
         "[".purple(),
         "✓".green(),
         "]".purple(),
-        log
+        log.green()
     );
 }
 
 fn print_err(log: &str) {
-    println!("\r{}{}{} {}   ", "[".purple(), "✗".red(), "]".purple(), log);
+    println!(
+        "\r{}{}{} {}   ",
+        "[".purple(),
+        "✗".red(),
+        "]".purple(),
+        log.red()
+    );
 }
 
 fn print_warn(log: &str) {
@@ -67,7 +73,7 @@ fn print_warn(log: &str) {
         "[".purple(),
         "!".yellow(),
         "]".purple(),
-        log
+        log.yellow()
     );
 }
 
@@ -77,6 +83,7 @@ fn log_execute_async(log: &str, name: &str, args: &[&str]) {
     let handle = Command::new(name)
         .env("TERM", "xterm-256color")
         .args(args)
+        .stderr(Stdio::null())
         .spawn()
         .expect(&format!("Failed to execute {}", name));
 
@@ -144,29 +151,9 @@ fn build() {
 }
 
 fn run() {
-    log_execute(
-        "Building client",
-        "wasm-pack",
-        &[
-            "--log-level",
-            "warn",
-            "build",
-            "--target",
-            "web",
-            "--out-dir",
-            "dist/pkg",
-            "--",
-            "--color",
-            "always",
-            "-q",
-        ],
-    );
+    build();
 
-    log_execute_async(
-        "Running server",
-        "cargo",
-        &["--color", "always", "run", "-q"],
-    );
+    log_execute_async("Running", "cargo", &["--color", "always", "run", "-q"]);
 }
 
 fn create_project_folder(name: &str) {
