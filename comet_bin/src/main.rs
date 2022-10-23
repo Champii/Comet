@@ -40,7 +40,28 @@ fn main() {
 }
 
 fn build() {
-    println!("Build");
+    println!("[ ] Building client");
+
+    println!(
+        "{}",
+        String::from_utf8(
+            Command::new("wasm-pack")
+                .args([
+                    "--log-level",
+                    "warn",
+                    "build",
+                    "--target",
+                    "web",
+                    "--out-dir",
+                    "dist/pkg",
+                ])
+                .output()
+                .expect("failed to run 'wasm-pack build'")
+                .stderr
+        )
+        .unwrap()
+    );
+
     println!("[ ] Building server");
 
     println!(
@@ -54,27 +75,12 @@ fn build() {
         )
         .unwrap()
     );
-
-    println!("[ ] Building client");
-
-    println!(
-        "{}",
-        String::from_utf8(
-            Command::new("wasm-pack")
-                .args(["build", "--target", "web"])
-                .output()
-                .expect("failed to run npm run build")
-                .stderr
-        )
-        .unwrap()
-    );
 }
 
 fn run() {
     build();
 
-    println!("Run");
-    println!("[ ] Running server");
+    println!(" -> Running...");
 
     println!(
         "{}",
@@ -83,20 +89,6 @@ fn run() {
                 .args(["run"])
                 .output()
                 .expect("failed to run cargo run")
-                .stderr
-        )
-        .unwrap()
-    );
-
-    println!("[ ] Running client");
-
-    println!(
-        "{}",
-        String::from_utf8(
-            Command::new("python3")
-                .args(["-m", "http.server", "8080"])
-                .output()
-                .expect("failed to run http server")
                 .stderr
         )
         .unwrap()
@@ -114,6 +106,7 @@ fn create_project_folder(name: &str) {
 
     fs::create_dir(path).expect("Failed to create project folder");
     fs::create_dir(path.join("src")).expect("Failed to create project src folder");
+    fs::create_dir(path.join("dist")).expect("Failed to create project dist folder");
 
     let create_file = |new_path: &str, content: &str| {
         let mut file = File::create(path.join(new_path)).expect("Failed to create file");
@@ -153,14 +146,14 @@ comet = { git = "https://github.com/Champii/Comet" }
     );
 
     create_file(
-        "index.html",
+        "dist/index.html",
         &r#"<html>
   <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
   </head>
   <body>
     <script type="module">
-      import init from './pkg/{{name}}.js';
+      import init from './assets/pkg/{{name}}.js';
 
       async function run() {
         await init();

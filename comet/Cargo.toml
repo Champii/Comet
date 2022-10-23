@@ -30,6 +30,7 @@ features = [
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 axum = { version = "0.5.17", features = ["ws"] }
 tokio = { version = "1.21.2", features = ["full"] }
+axum-extra = { version = "0.3.7", features = ["spa"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
