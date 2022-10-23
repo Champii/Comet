@@ -94,7 +94,7 @@ fn run() {
         "{}",
         String::from_utf8(
             Command::new("python3")
-                .args(["-m", "http.server", "-P", "8080"])
+                .args(["-m", "http.server", "8080"])
                 .output()
                 .expect("failed to run http server")
                 .stderr

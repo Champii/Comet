@@ -11,6 +11,8 @@ pub use crate::core::shared::*;
 pub use crate::core::*;
 
 // macros
+pub use comet_macro_procs::generate_proto;
+pub use comet_macro_procs::Db;
 pub use comet_macro_rules::_gen_full_variant;
 pub use comet_macro_rules::_gen_variant;
 pub use comet_macro_rules::comet;
