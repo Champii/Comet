@@ -22,23 +22,14 @@ macro_rules! comet {
 
             let addr = "ws://localhost:8080/ws".to_string();
 
-            let mut socket = Socket::connect(addr).await;
-
-            socket.send(Proto::Todo(TodoProto::New(Todo{
-                completed: false,
-                title: "hello".to_string(),
-            }))).await;
+            let mut socket: Socket<Proto> = Socket::connect(addr).await;
 
             let mut rx = socket.take_receiver().unwrap();
 
             while let Some(packet) = rx.next().await {
-                // info!("{:#?}", packet);
-
                 comet::console_log!("{:#?}", packet);
             }
-            // start_game(socket).await;
         }
-
 
         #[cfg(not(target_arch = "wasm32"))]
         pub async fn main() {

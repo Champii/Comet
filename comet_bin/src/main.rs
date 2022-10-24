@@ -225,4 +225,15 @@ comet = { git = "https://github.com/Champii/Comet" }
         "#
         .replace("{{name}}", name),
     );
+    create_file(
+        "src/main.rs",
+        &r#"use comet::prelude::*;
+
+#[tokio::main]
+pub async fn main() {
+    {{name}}::main().await;
+}
+        "#
+        .replace("{{name}}", name),
+    )
 }
