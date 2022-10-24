@@ -31,7 +31,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
     let models2 = models.clone();
 
     let tt = quote! {
-        #[derive(Serialize, Deserialize)]
+        #[derive(Serialize, Deserialize, Debug)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub enum Proto {
             #(#models(#inner)),*

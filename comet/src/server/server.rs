@@ -16,14 +16,14 @@ use super::{client::Client, universe::Universe};
 
 use futures::stream::StreamExt;
 
-async fn handler<P: Proto + 'static>(
+async fn handler<P: Proto + Send + 'static>(
     ws: WebSocketUpgrade,
     Extension(universe): Extension<Universe>,
 ) -> Response {
     ws.on_upgrade(|socket| handle_socket::<P>(socket, universe))
 }
 
-async fn handle_socket<P: Proto + 'static>(socket: WebSocket, universe: Universe) {
+async fn handle_socket<P: Proto + Send + 'static>(socket: WebSocket, universe: Universe) {
     let (tx, mut rx) = socket.split();
 
     let tx = Arc::new(RwLock::new(tx));
@@ -43,11 +43,11 @@ async fn handle_socket<P: Proto + 'static>(socket: WebSocket, universe: Universe
 
         let client = universe.read().await.get_client(session_id);
 
-        client.handle_msg::<P>(msg.into());
+        client.handle_msg::<P>(msg.into()).await;
     }
 }
 
-pub async fn run<P: Proto + 'static>() {
+pub async fn run<P: Proto + Send + 'static>() {
     let app = Router::new()
         .route("/ws", get(handler::<P>))
         .layer(Extension(Universe::default()))

@@ -33,17 +33,21 @@ impl Client {
         self.session_id = session_id;
     }
 
-    pub fn handle_msg<P: Proto>(&self, msg: Vec<u8>) {
+    pub async fn handle_msg<P: Proto + Send>(&self, msg: Vec<u8>) {
         let proto = P::from_bytes(&msg);
 
         proto.dispatch();
+
+        self.send(proto).await;
     }
 
-    pub async fn send<P: Proto>(&self, proto: P) {
+    pub async fn send<P: Proto + Send>(&self, proto: P) {
+        let msg = proto.to_bytes();
+
         self.out
             .write()
             .await
-            .send(Message::Binary(proto.to_bytes()))
+            .send(Message::Binary(msg))
             .await
             .unwrap();
     }

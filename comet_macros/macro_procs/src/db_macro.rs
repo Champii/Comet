@@ -34,11 +34,11 @@ pub fn impl_proto(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
     MODELS.write().unwrap().push(name.to_string());
 
     let tt = quote! {
-        #[derive(Serialize, Deserialize)]
+        #[derive(Serialize, Deserialize, Debug)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         #mcall
 
-        #[derive(Serialize, Deserialize)]
+        #[derive(Serialize, Deserialize, Debug)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub struct #name_id(i32);
 
@@ -52,7 +52,7 @@ pub fn impl_proto(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
             }
         }
 
-        #[derive(Serialize, Deserialize)]
+        #[derive(Serialize, Deserialize, Debug)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub enum #proto_name {
             New(#name),
@@ -87,14 +87,19 @@ pub fn impl_model(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
     let tt = quote! {
         impl #name {
             pub fn new(model: &Self) {
+                println!("new {:#?}", model);
             }
             pub fn fetch(id: &#name_id) {
+                println!("fetch");
             }
             pub fn list() {
+                println!("list");
             }
             pub fn update(&self) {
+                println!("update");
             }
             pub fn delete(id: &#name_id) {
+                println!("delete");
             }
         }
     };
