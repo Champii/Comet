@@ -235,5 +235,7 @@ pub async fn main() {
 }
         "#
         .replace("{{name}}", name),
-    )
+    );
+
+    create_file("README.md", "");
 }

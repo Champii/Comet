@@ -13,17 +13,17 @@ use super::universe::Universe;
 pub struct Client {
     out: Arc<RwLock<SplitSink<WebSocket, Message>>>,
     session_id: usize,
-    universe: Universe,
+    // universe: Universe,
     // hash: String,
     // db: DatabaseConnection,
 }
 
 impl Client {
-    pub fn new(out: Arc<RwLock<SplitSink<WebSocket, Message>>>, universe: Universe) -> Self {
+    pub fn new(out: Arc<RwLock<SplitSink<WebSocket, Message>>>, _universe: Universe) -> Self {
         Self {
             out,
             session_id: 0,
-            universe,
+            // universe,
             // hash: "".to_string(),
             // db: DatabaseConnection::new(),
         }

@@ -40,8 +40,8 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
         impl comet::prelude::Proto for Proto {
             fn dispatch(&self) {
                 match self {
-                    #(Proto::#models2(#inner2) => #inner3.dispatch()),*
-                    _ => todo!()
+                    #(Proto::#models2(#inner2) => #inner3.dispatch(),)*
+                    _ => todo!(),
                 }
             }
 
