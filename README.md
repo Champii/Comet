@@ -53,10 +53,10 @@ $> comet run
 If you prefer to compile and run it manually:
 
 ```bash
-# Build the client
+# Build the front
 $> wasm-pack build --target web
 
-# Build and run the app
+# Then build and run the back
 $> cargo run
 ```
 

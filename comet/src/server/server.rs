@@ -1,17 +1,39 @@
+use std::sync::Arc;
+
+use tokio::sync::RwLock;
+
 use axum::{
     extract::ws::{WebSocket, WebSocketUpgrade},
     response::Response,
     routing::get,
-    Router,
+    Extension, Router,
 };
 use axum_extra::routing::SpaRouter;
 
-async fn handler(ws: WebSocketUpgrade) -> Response {
-    ws.on_upgrade(handle_socket)
+use crate::core::prelude::Proto;
+
+use super::{client::Client, universe::Universe};
+
+use futures::stream::StreamExt;
+
+async fn handler<P: Proto + 'static>(
+    ws: WebSocketUpgrade,
+    Extension(universe): Extension<Universe>,
+) -> Response {
+    ws.on_upgrade(|socket| handle_socket::<P>(socket, universe))
 }
 
-async fn handle_socket(mut socket: WebSocket) {
-    while let Some(msg) = socket.recv().await {
+async fn handle_socket<P: Proto + 'static>(socket: WebSocket, universe: Universe) {
+    let (tx, mut rx) = socket.split();
+
+    let tx = Arc::new(RwLock::new(tx));
+
+    let session_id = universe
+        .write()
+        .await
+        .new_client(Client::new(tx.clone(), universe.clone()));
+
+    while let Some(msg) = rx.next().await {
         let msg = if let Ok(msg) = msg {
             msg
         } else {
@@ -19,16 +41,16 @@ async fn handle_socket(mut socket: WebSocket) {
             return;
         };
 
-        if socket.send(msg).await.is_err() {
-            // client disconnected
-            return;
-        }
+        let client = universe.read().await.get_client(session_id);
+
+        client.handle_msg::<P>(msg.into());
     }
 }
 
-pub async fn run() {
+pub async fn run<P: Proto + 'static>() {
     let app = Router::new()
-        .route("/ws", get(handler))
+        .route("/ws", get(handler::<P>))
+        .layer(Extension(Universe::default()))
         .merge(SpaRouter::new("/assets", "dist"));
 
     let addr = "0.0.0.0:8080";

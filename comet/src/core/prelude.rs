@@ -1,6 +1,9 @@
 pub use comet_macro_procs;
 pub use comet_macro_rules;
 pub use paste::paste;
+pub use serde;
+pub use serde::{Deserialize, Serialize};
+pub use serde_cbor;
 pub use std::{cell::RefCell, rc::Rc};
 pub use web_sys;
 
@@ -8,12 +11,13 @@ pub use crate::core::app::*;
 pub use crate::core::component::*;
 pub use crate::core::shared::*;
 
+pub use crate::core::proto::Proto;
 pub use crate::core::utils::*;
 pub use crate::core::*;
 
 // macros
+pub use comet_macro_procs::db;
 pub use comet_macro_procs::generate_proto;
-pub use comet_macro_procs::Db;
 pub use comet_macro_rules::_gen_full_variant;
 pub use comet_macro_rules::_gen_variant;
 pub use comet_macro_rules::comet;

@@ -13,6 +13,8 @@ futures = { version = "0.3"}
 paste = "1.0.9"
 comet_macro_procs = { path = "../comet_macros/macro_procs/" }
 comet_macro_rules = { path = "../comet_macros/macro_rules/" }
+serde = { version = "1.0.147", features = ["derive"] }
+serde_cbor = "0.11.2"
 
 [dependencies.web-sys]
 version = "0.3.4"

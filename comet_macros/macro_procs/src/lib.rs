@@ -25,8 +25,8 @@ pub fn generate_hash(input: TokenStream) -> TokenStream {
     generate_hash::perform(input)
 }
 
-#[proc_macro_derive(Db)]
-pub fn db_macro(input: TokenStream) -> TokenStream {
+#[proc_macro_attribute]
+pub fn db(_attr: TokenStream, input: TokenStream) -> TokenStream {
     db_macro::perform(input)
 }
 

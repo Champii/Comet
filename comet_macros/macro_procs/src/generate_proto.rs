@@ -25,9 +25,32 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
         })
         .unzip();
 
+    let inner2 = inner.clone();
+    let inner3 = inner.clone();
+
+    let models2 = models.clone();
+
     let tt = quote! {
-        enum Proto {
+        #[derive(Serialize, Deserialize)]
+        #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
+        pub enum Proto {
             #(#models(#inner)),*
+        }
+
+        impl comet::prelude::Proto for Proto {
+            fn dispatch(&self) {
+                match self {
+                    #(Proto::#models2(#inner2) => #inner3.dispatch()),*
+                }
+            }
+
+            fn from_bytes(bytes: &[u8]) -> Self {
+                serde_cbor::from_slice(bytes).unwrap()
+            }
+
+            fn to_bytes(&self) -> Vec<u8> {
+                serde_cbor::to_vec(self).unwrap()
+            }
         }
     };
 

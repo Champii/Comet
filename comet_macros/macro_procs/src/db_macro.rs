@@ -34,6 +34,12 @@ pub fn impl_proto(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
     MODELS.write().unwrap().push(name.to_string());
 
     let tt = quote! {
+        #[derive(Serialize, Deserialize)]
+        #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
+        #mcall
+
+        #[derive(Serialize, Deserialize)]
+        #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub struct #name_id(i32);
 
         use std::ops::Deref;
@@ -46,12 +52,26 @@ pub fn impl_proto(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
             }
         }
 
-        enum #proto_name {
+        #[derive(Serialize, Deserialize)]
+        #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
+        pub enum #proto_name {
             New(#name),
             Fetch(#name_id),
             List,
             Update(#name),
             Delete(#name_id),
+        }
+
+        impl #proto_name {
+            pub fn dispatch(&self) {
+                match self {
+                    #proto_name::New(model) => #name::new(model),
+                    #proto_name::Fetch(id) => #name::fetch(id),
+                    #proto_name::List => #name::list(),
+                    #proto_name::Update(model) => model.update(),
+                    #proto_name::Delete(id) => #name::delete(id),
+                }
+            }
         }
     };
 
@@ -62,19 +82,19 @@ pub fn impl_model(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
     use quote::ToTokens;
 
     let name = mcall.ident.clone();
-    let _name_id = syn::Ident::new(&format!("{}Id", name).to_string(), Span::call_site());
+    let name_id = syn::Ident::new(&format!("{}Id", name).to_string(), Span::call_site());
 
     let tt = quote! {
         impl #name {
-            pub fn new(model: Self) {
+            pub fn new(model: &Self) {
             }
-            pub fn fetch(&self) {
+            pub fn fetch(id: &#name_id) {
             }
-            pub fn list(&self) {
+            pub fn list() {
             }
             pub fn update(&self) {
             }
-            pub fn delete(&self) {
+            pub fn delete(id: &#name_id) {
             }
         }
     };

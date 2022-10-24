@@ -10,9 +10,8 @@ macro_rules! comet {
         }
 
         #[cfg(not(target_arch = "wasm32"))]
-        #[tokio::main]
         pub async fn main() {
-            comet::server::server::run().await;
+            comet::server::server::run::<Proto>().await;
         }
     }
 }

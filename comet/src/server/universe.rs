@@ -1,0 +1,36 @@
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::RwLock;
+
+use super::client::Client;
+
+pub type Universe = Arc<RwLock<UniverseInner>>;
+
+#[derive(Clone, Debug, Default)]
+pub struct UniverseInner {
+    next_session_id: usize,
+    clients: HashMap<usize, Client>, // session_id -> Client
+}
+
+impl UniverseInner {
+    pub fn get_next_session_id(&mut self) -> usize {
+        let id = self.next_session_id;
+
+        self.next_session_id += 1;
+
+        id
+    }
+
+    pub fn new_client(&mut self, mut client: Client) -> usize {
+        let session_id = self.get_next_session_id();
+
+        client.set_session_id(session_id);
+
+        self.clients.insert(session_id, client);
+
+        session_id
+    }
+
+    pub fn get_client(&self, session_id: usize) -> Client {
+        self.clients.get(&session_id).unwrap().clone()
+    }
+}
