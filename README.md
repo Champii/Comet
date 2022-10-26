@@ -18,7 +18,9 @@ Visit the [example](https://github.com/Champii/Comet/tree/master/examples) folde
 $> cargo install --git https://github.com/Champii/Comet --locked
 ```
 
-You will need [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
+If not found on your system, Comet will install these following crates using `cargo install`:
+ - `wasm-pack`
+ - `diesel-cli`
 
 ### Create simple counter example
 
@@ -46,21 +48,36 @@ comet!(0);
 
 ### Run it
 
+Setup your database address as an env variable
+
+/!\ Warning: This database will be COMPLETELY WIPED at startup and everytime time your models change  
+This is not ideal but, hey ! This is still a work in progress :p
+
+```bash
+export DATABASE_URL="postgres://postgres:postgres@localhost/your_db"
+```
+
+Actually run your project
+
 ```bash
 $> comet run
 ```
 
-If you prefer to compile and run it manually:
+This will download and install the tools it needs to build and run your crate.
 
 ```bash
-# Build the front
-$> wasm-pack build --target web
-
-# Then build and run the back
-$> cargo run
+[✓] Installing wasm-pack
+[✓] Installing diesel-cli
+[✓] Diesel setup
+[✓] Migrating database
+[✓] Patching schema
+[✓] Building client
+[✓] Building server
+[✓] Running
+ -> Listening on 0.0.0.0:8080
 ```
 
-And go to [http://localhost:8080](http://localhost:8080)
+Then go go to [http://localhost:8080](http://localhost:8080)
 
 ## Quick tour
 

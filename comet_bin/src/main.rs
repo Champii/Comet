@@ -1,4 +1,5 @@
 use colored::*;
+use which::which;
 
 use std::{
     fs::{self, File},
@@ -124,7 +125,58 @@ fn log_execute(log: &str, name: &str, args: &[&str]) {
     }
 }
 
+fn check_and_install_diesel_cli() {
+    if which("diesel").is_err() {
+        log_execute(
+            "Installing diesel-cli",
+            "cargo",
+            &[
+                "install",
+                "diesel_cli",
+                "--no-default-features",
+                "--features",
+                "postgres",
+                "-q",
+                "--color",
+                "always",
+            ],
+        );
+    }
+
+    if !Path::new("diesel.toml").exists()
+        || !Path::new("migrations").exists()
+        || !Path::new("src/schema.rs").exists()
+    {
+        log_execute("Diesel setup", "diesel", &["setup"]);
+        log_execute("Reset database", "diesel", &["database", "reset"]);
+        log_execute("Migrating database", "diesel", &["migration", "run"]);
+
+        log_execute(
+            "Patching schema",
+            "sed",
+            &[
+                "-i",
+                "s/^diesel::table/crate::diesel::table/g",
+                "src/schema.rs",
+            ],
+        );
+    }
+}
+
+fn check_and_install_wasm_pack() {
+    if which("wasm-pack").is_err() {
+        log_execute(
+            "Installing wasm-pack",
+            "cargo",
+            &["install", "wasm-pack", "-q", "--color", "always"],
+        );
+    }
+}
+
 fn build() {
+    check_and_install_wasm_pack();
+    check_and_install_diesel_cli();
+
     log_execute(
         "Building client",
         "wasm-pack",

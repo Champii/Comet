@@ -89,8 +89,6 @@ fn impl_model_macro(
 
             // let fields_idents4 = fields_idents2.clone();
 
-            let derives2 = derives.clone();
-
             let res = quote!(
                 #[cfg(target_arch = "wasm32")]
                 mod #lower_name_ident {

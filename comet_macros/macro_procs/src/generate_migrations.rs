@@ -2,8 +2,7 @@ use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use std::sync::{Arc, RwLock};
 
-use quote::quote;
-use syn::{parse::Result, parse_macro_input, Data, DeriveInput, Fields, ItemStruct};
+use syn::{parse::Result, Fields, ItemStruct};
 
 lazy_static! {
     pub static ref MIGRATIONS: Arc<RwLock<Vec<(String, String)>>> =
@@ -31,10 +30,45 @@ fn generate_migrations() {
 
     std::fs::create_dir_all("migrations/dev/").unwrap();
 
-    std::fs::write("migrations/dev/up.sql", up_res.to_string()).unwrap();
-    std::fs::write("migrations/dev/down.sql", down_res.to_string()).unwrap();
+    let old_dev_up_migration =
+        std::fs::read_to_string("migrations/dev/up.sql").unwrap_or("".to_string());
 
-    // execute diesel migrations redo
+    if old_dev_up_migration != up_res {
+        println!(" -> Detected a change in the database schema, generating a new migration");
+
+        std::fs::write("migrations/dev/up.sql", up_res.to_string()).unwrap();
+        std::fs::write("migrations/dev/down.sql", down_res.to_string()).unwrap();
+
+        std::fs::remove_file("src/schema.rs").unwrap();
+
+        std::process::Command::new("diesel")
+            .arg("setup")
+            .output()
+            .expect("failed to execute process");
+
+        // execute diesel migrations redo
+        std::process::Command::new("diesel")
+            .arg("database")
+            .arg("reset")
+            .output()
+            .expect("failed to execute process");
+
+        std::process::Command::new("diesel")
+            .arg("migration")
+            .arg("run")
+            .output()
+            .expect("failed to execute process");
+
+        // replace 'diesel' with 'crate::diesel' in the file src/schema.rs with sed
+        std::process::Command::new("sed")
+            .arg("-i")
+            .arg("s/^diesel::table/crate::diesel::table/g")
+            .arg("src/schema.rs")
+            .output()
+            .expect("failed to execute process");
+    }
+
+    /* // execute diesel migrations redo
     let output = std::process::Command::new("diesel")
         .arg("migration")
         .arg("redo")
@@ -47,11 +81,7 @@ fn generate_migrations() {
         .arg("s/^diesel::table/crate::diesel::table/g")
         .arg("src/schema.rs")
         .output()
-        .expect("failed to execute process");
-
-    /* let mut schema = std::fs::read_to_string("src/schema.rs").unwrap();
-    schema = schema.replace("diesel", "crate::diesel");
-    std::fs::write("src/schema.rs", schema).unwrap(); */
+        .expect("failed to execute process"); */
 }
 
 pub fn struct_to_sql(obj: ItemStruct) -> Result<(String, String)> {
