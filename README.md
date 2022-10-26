@@ -273,11 +273,11 @@ component! {
 - Separate all the reusable features in different crates:
   - [ ] Comet crate
     - [ ] The view system
-      - [  ] The html macro
-      - [  ] The component macro
-    - [  ] The isomorphic db model through websocket
-      - [  ] The #[db] proc macro that generates basic model queries
-      - [  ] An abstract ws server/client
-          - [  ] The auto-proto macro
-          - [OK] The reactive/listening part of the db [reactive-postgres-rs](https://github.com/Champii/reactive-postgres-rs)
+      - [ ] The html macro
+      - [ ] The component macro
+    - [ ] The isomorphic db model through websocket
+      - [ ] The #[db] proc macro that generates basic model queries
+      - [ ] An abstract ws server/client
+          - [ ] The auto-proto macro
+          - [X] The reactive/listening part of the db [reactive-postgres-rs](https://github.com/Champii/reactive-postgres-rs)
 
