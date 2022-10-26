@@ -12,13 +12,15 @@ Work in progress.
 
 Visit the [example](https://github.com/Champii/Comet/tree/master/examples) folder, this is the only documentation for now
 
-### Install Comet Binary
+### Install Comet Binary and dependencies
 
 ```bash
 $> cargo install --git https://github.com/Champii/Comet --locked
 ```
 
-If not found on your system, Comet will install these following crates using `cargo install`:
+You will need to install and run an instance of PostgreSQL.
+
+If not found on your system, Comet will install these following crates using `cargo install` on the first run:
  - `wasm-pack`
  - `diesel-cli`
 
@@ -197,7 +199,6 @@ component! {
 
 ## TODO List
 - DB
-    - Macro for models
     - Register for queries
 - Websocket
 - Allow for iterators inside html

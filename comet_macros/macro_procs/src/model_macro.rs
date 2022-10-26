@@ -46,8 +46,6 @@ fn impl_model_macro(
                 name_vec.push(name.clone());
             }
 
-            // let name_vec2 = name_vec.clone();
-
             let new_name = "New".to_string() + &name.to_string();
             item_struct.ident = syn::parse_str(&new_name).unwrap();
 
@@ -60,7 +58,6 @@ fn impl_model_macro(
             };
 
             let table_name_ident: syn::Ident = syn::parse_str(&table_name).unwrap();
-            // let table_name_ident2 = table_name_ident.clone();
 
             // tricks to have a one-line iterator to create "pub fn fetch_by_ {}"
             let mut table_name_ident_vec = vec![];
@@ -68,8 +65,6 @@ fn impl_model_macro(
             for _ in &fields.named {
                 table_name_ident_vec.push(table_name_ident.clone());
             }
-
-            // let table_name_ident_vec2 = table_name_ident_vec.clone();
 
             let from_name: syn::Ident =
                 syn::parse_str(&("from_".to_string() + &lower_name)).unwrap();
@@ -81,13 +76,6 @@ fn impl_model_macro(
             }
 
             let fields_idents2 = fields_idents.clone();
-            /* let fetch_fields_idents3 = fields_idents
-            .clone()
-            .iter()
-            .map(|x| syn::parse_str(&("fetch_by_".to_string() + &x.to_string())).unwrap())
-            .collect::<Vec<syn::Ident>>(); */
-
-            // let fields_idents4 = fields_idents2.clone();
 
             let res = quote!(
                 #[cfg(target_arch = "wasm32")]
@@ -223,15 +211,6 @@ fn impl_model_macro(
 
                             #table_name_ident::table.filter(#table_name_ident::dsl::id.eq(id_given)).first::<#name>(&mut conn)
                         }
-
-                        // #(
-                        //     pub fn #fetch_fields_idents3(value_given: i64, conn: &mut PgConnection) -> Result<#name_vec, diesel::result::Error> {
-                        //         use schema::#table_name_ident_vec::dsl::*;
-
-                        //         #table_name_ident_vec2.filter(#fields_idents4.eq(value_given)).first::<#name_vec2>(conn)
-                        //     }
-                        // )* */
-
                     }
                 }
 
