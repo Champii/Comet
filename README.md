@@ -2,15 +2,36 @@
 
 Reactive isomorphic rust web framework.
 
+## Index
+
+  1. [Introduction](#introduction)
+  2. [Getting started](#getting-started)
+  3. [Quick tour](#quick-tour)
+
+Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) folder, this is the only documentation for now
+
+## Introduction
+
+Comet is a framework for the web build with Rust+Wasm<3. It takes its inspiration from MeteorJS, Seed-rs, Yew and others.
+
+This crate aims to be an all-in-one all-inclusive battery-included isomorphic reactive framework.
+
+      - You keep saying 'Isomorphic', but why ?
+
+In this context, Isomorphic means that you only write one program for both client and server. One crate. One. For both. Yes.
+This means that we rely a lot on macros and code generation, with all the good and the bad this could bring,
+but it allows for a great deal of features, close to no boilerplate, and a little quality of life improvement on different aspects.
+
+      - Ok, and how is it reactive then ?
+
+It is reactive in many sense, first by its `component` system, that encapsulate little bits of logic into an HTML templating system,
+and which can bind your struct's methods directly to JS events, triggering a render of only the components that changed. 
+There is also a reactive layer on top of a `PostgreSQL` database, that permits to watch for some queries to change over time and 
+to send push notifications over websocket to every client watching for thoses change, triggering a render when needed.
+
 Work in progress.
 
-## Quick start
-
-    - Install Comet binary
-    - Create simple counter example
-    - Run it
-
-Visit the [example](https://github.com/Champii/Comet/tree/master/examples) folder, this is the only documentation for now
+## Getting started
 
 ### Install Comet Binary and dependencies
 
@@ -24,7 +45,7 @@ If not found on your system, Comet will install these following crates using `ca
  - `wasm-pack`
  - `diesel-cli`
 
-### Create simple counter example
+### Create a simple incrementing counter 
 
 ```bash
 $> comet new my_counter && cd my_counter

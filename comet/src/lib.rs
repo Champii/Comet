@@ -1,9 +1,9 @@
 #![recursion_limit = "256"]
 
-pub mod core;
-
 #[cfg(test)]
 mod tests;
+
+pub mod core;
 
 pub mod prelude {
     pub use crate::core::prelude::*;
