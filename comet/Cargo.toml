@@ -15,6 +15,8 @@ comet_macro_procs = { path = "../comet_macros/macro_procs/" }
 comet_macro_rules = { path = "../comet_macros/macro_rules/" }
 serde = { version = "1.0.147", features = ["derive"] }
 serde_cbor = "0.11.2"
+lazy_static = "1.4.0"
+derive_more = "0.99.17"
 
 [dependencies.web-sys]
 version = "0.3.4"
@@ -33,6 +35,9 @@ features = [
 axum = { version = "0.5.17", features = ["ws"] }
 tokio = { version = "1.21.2", features = ["full"] }
 axum-extra = { version = "0.3.7", features = ["spa"] }
+reactive-pg = { path = "../../reactive-postgres-rs/" }
+diesel = { version = "2.0.2", features = ["postgres"] }
+
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 ws_stream_wasm = "0.7.3"

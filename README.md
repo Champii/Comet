@@ -188,3 +188,14 @@ component! {
 - Find a way for global inter-component message passing
 - Allow for real time value binding for input element without losing focus (might need a real virtual dom for this one)
 
+- Separate all the reusable features in different crates:
+  - Comet crate
+    - The view system
+      - The html macro
+      - The component macro
+    - The isomorphic db model through websocket
+      - The #[db] proc macro that generates basic model queries
+      - An abstract ws server/client
+      - The auto-proto macro
+      - The reactive/listening part of the db
+

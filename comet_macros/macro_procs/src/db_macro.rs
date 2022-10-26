@@ -34,23 +34,13 @@ pub fn impl_proto(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
     MODELS.write().unwrap().push(name.to_string());
 
     let tt = quote! {
-        #[derive(Serialize, Deserialize, Debug)]
+        #[derive(Serialize, Deserialize, Debug, Clone, Default)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         #mcall
 
-        #[derive(Serialize, Deserialize, Debug)]
+        #[derive(Serialize, Deserialize, Debug, Clone, Default, From, Deref)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub struct #name_id(i32);
-
-        use std::ops::Deref;
-
-        impl Deref for #name_id {
-            type Target = i32;
-
-            fn deref(&self) -> &Self::Target {
-                &self.0
-            }
-        }
 
         #[derive(Serialize, Deserialize, Debug)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
@@ -65,7 +55,7 @@ pub fn impl_proto(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
         impl #proto_name {
             pub fn dispatch(&self) {
                 match self {
-                    #proto_name::New(model) => #name::new(model),
+                    #proto_name::New(model) => model.new(),
                     #proto_name::Fetch(id) => #name::fetch(id),
                     #proto_name::List => #name::list(),
                     #proto_name::Update(model) => model.update(),
@@ -82,12 +72,14 @@ pub fn impl_model(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
     use quote::ToTokens;
 
     let name = mcall.ident.clone();
+    let proto_name = syn::Ident::new(&format!("{}Proto", name).to_string(), Span::call_site());
     let name_id = syn::Ident::new(&format!("{}Id", name).to_string(), Span::call_site());
 
     let tt = quote! {
+        #[cfg(not(target_arch = "wasm32"))]
         impl #name {
-            pub fn new(model: &Self) {
-                println!("new {:#?}", model);
+            pub fn new(&self) {
+                println!("new {:#?}", self);
             }
             pub fn fetch(id: &#name_id) {
                 println!("fetch");
@@ -100,6 +92,21 @@ pub fn impl_model(mcall: syn::ItemStruct) -> Result<proc_macro2::TokenStream> {
             }
             pub fn delete(id: &#name_id) {
                 println!("delete");
+            }
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        impl #name {
+            pub fn new(&self) {
+                crate::SOCKET.write().unwrap().as_mut().map(|socket| socket.send_async(Proto::#name(#proto_name::New(self.clone()))));
+            }
+            pub fn fetch(id: &#name_id) {
+            }
+            pub fn list() {
+            }
+            pub fn update(&self) {
+            }
+            pub fn delete(id: &#name_id) {
             }
         }
     };
