@@ -1,16 +1,13 @@
-use colored::*;
-use which::which;
-
-use std::{
-    fs::{self, File},
-    io::Write,
-    path::Path,
-    process::{Command, Stdio},
-};
-
 use clap::{App, Arg, SubCommand};
 
+mod install;
 mod logger;
+mod new;
+mod print;
+
+use install::*;
+use new::*;
+use print::*;
 
 fn main() {
     let matches = App::new("Comet")
@@ -39,137 +36,6 @@ fn main() {
         create_project_folder(matches.value_of("name").unwrap());
     } else {
         println!("{}", matches.usage());
-    }
-}
-
-fn print(msg: &str) {
-    let mut stdout = std::io::stdout();
-    print!("{}", msg);
-    stdout.flush().unwrap();
-}
-
-fn print_ok(log: &str) {
-    println!(
-        "\r{}{}{} {}   ",
-        "[".purple(),
-        "✓".green(),
-        "]".purple(),
-        log.green()
-    );
-}
-
-fn print_err(log: &str) {
-    println!(
-        "\r{}{}{} {}   ",
-        "[".purple(),
-        "✗".red(),
-        "]".purple(),
-        log.red()
-    );
-}
-
-fn print_warn(log: &str) {
-    println!(
-        "\r{}{}{} {}   ",
-        "[".purple(),
-        "!".yellow(),
-        "]".purple(),
-        log.yellow()
-    );
-}
-
-fn log_execute_async(log: &str, name: &str, args: &[&str]) {
-    print(format!("{} {} {}...", "[".purple(), "]".purple(), log).as_str());
-
-    let handle = Command::new(name)
-        .env("TERM", "xterm-256color")
-        .args(args)
-        .stderr(Stdio::null())
-        .spawn()
-        .expect(&format!("Failed to execute {}", name));
-
-    print_ok(log);
-
-    let status = handle.wait_with_output().unwrap();
-
-    if !status.status.success() {
-        std::process::exit(1);
-    }
-}
-
-fn log_execute(log: &str, name: &str, args: &[&str]) {
-    print(format!("{} {} {}...", "[".purple(), "]".purple(), log).as_str());
-
-    let status = Command::new(name)
-        .env("TERM", "xterm-256color")
-        .args(args)
-        .output()
-        .expect(&format!("Failed to execute {}", name));
-
-    let out = String::from_utf8_lossy(&status.stderr);
-
-    if out.trim_end().is_empty() {
-        print_ok(log);
-    } else {
-        if status.status.success() {
-            print_warn(log);
-        } else {
-            print_err(log);
-        }
-
-        println!("{}", out);
-    }
-
-    if !status.status.success() {
-        std::process::exit(1);
-    }
-}
-
-fn check_and_install_diesel_cli() {
-    if which("diesel").is_err() {
-        log_execute(
-            "Installing diesel-cli",
-            "cargo",
-            &[
-                "install",
-                "diesel_cli",
-                "--no-default-features",
-                "--features",
-                "postgres",
-                "-q",
-                "--color",
-                "always",
-            ],
-        );
-    }
-
-    if !Path::new("diesel.toml").exists()
-        || !Path::new("migrations").exists()
-        || !Path::new("src/schema.rs").exists()
-    {
-        log_execute("Diesel setup", "diesel", &["setup"]);
-        log_execute("Reset database", "diesel", &["database", "reset"]);
-        log_execute("Migrating database", "diesel", &["migration", "run"]);
-
-        log_execute(
-            "Patching schema",
-            "sed",
-            &[
-                "-i",
-                "s/^diesel::table/crate::diesel::table/g",
-                "src/schema.rs",
-            ],
-        );
-    }
-}
-
-fn check_and_install_wasm_pack() {
-    if which("wasm-pack").is_err() {
-        log_execute(
-            "Installing wasm-pack",
-            "cargo",
-            &["install", "wasm-pack", "-q", "--color", "always"],
-        );
     }
 }
 
@@ -206,88 +72,4 @@ fn run() {
     build();
 
     log_execute_async("Running", "cargo", &["--color", "always", "run", "-q"]);
-}
-
-fn create_project_folder(name: &str) {
-    let path = Path::new(name);
-
-    if path.exists() {
-        println!("Error: {} already exists", name);
-
-        return;
-    }
-
-    fs::create_dir(path).expect("Failed to create project folder");
-    fs::create_dir(path.join("src")).expect("Failed to create project src folder");
-    fs::create_dir(path.join("dist")).expect("Failed to create project dist folder");
-
-    let create_file = |new_path: &str, content: &str| {
-        let mut file = File::create(path.join(new_path)).expect("Failed to create file");
-        file.write(content.as_bytes()).unwrap();
-    };
-
-    create_file(
-        "src/lib.rs",
-        r#"use comet::prelude::*;
-
-component! {
-    i32,
-    button @click: { *self += 1 } {
-        { self }
-    }
-}
-
-comet!(0);
-"#,
-    );
-
-    create_file(
-        "Cargo.toml",
-        &r#"[package]
-name = "{{name}}"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[dependencies]
-comet = { git = "https://github.com/Champii/Comet" }
-        "#
-        .replace("{{name}}", name),
-    );
-
-    create_file(
-        "dist/index.html",
-        &r#"<html>
-  <head>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
-  </head>
-  <body>
-    <script type="module">
-      import init from './assets/pkg/{{name}}.js';
-
-      async function run() {
-        await init();
-      }
-      run();
-    </script>
-  </body>
-</html>
-        "#
-        .replace("{{name}}", name),
-    );
-    create_file(
-        "src/main.rs",
-        &r#"use comet::prelude::*;
-
-#[tokio::main]
-pub async fn main() {
-    {{name}}::main().await;
-}
-        "#
-        .replace("{{name}}", name),
-    );
-
-    create_file("README.md", "");
 }
