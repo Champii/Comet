@@ -234,7 +234,10 @@ component! {
 
 ### Database persistance for free
 
+Note: This one is still a proof of concept, this needs work.
+
 ```rust
+// You just have to add this little attribute to your type et voila !
 #[model]
 struct Todo {
     title: String,
@@ -262,6 +265,9 @@ component! {
         }
     }
 }
+
+// This will create a new Todo in db every time this program runs
+comet!(Todo::create());
 ```
 
 ## Todo List
