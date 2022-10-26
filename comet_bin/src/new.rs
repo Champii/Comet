@@ -27,7 +27,9 @@ pub(crate) fn create_project_folder(name: &str) {
         r#"// The mandatory imports
 use comet::prelude::*;
 
-// This macro takes two arguments: a type for which we will implement `Component` and a HTML element
+// This macro takes two arguments:
+// - A type for which we will implement `Component`
+// - And a root HTML element
 // We implement `Component` for a simple integer.
 component! {
     // We use an i32 here, but you can use any stucts/enums/custom type

@@ -19,7 +19,8 @@ This crate aims to be an all-in-one all-inclusive battery-included isomorphic re
 
       - You keep saying 'Isomorphic', but why ?
 
-In this context, Isomorphic means that you only write one program for both client and server. One crate. One. For both. Yes.
+In this context, Isomorphic means that you only write one program for both client and server.  
+One crate. One. For both. Yes.  
 This means that we rely a lot on macros and code generation, with all the good and the bad this could bring,
 but it allows for a great deal of features, close to no boilerplate, and a little quality of life improvement on different aspects.
 
@@ -61,7 +62,9 @@ The default generated file `src/lib.rs` :
 // The mandatory imports
 use comet::prelude::*;
 
-// This macro takes two arguments: a type for which we will implement `Component` and a HTML element
+// This macro takes two arguments:
+// - A type for which we will implement `Component`
+// - And a root HTML element
 // We implement `Component` for a simple integer.
 component! {
     // We use an i32 here, but you can use any stucts/enums/custom type
