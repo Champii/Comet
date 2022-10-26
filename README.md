@@ -7,10 +7,11 @@ Reactive isomorphic rust web framework.
   1. [Introduction](#introduction)
   2. [Getting started](#getting-started)
   3. [Quick tour](#quick-tour)
-
-Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) folder, this is the only documentation for now
+  4. [Todo list](#todo-list)
 
 ## Introduction
+
+Work in progress.
 
 Comet is a framework for the web build with Rust+Wasm<3. It takes its inspiration from MeteorJS, Seed-rs, Yew and others.
 
@@ -29,7 +30,7 @@ and which can bind your struct's methods directly to JS events, triggering a ren
 There is also a reactive layer on top of a `PostgreSQL` database, that permits to watch for some queries to change over time and 
 to send push notifications over websocket to every client watching for thoses change, triggering a render when needed.
 
-Work in progress.
+Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) folder.
 
 ## Getting started
 
@@ -51,21 +52,31 @@ If not found on your system, Comet will install these following crates using `ca
 $> comet new my_counter && cd my_counter
 ```
 
+This newly generated project contains all you need to get started. The only file you have to care about for now is `src/lib.rs`, this is your entry point.  
+Conveignantly, the generated file is already the simpliest incrementing counter you can think of.
+
 The default generated file `src/lib.rs` :
 
 ```rust
 // The mandatory imports
 use comet::prelude::*;
 
-// We create a component that is an `i32` and which we can increment with a button
+// This macro takes two arguments: a type for which we will implement `Component` and a HTML element
+// We implement `Component` for a simple integer.
 component! {
+    // We use an i32 here, but you can use any stucts/enums/custom type
     i32,
+
+    // The root of this HTML element is a simple button
+    // It has a 'click' event registered that will increment our i32 by 1
     button @click: { *self += 1 } {
-	{ self }
+        // We display our value inside the button
+        { self }
     }
 }
 
-// We run the application with a start value
+// This is where all the magic happens
+// We run the application with an instance of our i32 component that starts with the value 0
 comet!(0);
 ```
 
@@ -73,11 +84,11 @@ comet!(0);
 
 Setup your database address as an env variable
 
-/!\ Warning: This database will be COMPLETELY WIPED at startup and everytime time your models change  
+/!\ Warning: This database will be COMPLETELY WIPED at startup and everytime your models change  
 This is not ideal but, hey ! This is still a work in progress :p
 
 ```bash
-export DATABASE_URL="postgres://postgres:postgres@localhost/your_db"
+$> export DATABASE_URL="postgres://your_user:your_password@localhost/your_db"
 ```
 
 Actually run your project
@@ -118,14 +129,14 @@ component! {
     // and the dot .class1 and .class2 add some classes to the element
     // The #id must always preceed the classes, if any
     div #my_id.class1.class2 {
-	span {
-	    // You can access your context anywhere
-	    { self.my_value }
-	}
-	// Define style properties
-	div [height: { self.my_height }}] {
-	    { "Another child" }
-	}
+        span {
+            // You can access your context anywhere
+            { self.my_value }
+        }
+        // Define style properties
+        div [height: { self.my_height }}] {
+            { "Another child" }
+        }
     }
 };
 
@@ -142,29 +153,29 @@ struct MyComponent {
 component! {
     MyComponent,
     div {
-	div {
-	    // Conditional rendering with if
-	    // The parenthesis are necessary
-	    if (self.show) {
-		{ "Visible !" }
-	    }
-	    button @click: { self.show = !self.show } {
-		{ "Toggle" }
-	    }
-	}
-	div {
-	    // Use a for-like loop.
-	    // The parenthesis are necessary around the last part
-	    for key, value in (self.value) {
-		div {
-		    { key }
-		    { value }
-		}
-	    }
-	    button @click: { self.value.push(42) } {
-		{ "Add a number" }
-	    }
-	}
+        div {
+            // Conditional rendering with if
+            // The parenthesis are necessary
+            if (self.show) {
+                { "Visible !" }
+            }
+            button @click: { self.show = !self.show } {
+                { "Toggle" }
+            }
+        }
+        div {
+            // Use a for-like loop.
+            // The parenthesis are necessary around the last part
+            for key, value in (self.value) {
+                div {
+                    { key }
+                    { value }
+                }
+            }
+            button @click: { self.value.push(42) } {
+                { "Add a number" }
+            }
+        }
     }
 }
 ```
@@ -183,8 +194,8 @@ struct MyStruct {
 component! {
     MyStruct,
     div {
-	input ={ self.value } {}
-	{ self.value }
+        input ={ self.value } {}
+        { self.value }
     }
 }
 ```
@@ -199,7 +210,7 @@ struct Child {
 component! {
     Child,
     div {
-	{ self.value }
+        { self.value }
     }
 }
 
@@ -212,13 +223,45 @@ struct Parent {
 component! {
     Parent,
     div {
-	// To include a component, you must wrap it inside a @{ }
-	@{ self.child }
+        // To include a component, you must wrap it inside a @{ }
+        @{ self.child }
     }
 }
 ```
 
-## TODO List
+### Database persistance for free
+
+```rust
+#[model]
+struct Todo {
+    title: String,
+    completed: bool,
+}
+
+impl Todo {
+    fn toggle(&mut self) {
+        self.completed = !self.completed;
+
+        // This will save the model in the db
+        self.save();
+    }
+}
+
+component! {
+    Todo,
+    div {
+        p {
+            { self.title }
+            { self.completed }
+            button @click: { self.toggle() } {
+                { "Toggle" }
+            }
+        }
+    }
+}
+```
+
+## Todo List
 - DB
     - Register for queries
 - Websocket
@@ -228,13 +271,13 @@ component! {
 - Allow for real time value binding for input element without losing focus (might need a real virtual dom for this one)
 
 - Separate all the reusable features in different crates:
-  - Comet crate
-    - The view system
-      - The html macro
-      - The component macro
-    - The isomorphic db model through websocket
-      - The #[db] proc macro that generates basic model queries
-      - An abstract ws server/client
-      - The auto-proto macro
-      - The reactive/listening part of the db
+  - [ ] Comet crate
+    - [ ] The view system
+      - [  ] The html macro
+      - [  ] The component macro
+    - [  ] The isomorphic db model through websocket
+      - [  ] The #[db] proc macro that generates basic model queries
+      - [  ] An abstract ws server/client
+          - [  ] The auto-proto macro
+          - [OK] The reactive/listening part of the db [reactive-postgres-rs](https://github.com/Champii/reactive-postgres-rs)
 

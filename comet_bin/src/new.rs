@@ -24,15 +24,25 @@ pub(crate) fn create_project_folder(name: &str) {
 
     create_file(
         "src/lib.rs",
-        r#"use comet::prelude::*;
+        r#"// The mandatory imports
+use comet::prelude::*;
 
+// This macro takes two arguments: a type for which we will implement `Component` and a HTML element
+// We implement `Component` for a simple integer.
 component! {
+    // We use an i32 here, but you can use any stucts/enums/custom type
     i32,
+
+    // The root of this HTML element is a simple button
+    // It has a 'click' event registered that will increment our i32 by 1
     button @click: { *self += 1 } {
+        // We display our value inside the button
         { self }
     }
 }
 
+// This is where all the magic happens
+// We run the application with an instance of our i32 component that starts with the value 0
 comet!(0);
 "#,
     );
