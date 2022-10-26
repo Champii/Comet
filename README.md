@@ -5,9 +5,10 @@ Reactive isomorphic rust web framework.
 ## Index
 
   1. [Introduction](#introduction)
-  2. [Getting started](#getting-started)
-  3. [Quick tour](#quick-tour)
-  4. [Todo list](#todo-list)
+  2. [Features](#features)
+  3. [Getting started](#getting-started)
+  4. [Quick tour](#quick-tour)
+  5. [Todo list](#todo-list)
 
 ## Introduction
 
@@ -33,6 +34,20 @@ to send push notifications over websocket to every client watching for thoses ch
 
 Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) folder.
 
+## Features
+
+ - Isomorphic client/server
+ - Reactive view
+ - Reactive database with PostgreSQL
+ - Auto database generation every time your structs change
+ - Websocket
+ - Auto procol generation
+ - Convenient wrapper binary
+ - Zero boilerplate
+ - Fast (Soon™)
+ - Client cache with its own SQL engine (Soon™)
+ - Remote procedure calls (Soon™)
+
 ## Getting started
 
 ### Install Comet Binary and dependencies
@@ -54,7 +69,7 @@ $> comet new my_counter && cd my_counter
 ```
 
 This newly generated project contains all you need to get started. The only file you have to care about for now is `src/lib.rs`, this is your entry point.  
-Conveignantly, the generated file is already the simpliest incrementing counter you can think of.
+Conveniently, the generated file is already the simpliest incrementing counter you can think of.
 
 The default generated file `src/lib.rs` :
 
@@ -285,7 +300,7 @@ comet!(Todo::create());
       - [ ] The html macro
       - [ ] The component macro
     - [ ] The isomorphic db model through websocket
-      - [ ] The #[db] proc macro that generates basic model queries
+      - [ ] The #[model] proc macro that generates basic model queries
       - [ ] An abstract ws server/client
           - [ ] The auto-proto macro
           - [X] The reactive/listening part of the db [reactive-postgres-rs](https://github.com/Champii/reactive-postgres-rs)
