@@ -109,6 +109,9 @@ fn impl_model_macro(
                         }
                         pub fn delete(id: &#name) {
                         }
+
+                        /* #[sql]
+                        pub fn create_sql() */
                     }
                 }
 

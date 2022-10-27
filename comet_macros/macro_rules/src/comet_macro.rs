@@ -3,6 +3,8 @@ macro_rules! comet {
     ($($e:tt)+) => {
         #[cfg(not(target_arch = "wasm32"))]
         mod schema;
+        #[cfg(not(target_arch = "wasm32"))]
+        use schema::*;
 
         generate_proto! {}
 

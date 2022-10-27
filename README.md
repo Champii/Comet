@@ -12,7 +12,7 @@ Reactive isomorphic rust web framework.
 
 ## Introduction
 
-Work in progress.
+Work in progress, this is still a naive early prototype.
 
 Comet is a framework for the web build with Rust+Wasm<3. It takes its inspiration from MeteorJS, Seed-rs, Yew and others.
 
@@ -253,6 +253,7 @@ Note: This one is still a proof of concept, this needs work.
 
 ```rust
 // You just have to add this little attribute to your type et voila !
+// It will add a field `id: i32` to the struct, for database storing purpose
 #[model]
 struct Todo {
     title: String,
@@ -286,11 +287,20 @@ comet!(Todo::create());
 ```
 
 ## Todo List
-- DB
-    - Register for queries
-- Websocket
 - Allow for iterators inside html
 - Allow to mix attributes, styles and events
+- Client cache (with local wasm sql ?)
+- Have a ComponentId that allows to fetch the corresponding root dom element
+- Have some QueryId
+  - Every user-defined raw queries will have a QueryId known from both client and server.
+  - These queries are parametrized, and only these parameters and the QueryId transit from the client to the server
+  - The client register any query's QueryHash (params+query_id) with every ComponentId that triggered it
+  - The client check the cache if this query exists, if so return the data and render
+  - Else, forward the query and the RequestId to the server
+  - Bind it to the watch query server side
+  - When triggered, the changes are passed back along with the original RequestId and QueryId
+  - Then the client update its local store and trigger the render of the component's element that originated the request
+- Have some RequestId to implement sync/async RPC-like communication
 - Find a way for global inter-component message passing
 - Allow for real time value binding for input element without losing focus (might need a real virtual dom for this one)
 
