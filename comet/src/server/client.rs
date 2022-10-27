@@ -42,12 +42,9 @@ impl Client {
         
         let proto = P::from_bytes(&msg.msg);
 
-        println!("GOT REQUEST: {:#?}", proto);
-
         let response = proto.dispatch().await;
 
         if let Some(response) = response {
-            println!("RESPONSE");
             let response = response.to_bytes();
 
             let msg = crate::Message {
@@ -58,13 +55,11 @@ impl Client {
             let response = msg.to_bytes();
 
             self.out.write().await.send(Message::Binary(response)).await.unwrap();
-            println!("SENT RESPONSE");
         }
 
-        // self.send(proto).await;
     }
 
-    pub async fn send<P: Proto + Send + Serialize + DeserializeOwned>(&self, proto: P) {
+    /* pub async fn send<P: Proto + Send + Serialize + DeserializeOwned>(&self, proto: P) {
         let msg = proto.to_bytes();
         let msg = crate::Message {request_id: 0, msg};
         let msg = msg.to_bytes();
@@ -75,5 +70,5 @@ impl Client {
             .send(Message::Binary(msg))
             .await
             .unwrap();
-    }
+    } */
 }

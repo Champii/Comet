@@ -18,17 +18,17 @@ pub fn perform(input: TokenStream) -> TokenStream {
     )
 }
 
-pub fn register_sql_query(mut mcall: syn::ItemFn) -> Result<proc_macro2::TokenStream> {
+pub fn register_sql_query(mcall: syn::ItemFn) -> Result<proc_macro2::TokenStream> {
     let mut server_fn = mcall.clone();
-    let mut client_fn = mcall.clone();
-    let mut stmts = server_fn.block.stmts.clone();
+    let client_fn = mcall.clone();
+    let stmts = server_fn.block.stmts.clone();
 
     /* mcall.attrs.push(syn::parse_quote! {
         #[rpc]
     }); */
     println!("stmts: {:#?}", stmts);
 
-    let last = stmts.pop().unwrap();
+    // let last = stmts.pop().unwrap();
 
     let wrap: syn::Block = syn::parse_quote! {
         {

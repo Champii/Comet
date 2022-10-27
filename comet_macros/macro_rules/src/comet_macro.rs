@@ -46,7 +46,7 @@ macro_rules! comet {
 
             let mut rx = socket.take_receiver().unwrap();
 
-            SOCKET.write().unwrap().replace(socket);
+            SOCKET.write().await.replace(socket);
 
             while let Some(packet) = rx.next().await {
                 comet::console_log!("packet {:#?}", packet);

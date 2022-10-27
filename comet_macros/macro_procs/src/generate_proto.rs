@@ -1,5 +1,4 @@
 use proc_macro::TokenStream;
-use proc_macro2::Span;
 
 use quote::quote;
 use syn::parse::Result;
@@ -13,7 +12,7 @@ pub fn perform(input: TokenStream) -> TokenStream {
 pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> {
     use quote::ToTokens;
 
-    let (models, inner): (Vec<_>, Vec<_>) = crate::db_macro::MODELS
+    /* let (models, inner): (Vec<_>, Vec<_>) = crate::db_macro::MODELS
         .read()
         .unwrap()
         .iter()
@@ -28,7 +27,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
     let inner2 = inner.clone();
     let inner3 = inner.clone();
 
-    let models2 = models.clone();
+    let models2 = models.clone(); */
 
     let tt = quote! {
         #[derive(Serialize, Deserialize, Debug)]

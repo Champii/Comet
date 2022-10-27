@@ -39,14 +39,14 @@ Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) fold
  - Isomorphic client/server
  - Reactive view
  - Reactive database with PostgreSQL
+ - Remote procedure calls
  - Auto database generation every time your structs change
  - Websocket
  - Auto procol generation
  - Convenient wrapper binary
  - Zero boilerplate
  - Fast (Soon™)
- - Client cache with its own SQL engine (Soon™)
- - Remote procedure calls (Soon™)
+ - Client cache (Soon™)
 
 ## Getting started
 
@@ -284,6 +284,37 @@ component! {
 
 // This will create a new Todo in db every time this program runs
 comet!(Todo::create());
+```
+
+### Remote procedure calls
+
+```rust
+use comet::prelude::*;
+
+#[model]
+#[derive(Default)]
+pub struct Counter {
+    pub count: i32,
+}
+
+// This attribute indicated that all the following methods are to be treated as RPC
+#[rpc]
+impl Counter {
+    // The RPC method MUST be async (at least for not)
+    // They also cannot take a mutable reference on self (yet)
+    pub async fn remote_increment(&self) -> i32 {
+        self.count + 1
+    }
+}
+
+component! {
+    Counter,
+    button @click: { self.count = self.remote_increment().await } {
+        { self.count }
+    }
+}
+
+comet!(Counter::default());
 ```
 
 ## Todo List

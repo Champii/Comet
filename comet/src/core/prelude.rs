@@ -9,8 +9,9 @@ pub use paste::paste;
 pub use serde;
 pub use serde::{Deserialize, Serialize};
 pub use serde_cbor;
-pub use std::sync::{Arc, RwLock};
+pub use std::sync::Arc;
 pub use std::{cell::RefCell, rc::Rc};
+pub use tokio::sync::RwLock;
 pub use web_sys;
 
 pub use crate::core::app::*;

@@ -5,7 +5,7 @@ use {
 
 use futures::{
     channel::mpsc::{UnboundedReceiver, UnboundedSender},
-    Future, SinkExt,
+    SinkExt,
 };
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -25,7 +25,10 @@ pub struct Socket<P: Proto + 'static + Serialize + DeserializeOwned + Debug> {
     _phantom: std::marker::PhantomData<P>,
 }
 
-impl<P: Proto + 'static + Serialize + DeserializeOwned + Debug> Socket<P> {
+impl<P: Proto + 'static + Serialize + DeserializeOwned + Debug> Socket<P>
+where
+    Self: 'static,
+{
     pub fn new(
         tx: UnboundedSender<Message>,
         rx: Option<UnboundedReceiver<Message>>,
@@ -69,22 +72,17 @@ impl<P: Proto + 'static + Serialize + DeserializeOwned + Debug> Socket<P> {
                 if let WsMessage::Binary(blob) = msg {
                     let msg = Message::from_bytes(&blob);
 
-                    /* if pending_requests2
-                        .read()
-                        .unwrap()
-                        .contains_key(&msg.request_id)
-                    {
+                    if pending_requests2.read().await.contains_key(&msg.request_id) {
                         let tx: futures::channel::oneshot::Sender<Message> = pending_requests2
                             .write()
-                            .unwrap()
+                            .await
                             .remove(&msg.request_id)
                             .unwrap();
 
                         tx.send(msg).unwrap();
                     } else {
                         out_tx.send(msg).await.unwrap();
-                    } */
-                    out_tx.send(msg).await.unwrap();
+                    }
                 } else {
                     // bad message type
                 }
@@ -100,18 +98,9 @@ impl<P: Proto + 'static + Serialize + DeserializeOwned + Debug> Socket<P> {
         let request_id = self.next_request_id;
         self.next_request_id += 1;
 
-        let (tx, mut rx) = futures::channel::oneshot::channel::<Message>();
-        let (future, handle) = futures::future::abortable(async move {
-            crate::console_log!("RESOLVE RPC");
-            /* if let Ok(message) = rx.await {
-                let packet = P::from_bytes(&message.msg);
-                packet
-            } else {
-                panic!("no message with id {}", request_id);
-            } */
-            // panic!("no message with id {}", request_id);
-            P::from_bytes(&rx.await.unwrap().msg)
-        });
+        let (tx, rx) = futures::channel::oneshot::channel::<Message>();
+        let (future, _handle) =
+            futures::future::abortable(async move { P::from_bytes(&rx.await.unwrap().msg) });
 
         // if timeoug then abort the handle
         /* let timeout = async move {
@@ -119,96 +108,23 @@ impl<P: Proto + 'static + Serialize + DeserializeOwned + Debug> Socket<P> {
             handle.abort();
         }; */
 
-        self.pending_requests
-            .write()
-            .unwrap()
-            .insert(request_id, tx);
+        self.pending_requests.write().await.insert(request_id, tx);
 
         let msg = Message {
             request_id,
             msg: packet.to_bytes(),
         };
 
-        crate::console_log!("SEND RPC");
         self.tx.send(msg).await.unwrap();
 
-        crate::console_log!("SEND TAGRANDTANTE");
-        let packet = future.await.unwrap();
-        crate::console_log!("SEND TAGRANDTANTE {:#?}", packet);
-
-        // P::from_bytes(&message.msg)
-        packet
-    }
-    pub async fn tamere_wesh(&mut self) {
-        crate::console_log!("SEND TAMEREJk");
-        // let message = self.rx.as_mut().unwrap().next().await.unwrap();
-        // crate::console_log!("SEND TAGRANDTANTE {:#?}", message);
+        future.await.unwrap()
     }
 
     pub async fn send(&mut self, packet: P) -> P {
-        // self.tx.send(packet).await.unwrap();
-        // unimplemented!()
         self.rpc(packet).await
     }
-
-    /* pub fn send_async(&mut self, packet: P) {
-        let mut tx = self.tx.clone();
-
-        spawn_local(async move {
-            tx.send(packet).await.unwrap();
-        });
-    } */
-
-    // pub fn send_sync(&mut self, packet: P) -> P {
-    /* let mut tx = self.tx.clone();
-    let (tx2, mut rx2) = futures::channel::oneshot::channel::<P>();
-
-    let request_id = self.next_request_id;
-    self.next_request_id += 1;
-
-    let (tx3, rx3) = futures::channel::oneshot::channel::<Message>();
-    let (future, handle) = futures::future::abortable(async move {
-        crate::console_log!("RESOLVE RPC");
-        if let Ok(message) = rx3.await {
-            let packet = P::from_bytes(&message.msg);
-            packet
-        } else {
-            panic!("no message with id {}", request_id);
-        }
-    });
-
-    self.pending_requests
-        .write()
-        .unwrap()
-        .insert(request_id, tx3);
-
-    spawn_local(async move {
-        let msg = Message {
-            request_id,
-            msg: packet.to_bytes(),
-        };
-        tx.send(msg.clone()).await.unwrap();
-        tx2.send(P::from_bytes(&msg.msg)).unwrap();
-    });
-
-    loop {
-        if let Some(packet) = rx2.try_recv().unwrap() {
-            return packet;
-        } else {
-            crate::console_log!("WAITING");
-        }
-    } */
-    // }
 
     pub fn take_receiver(&mut self) -> Option<UnboundedReceiver<Message>> {
         self.rx.take()
     }
-
-    /* pub async fn next(&mut self) -> Option<Packet> {
-        if let Some(rx) = &mut self.rx {
-            rx.next().await
-        } else {
-            None
-        }
-    } */
 }

@@ -6,7 +6,6 @@ use quote::quote;
 use syn::{parse::Result, parse_macro_input, ImplItem};
 
 pub struct RpcEntry {
-    id: u64,
     model_name: String,
     method_name: String,
     query_variant: String,
@@ -52,9 +51,9 @@ pub fn register_rpcs(mut mcall: syn::ItemImpl) -> Result<proc_macro2::TokenStrea
 
 pub fn register_rpc(
     self_type: syn::Type,
-    mut mcall: &syn::ImplItemMethod,
+    mcall: &syn::ImplItemMethod,
 ) -> Result<Vec<proc_macro2::TokenStream>> {
-    let mut server_fn = mcall.clone();
+    let server_fn = mcall.clone();
     let mut client_fn = mcall.clone();
 
     let query_types = mcall
@@ -86,16 +85,12 @@ pub fn register_rpc(
         syn::ReturnType::Type(_, ty) => ty.clone(),
     };
 
-    /* let enum_query_str = quote! { #enum_query_variant }.to_string();
-    let enum_response_str = quote! { #enum_response_variant }.to_string(); */
-
     let model_name = quote! { #self_type }.to_string();
     let fn_name = mcall.sig.ident.to_string();
 
     let response_type = quote! { #response_type }.to_string();
 
     RPCS.write().unwrap().push(RpcEntry {
-        id: rpc_nb,
         model_name,
         method_name: fn_name,
         query_variant: query_variant.clone(),
@@ -119,39 +114,23 @@ pub fn register_rpc(
             _ => unimplemented!(),
         })
         .collect::<Vec<_>>();
-    // server_fn.block = server_wrap;
 
     let client_wrap: syn::Block = syn::parse_quote! {
-           {
-               comet::console_log!("socket");
-               let mut socket = crate::SOCKET.write().unwrap().take().unwrap();
-                   let response = socket.rpc(Proto::RPCQuery(RPCQuery::#query_variant_real(#(#query_args.clone()),*))).await;
-               /* let mut socket_opt = crate::SOCKET.write().unwrap();
+        {
+            let response = if let Some(socket) = crate::SOCKET.write().await.as_mut() {
+                socket.rpc(Proto::RPCQuery(RPCQuery::#query_variant_real(#(#query_args.clone()),*))).await
+            } else {
+                    panic!("No socket")
+            };
 
-               let response = if let Some(mut ref socket) = &mut socket_opt {
+            let response = match response {
+                Proto::RPCResponse(RPCResponse::#response_variant_real(response)) => response,
+                _ => unimplemented!(),
+            };
 
-                   comet::console_log!("socket2");
-
-                   socket.rpc(Proto::RPCQuery(RPCQuery::#query_variant_real(#(#query_args.clone()),*))).await
-               } else {
-                       panic!("No socket")
-               };
-    */
-
-            crate::SOCKET.write().unwrap().replace(socket);
-
-               comet::console_log!("socket3");
-
-               let response = match response {
-                   Proto::RPCResponse(RPCResponse::#response_variant_real(response)) => response,
-                   _ => unimplemented!(),
-               };
-
-               comet::console_log!("RPC response: {:?}", response);
-
-               response
-           }
-       };
+            response
+        }
+    };
 
     client_fn.block = client_wrap;
 
@@ -218,8 +197,6 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
 
     let (response_variants, response_types): (Vec<_>, Vec<_>) = response.into_iter().unzip();
 
-    // let query_declared_params2 = query_declared_params.clone();
-    let query_params2 = query_params.clone();
     let query_variants2 = query_variants.clone();
     let response_variants2 = response_variants.clone();
     let response_variants3 = response_variants.clone();
@@ -267,7 +244,6 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
             async fn dispatch(self) -> Option<Self::Response> {
                 match self {
                     #(RPCQuery::#query_variants2(#(#query_params),*) => {
-                        // TODO: How to get the result back ?
                         Some(Proto::RPCResponse(RPCResponse::#response_variants2(#models::#methods(#(#query_params_with_ref),*).await)))
                     }),*,
                     _ => todo!(),
@@ -285,8 +261,6 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
             async fn dispatch(self) -> Option<Self::Response> {
                 match self {
                     #(RPCResponse::#response_variants3(arg) => {
-                        // TODO: Who to contact back with this result ?
-                        // #models::#methods(#(#query_params2),*);
                         None
                     }),*,
                     _ => todo!(),

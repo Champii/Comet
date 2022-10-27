@@ -47,11 +47,7 @@ where
         })
     };
 
-    #[cfg(target_arch = "wasm32")]
-    crate::console_log!("run_rec");
     let view = component.borrow().view(cb, bindings.clone());
-    #[cfg(target_arch = "wasm32")]
-    crate::console_log!("run_rec_lol");
 
     parent.set_inner_html("");
     parent.append_child(&view).unwrap();
