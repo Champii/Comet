@@ -1,6 +1,10 @@
 #[macro_export]
 macro_rules! comet {
     ($($e:tt)+) => {
+
+        #[cfg(target_arch = "wasm32")]
+        use std::panic;
+
         #[cfg(not(target_arch = "wasm32"))]
         mod schema;
         #[cfg(not(target_arch = "wasm32"))]
@@ -15,13 +19,15 @@ macro_rules! comet {
         #[cfg(target_arch = "wasm32")]
         #[wasm_bindgen(start)]
         pub fn main() {
-            comet::run($($e)+);
+            panic::set_hook(Box::new(comet::prelude::console_error_panic_hook::hook));
+
 
             spawn_local(async { main_async().await });
         }
 
         #[cfg(target_arch = "wasm32")]
         pub async fn main_async() {
+            comet::run($($e)+).await;
             spawn_local(start_socket());
         }
 

@@ -17,6 +17,7 @@ serde = { version = "1.0.147", features = ["derive"] }
 serde_cbor = "0.11.2"
 lazy_static = "1.4.0"
 derive_more = "0.99.17"
+async-trait = "0.1.58"
 
 [dependencies.web-sys]
 version = "0.3.4"
@@ -43,6 +44,7 @@ diesel = { version = "2.0.2", features = ["postgres"] }
 ws_stream_wasm = "0.7.3"
 pharos = "0.5"
 wasm-bindgen-futures = "0.4.30"
+console_error_panic_hook = "0.1.7"
 
 
 [dev-dependencies]

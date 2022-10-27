@@ -1,4 +1,5 @@
 pub use crate::wasm::log_macro::*;
+pub use console_error_panic_hook;
 
 pub use crate::wasm::*;
 

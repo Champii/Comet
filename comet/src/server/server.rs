@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::fmt::Debug;
 
 use tokio::sync::RwLock;
 
@@ -12,18 +13,21 @@ use axum_extra::routing::SpaRouter;
 
 use crate::core::prelude::Proto;
 
+use serde::de::DeserializeOwned;
+use serde::Serialize;
+
 use super::{client::Client, universe::Universe};
 
 use futures::stream::StreamExt;
 
-async fn handler<P: Proto + Send + 'static>(
+async fn handler<P: Proto + Send + 'static + Serialize + DeserializeOwned + Debug>(
     ws: WebSocketUpgrade,
     Extension(universe): Extension<Universe>,
 ) -> Response {
     ws.on_upgrade(|socket| handle_socket::<P>(socket, universe))
 }
 
-async fn handle_socket<P: Proto + Send + 'static>(socket: WebSocket, universe: Universe) {
+async fn handle_socket<P: Proto + Send + 'static + Serialize + DeserializeOwned + Debug>(socket: WebSocket, universe: Universe) {
     let (tx, mut rx) = socket.split();
 
     let tx = Arc::new(RwLock::new(tx));
@@ -47,7 +51,7 @@ async fn handle_socket<P: Proto + Send + 'static>(socket: WebSocket, universe: U
     }
 }
 
-pub async fn run<P: Proto + Send + 'static>() {
+pub async fn run<P: Proto + Send + 'static + Serialize + DeserializeOwned + Debug>() {
     let app = Router::new()
         .route("/ws", get(handler::<P>))
         .layer(Extension(Universe::default()))

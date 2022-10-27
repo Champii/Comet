@@ -2,6 +2,10 @@ use axum::extract::ws::{Message, WebSocket};
 use futures::SinkExt;
 use tokio::sync::RwLock;
 
+use serde::de::DeserializeOwned;
+use serde::Serialize;
+use std::fmt::Debug;
+
 use futures::stream::SplitSink;
 use std::sync::Arc;
 
@@ -33,16 +37,37 @@ impl Client {
         self.session_id = session_id;
     }
 
-    pub async fn handle_msg<P: Proto + Send>(&self, msg: Vec<u8>) {
-        let proto = P::from_bytes(&msg);
+    pub async fn handle_msg<P: Proto + Send + Serialize + DeserializeOwned + Debug>(&self, msg: Vec<u8>) {
+        let msg = crate::Message::from_bytes(&msg);
+        
+        let proto = P::from_bytes(&msg.msg);
 
-        proto.dispatch();
+        println!("GOT REQUEST: {:#?}", proto);
 
-        self.send(proto).await;
+        let response = proto.dispatch().await;
+
+        if let Some(response) = response {
+            println!("RESPONSE");
+            let response = response.to_bytes();
+
+            let msg = crate::Message {
+                request_id: msg.request_id,
+                msg: response,
+            };
+
+            let response = msg.to_bytes();
+
+            self.out.write().await.send(Message::Binary(response)).await.unwrap();
+            println!("SENT RESPONSE");
+        }
+
+        // self.send(proto).await;
     }
 
-    pub async fn send<P: Proto + Send>(&self, proto: P) {
+    pub async fn send<P: Proto + Send + Serialize + DeserializeOwned>(&self, proto: P) {
         let msg = proto.to_bytes();
+        let msg = crate::Message {request_id: 0, msg};
+        let msg = msg.to_bytes();
 
         self.out
             .write()

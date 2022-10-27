@@ -39,22 +39,21 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
             // #(#models(#inner)),*
         }
 
+        impl Proto {
+
+        }
+
+        #[async_trait]
         impl comet::prelude::Proto for Proto {
-            fn dispatch(&self) {
+            type Response = Proto;
+
+            async fn dispatch(self) -> Option<Self::Response> {
                 match self {
-                    Proto::RPCQuery(rpc_proto) => rpc_proto.dispatch(),
-                    Proto::RPCResponse(rpc_proto) => rpc_proto.dispatch(),
+                    Proto::RPCQuery(rpc_proto) => rpc_proto.dispatch().await,
+                    Proto::RPCResponse(rpc_proto) => rpc_proto.dispatch().await,
                     // #(Proto::#models2(#inner2) => #inner3.dispatch(),)*
                     _ => todo!(),
                 }
-            }
-
-            fn from_bytes(bytes: &[u8]) -> Self {
-                serde_cbor::from_slice(bytes).unwrap()
-            }
-
-            fn to_bytes(&self) -> Vec<u8> {
-                serde_cbor::to_vec(self).unwrap()
             }
         }
     };

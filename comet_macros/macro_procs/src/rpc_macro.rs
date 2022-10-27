@@ -78,7 +78,10 @@ pub fn register_rpc(
 
     let response_variant = format!("RPCResponse{}", rpc_nb);
 
-    let responst_type = match &mcall.sig.decl.output {
+    let query_variant_real: syn::Ident = syn::parse_str(&query_variant).unwrap();
+    let response_variant_real: syn::Ident = syn::parse_str(&response_variant).unwrap();
+
+    let response_type = match &mcall.sig.decl.output {
         syn::ReturnType::Default => syn::parse_quote! { () },
         syn::ReturnType::Type(_, ty) => ty.clone(),
     };
@@ -89,27 +92,68 @@ pub fn register_rpc(
     let model_name = quote! { #self_type }.to_string();
     let fn_name = mcall.sig.ident.to_string();
 
-    let response_type = quote! { #responst_type }.to_string();
+    let response_type = quote! { #response_type }.to_string();
 
     RPCS.write().unwrap().push(RpcEntry {
         id: rpc_nb,
         model_name,
         method_name: fn_name,
-        query_variant,
+        query_variant: query_variant.clone(),
         query_types,
         response_variant,
         response_type,
     });
 
+    let query_args = mcall
+        .sig
+        .decl
+        .inputs
+        .iter()
+        .map(|arg| match arg {
+            syn::FnArg::SelfRef(_) => quote! { self },
+            syn::FnArg::Captured(c) => {
+                let pat = &c.pat;
+
+                quote! { #pat }
+            }
+            _ => unimplemented!(),
+        })
+        .collect::<Vec<_>>();
     // server_fn.block = server_wrap;
 
-    /* let client_wrap: syn::Block = syn::parse_quote! {
-        {
-            // crate::SOCKET.rpc(RPCProto::enum_response_variant);
-        }
-    };
+    let client_wrap: syn::Block = syn::parse_quote! {
+           {
+               comet::console_log!("socket");
+               let mut socket = crate::SOCKET.write().unwrap().take().unwrap();
+                   let response = socket.rpc(Proto::RPCQuery(RPCQuery::#query_variant_real(#(#query_args.clone()),*))).await;
+               /* let mut socket_opt = crate::SOCKET.write().unwrap();
 
-    client_fn.block = client_wrap; */
+               let response = if let Some(mut ref socket) = &mut socket_opt {
+
+                   comet::console_log!("socket2");
+
+                   socket.rpc(Proto::RPCQuery(RPCQuery::#query_variant_real(#(#query_args.clone()),*))).await
+               } else {
+                       panic!("No socket")
+               };
+    */
+
+            crate::SOCKET.write().unwrap().replace(socket);
+
+               comet::console_log!("socket3");
+
+               let response = match response {
+                   Proto::RPCResponse(RPCResponse::#response_variant_real(response)) => response,
+                   _ => unimplemented!(),
+               };
+
+               comet::console_log!("RPC response: {:?}", response);
+
+               response
+           }
+       };
+
+    client_fn.block = client_wrap;
 
     Ok(vec![
         quote! {
@@ -178,6 +222,7 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
     let query_params2 = query_params.clone();
     let query_variants2 = query_variants.clone();
     let response_variants2 = response_variants.clone();
+    let response_variants3 = response_variants.clone();
 
     let query_params_with_ref = models
         .iter()
@@ -212,43 +257,40 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
             #(#response_variants(#response_types)),*
         }
 
+        impl RPCQuery {
+        }
+
+        #[async_trait]
         impl comet::prelude::Proto for RPCQuery {
-            fn dispatch(&self) {
-                match self.clone() {
+            type Response = Proto;
+
+            async fn dispatch(self) -> Option<Self::Response> {
+                match self {
                     #(RPCQuery::#query_variants2(#(#query_params),*) => {
                         // TODO: How to get the result back ?
-                        #models::#methods(#(#query_params_with_ref),*);
+                        Some(Proto::RPCResponse(RPCResponse::#response_variants2(#models::#methods(#(#query_params_with_ref),*).await)))
                     }),*,
                     _ => todo!(),
                 }
-            }
-
-            fn from_bytes(bytes: &[u8]) -> Self {
-                serde_cbor::from_slice(bytes).unwrap()
-            }
-
-            fn to_bytes(&self) -> Vec<u8> {
-                serde_cbor::to_vec(self).unwrap()
             }
         }
 
+        impl RPCResponse {
+        }
+
+        #[async_trait]
         impl comet::prelude::Proto for RPCResponse {
-            fn dispatch(&self) {
-                match self.clone() {
-                    #(RPCResponse::#response_variants2(arg) => {
+            type Response = Proto;
+
+            async fn dispatch(self) -> Option<Self::Response> {
+                match self {
+                    #(RPCResponse::#response_variants3(arg) => {
                         // TODO: Who to contact back with this result ?
                         // #models::#methods(#(#query_params2),*);
+                        None
                     }),*,
                     _ => todo!(),
                 }
-            }
-
-            fn from_bytes(bytes: &[u8]) -> Self {
-                serde_cbor::from_slice(bytes).unwrap()
-            }
-
-            fn to_bytes(&self) -> Vec<u8> {
-                serde_cbor::to_vec(self).unwrap()
             }
         }
 

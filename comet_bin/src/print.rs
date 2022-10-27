@@ -48,7 +48,6 @@ pub fn log_execute_async(log: &str, name: &str, args: &[&str]) {
     let handle = Command::new(name)
         .env("TERM", "xterm-256color")
         .args(args)
-        .stderr(Stdio::null())
         .spawn()
         .expect(&format!("Failed to execute {}", name));
 
