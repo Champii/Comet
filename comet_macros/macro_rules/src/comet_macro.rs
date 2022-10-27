@@ -6,6 +6,7 @@ macro_rules! comet {
         #[cfg(not(target_arch = "wasm32"))]
         use schema::*;
 
+        generate_rpc_proto! {}
         generate_proto! {}
 
         #[cfg(not(target_arch = "wasm32"))]

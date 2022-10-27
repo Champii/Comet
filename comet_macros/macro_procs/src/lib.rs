@@ -11,6 +11,8 @@ mod generate_msg;
 mod generate_proto;
 mod generate_update;
 mod model_macro;
+mod rpc_macro;
+mod sql_macro;
 
 mod utils;
 
@@ -49,4 +51,19 @@ pub fn model(attr: TokenStream, input: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn generate_migrations(input: TokenStream) -> TokenStream {
     generate_migrations::perform(input)
+}
+
+#[proc_macro_attribute]
+pub fn sql(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    sql_macro::perform(input)
+}
+
+#[proc_macro_attribute]
+pub fn rpc(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    rpc_macro::perform(input)
+}
+
+#[proc_macro]
+pub fn generate_rpc_proto(input: TokenStream) -> TokenStream {
+    rpc_macro::generate_rpc_proto(input)
 }

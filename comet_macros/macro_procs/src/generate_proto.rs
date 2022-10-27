@@ -34,13 +34,17 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
         #[derive(Serialize, Deserialize, Debug)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub enum Proto {
-            #(#models(#inner)),*
+            RPCQuery(RPCQuery),
+            RPCResponse(RPCResponse),
+            // #(#models(#inner)),*
         }
 
         impl comet::prelude::Proto for Proto {
             fn dispatch(&self) {
                 match self {
-                    #(Proto::#models2(#inner2) => #inner3.dispatch(),)*
+                    Proto::RPCQuery(rpc_proto) => rpc_proto.dispatch(),
+                    Proto::RPCResponse(rpc_proto) => rpc_proto.dispatch(),
+                    // #(Proto::#models2(#inner2) => #inner3.dispatch(),)*
                     _ => todo!(),
                 }
             }
