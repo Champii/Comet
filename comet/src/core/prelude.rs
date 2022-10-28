@@ -18,7 +18,7 @@ pub use crate::core::app::*;
 pub use crate::core::component::*;
 pub use crate::core::shared::*;
 
-pub use crate::core::proto::{Message, Proto};
+pub use crate::core::proto::{Message, ProtoTrait};
 pub use crate::core::utils::*;
 pub use crate::core::*;
 

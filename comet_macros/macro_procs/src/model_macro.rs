@@ -116,7 +116,7 @@ fn impl_model_macro(
                 }
 
                 #[cfg(target_arch = "wasm32")]
-                use #lower_name_ident::{#name, #new_name_ident};
+                pub use #lower_name_ident::{#name, #new_name_ident};
 
                 #[cfg(not(target_arch = "wasm32"))]
                 mod #lower_name_ident {
@@ -218,7 +218,7 @@ fn impl_model_macro(
                 }
 
                 #[cfg(not(target_arch = "wasm32"))]
-                use #lower_name_ident::{#name, #new_name_ident};
+                pub use #lower_name_ident::{#name, #new_name_ident};
             );
 
             res

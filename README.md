@@ -44,7 +44,8 @@ Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) fold
  - Websocket
  - Auto procol generation
  - Convenient wrapper binary
- - Zero boilerplate
+ - (Almost) Zero boilerplate
+ - Clean Codebase (Yeaaah, ok, this one is a lie)
  - Fast (Soon™)
  - Client cache (Soon™)
 
@@ -68,10 +69,9 @@ If not found on your system, Comet will install these following crates using `ca
 $> comet new my_counter && cd my_counter
 ```
 
-This newly generated project contains all you need to get started. The only file you have to care about for now is `src/lib.rs`, this is your entry point.  
-Conveniently, the generated file is already the simpliest incrementing counter you can think of.
+This newly generated project contains all you need to get started. Your journey starts with `src/main.rs`.  
+Conveniently, this generated file is already the simpliest incrementing counter you can think of:
 
-The default generated file `src/lib.rs` :
 
 ```rust
 // The mandatory imports
@@ -249,7 +249,7 @@ component! {
 
 ### Database persistance for free
 
-Note: This one is still a proof of concept, this needs work.
+Note: This one is still a proof of concept, and needs work.
 
 ```rust
 // You just have to add this little attribute to your type et voila !
@@ -273,6 +273,7 @@ component! {
     Todo,
     div {
         p {
+            { self.id }
             { self.title }
             { self.completed }
             button @click: { self.toggle() } {
@@ -288,8 +289,17 @@ comet!(Todo::create());
 
 ### Remote procedure calls
 
+Note: The structs involved in the `#[rpc]` macro MUST be accessible from the root module (i.e. `src/main.rs`)
+
 ```rust
 use comet::prelude::*;
+// this one is weird but you will need it if you have different module files
+// This is because there is a lot of generated structs and enums at the crate's root
+use crate::*;
+
+// If you have other mods that use `#[rpc]`, you have to import them explicitly in the root (assuming this file is the root)
+mod other_mod;
+use other_mod::OtherComponent;
 
 #[model]
 #[derive(Default)]
@@ -297,10 +307,10 @@ pub struct Counter {
     pub count: i32,
 }
 
-// This attribute indicated that all the following methods are to be treated as RPC
+// This attribute indicate that all the following methods are to be treated as RPC
 #[rpc]
 impl Counter {
-    // The RPC method MUST be async (at least for not)
+    // The RPC methods MUST be async (at least for now)
     // They also cannot take a mutable reference on self (yet)
     pub async fn remote_increment(&self) -> i32 {
         self.count + 1
@@ -343,6 +353,6 @@ comet!(Counter::default());
     - [ ] The isomorphic db model through websocket
       - [ ] The #[model] proc macro that generates basic model queries
       - [ ] An abstract ws server/client
-          - [ ] The auto-proto macro
-          - [X] The reactive/listening part of the db [reactive-postgres-rs](https://github.com/Champii/reactive-postgres-rs)
+        - [ ] The auto-proto macro
+        - [X] The reactive/listening part of the db [reactive-postgres-rs](https://github.com/Champii/reactive-postgres-rs)
 

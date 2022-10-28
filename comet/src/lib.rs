@@ -17,6 +17,8 @@ pub mod wasm;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod server;
 
+pub use prelude::comet;
+
 pub async fn run<Comp, Msg>(_root: Comp)
 where
     Comp: Component<Msg>,

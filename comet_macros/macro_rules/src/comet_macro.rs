@@ -2,19 +2,30 @@
 macro_rules! comet {
     ($($e:tt)+) => {
 
+        pub use comet::prelude::*;
+
         #[cfg(target_arch = "wasm32")]
         use std::panic;
 
         #[cfg(not(target_arch = "wasm32"))]
         mod schema;
-        #[cfg(not(target_arch = "wasm32"))]
-        use schema::*;
+        // #[cfg(not(target_arch = "wasm32"))]
+        // use schema::*;
 
         generate_rpc_proto! {}
         generate_proto! {}
 
         #[cfg(not(target_arch = "wasm32"))]
         generate_migrations! {}
+
+        /* pub mod prelude {
+            pub use crate::*;
+            /* pub use crate::RPCQuery;
+            pub use crate::RPCResponse;
+            pub use crate::Proto; */
+            pub use comet::prelude::*;
+        } */
+        // pub use crate::prelude::*;
 
         #[cfg(target_arch = "wasm32")]
         #[wasm_bindgen(start)]
@@ -36,6 +47,10 @@ macro_rules! comet {
             pub static ref SOCKET: Arc<RwLock<Option<Socket<Proto>>>> = Arc::new(RwLock::new(None));
         }
 
+        /* lazy_static! {
+            pub static ref RPCS_IDS: Arc<RwLock<HashMap<u64, Box<dyn
+        } */
+
         #[cfg(target_arch = "wasm32")]
         pub async fn start_socket() {
             use comet::prelude::futures::StreamExt;
@@ -54,12 +69,6 @@ macro_rules! comet {
         }
 
         #[cfg(not(target_arch = "wasm32"))]
-        pub async fn main() {
-            comet::server::server::run::<Proto>().await;
-        }
-
-
-        #[cfg(not(target_arch = "wasm32"))]
         use crate::diesel::pg::PgConnection;
 
         #[cfg(not(target_arch = "wasm32"))]
@@ -71,6 +80,12 @@ macro_rules! comet {
 
             PgConnection::establish(&database_url)
                 .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        #[tokio::main]
+        pub async fn main() {
+                comet::server::server::run::<Proto>().await;
         }
     }
 }

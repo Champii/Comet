@@ -13,11 +13,11 @@ use std::{collections::HashMap, fmt::Debug};
 
 use crate::prelude::*;
 
-use crate::Proto;
+use crate::ProtoTrait;
 
 use crate::Message;
 
-pub struct Socket<P: Proto + 'static + Serialize + DeserializeOwned + Debug> {
+pub struct Socket<P: ProtoTrait + 'static + Serialize + DeserializeOwned + Debug> {
     tx: UnboundedSender<Message>,
     rx: Option<UnboundedReceiver<Message>>,
     next_request_id: u64,
@@ -25,7 +25,7 @@ pub struct Socket<P: Proto + 'static + Serialize + DeserializeOwned + Debug> {
     _phantom: std::marker::PhantomData<P>,
 }
 
-impl<P: Proto + 'static + Serialize + DeserializeOwned + Debug> Socket<P>
+impl<P: ProtoTrait + 'static + Serialize + DeserializeOwned + Debug> Socket<P>
 where
     Self: 'static,
 {

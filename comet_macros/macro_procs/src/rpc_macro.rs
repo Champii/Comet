@@ -147,6 +147,7 @@ pub fn register_rpc(
 }
 
 pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
+    // FIXME: WTF !!! This is why I should stop coding after the 20th consecutive hour haha
     let (to_call, enum_stuff): (Vec<_>, Vec<_>) = RPCS
         .read()
         .unwrap()
@@ -226,7 +227,7 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         #[derive(Serialize, Deserialize, Debug, Clone)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub enum RPCQuery {
-            #(#query_variants(#(#query_types),*)),*,
+            #(#query_variants(#(#query_types),*)),*
         }
         #[derive(Serialize, Deserialize, Debug, Clone)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
@@ -238,14 +239,14 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         }
 
         #[async_trait]
-        impl comet::prelude::Proto for RPCQuery {
+        impl comet::prelude::ProtoTrait for RPCQuery {
             type Response = Proto;
 
             async fn dispatch(self) -> Option<Self::Response> {
                 match self {
                     #(RPCQuery::#query_variants2(#(#query_params),*) => {
                         Some(Proto::RPCResponse(RPCResponse::#response_variants2(#models::#methods(#(#query_params_with_ref),*).await)))
-                    }),*,
+                    }),*
                     _ => todo!(),
                 }
             }
@@ -255,14 +256,14 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         }
 
         #[async_trait]
-        impl comet::prelude::Proto for RPCResponse {
+        impl comet::prelude::ProtoTrait for RPCResponse {
             type Response = Proto;
 
             async fn dispatch(self) -> Option<Self::Response> {
                 match self {
                     #(RPCResponse::#response_variants3(arg) => {
                         None
-                    }),*,
+                    }),*
                     _ => todo!(),
                 }
             }

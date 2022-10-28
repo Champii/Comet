@@ -32,11 +32,7 @@ pub fn check_and_install_diesel_cli() {
         log_execute(
             "Patching schema",
             "sed",
-            &[
-                "-i",
-                "s/^diesel::table/crate::diesel::table/g",
-                "src/schema.rs",
-            ],
+            &["-i", "s/^diesel::/crate::diesel::/g", "src/schema.rs"],
         );
     }
 }
