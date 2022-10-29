@@ -95,25 +95,6 @@ fn impl_model_macro(
                     #[derive(Clone, Serialize, Deserialize)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     #item_struct
-
-                    /* impl #name {
-                        pub fn create(#lower_name_ident: #name) -> std::result::Result<#name, String> {
-                            // crate::SOCKET.write().unwrap().as_mut().map(|socket| socket.send_async(Proto::#name(#proto_name::New(self.clone()))));
-                            Err("lol".to_string())
-
-                        }
-                        pub fn fetch(id: &#name) {
-                        }
-                        pub fn list() {
-                        }
-                        pub fn save(&self) {
-                        }
-                        pub fn delete(id: &#name) {
-                        }
-
-                        /* #[sql]
-                        pub fn create_sql() */
-                    } */
                 }
 
                 #[cfg(target_arch = "wasm32")]
@@ -149,74 +130,6 @@ fn impl_model_macro(
                             }
                         }
                     }
-
-                    /* impl #name {
-                        pub fn create(#lower_name_ident: #name) -> std::result::Result<#name, diesel::result::Error> {
-                            let mut conn = crate::establish_connection();
-
-                            let #lower_name_ident = #new_name_ident::#from_name(&#lower_name_ident);
-
-                            diesel::insert_into(#table_name_ident::table)
-                                .values(&#lower_name_ident)
-                                .execute(&mut conn)?;
-
-                            #table_name_ident::table
-                                .order(#table_name_ident::dsl::id.desc())
-                                .first(&mut conn)
-                        }
-
-                        pub fn list() -> std::result::Result<Vec<#name>, diesel::result::Error> {
-                            let mut conn = crate::establish_connection();
-
-                            use crate::schema::#table_name_ident::*;
-
-                            #table_name_ident::table
-                                .order(#table_name_ident::dsl::id)
-                                .load::<#name>(&mut conn)
-                        }
-
-                        pub fn update(id_given: i32, #lower_name_ident: #name) -> std::result::Result<usize, diesel::result::Error> {
-                            let mut conn = crate::establish_connection();
-
-                            use crate::schema::#table_name_ident::*;
-
-                            let #lower_name_ident = #new_name_ident::#from_name(&#lower_name_ident);
-
-                            diesel::update(#table_name_ident::table.find(id_given))
-                                .set(&#lower_name_ident)
-                                .execute(&mut conn)
-                        }
-
-                        pub fn save(&mut self) -> std::result::Result<(), diesel::result::Error> {
-                            if self.id == -1 {
-                                let res = #name::create(self.clone())?;
-
-                                self.id = res.id;
-
-                            } else {
-                                #name::update(self.id, self.clone())?;
-                            }
-
-                            Ok(())
-                        }
-
-                        pub fn delete(id_given: i32) -> std::result::Result<usize, diesel::result::Error> {
-                            let mut conn = crate::establish_connection();
-
-                            use crate::schema::#table_name_ident;
-
-                            diesel::delete(#table_name_ident::table.find(id_given))
-                                .execute(&mut conn)
-                        }
-
-                        pub fn fetch(id_given: i32) -> std::result::Result<#name, diesel::result::Error> {
-                            let mut conn = crate::establish_connection();
-
-                            use crate::schema::#table_name_ident;
-
-                            #table_name_ident::table.filter(#table_name_ident::dsl::id.eq(id_given)).first::<#name>(&mut conn)
-                        }
-                    } */
                 }
 
                 // use crate::{RPCQuery, RPCResult, Proto};
