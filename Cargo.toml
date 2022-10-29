@@ -1,5 +1,5 @@
 [package]
-name = "comet"
+name = "comet-web"
 version = "0.1.2"
 edition = "2021"
 license = "MIT"
@@ -7,6 +7,7 @@ description = "Reactive Isomorphic Web Framework"
 repository = "https://github.com/Champii/Comet"
 
 [lib]
+name = "comet"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
