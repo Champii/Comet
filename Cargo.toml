@@ -18,8 +18,7 @@ wasm-bindgen = "0.2.83"
 wasm-bindgen-futures = "0.4.30"
 futures = { version = "0.3"}
 paste = "1.0.9"
-comet_macro_procs = { path = "./macros/macro_procs/", version = "0.1.2" }
-comet_macro_rules = { path = "./macros/macro_rules/", version = "0.1.2" }
+comet_macro_procs = { path = "./macros/macro_procs/" }
 serde = { version = "1.0.147", features = ["derive"] }
 serde_cbor = "0.11.2"
 lazy_static = "1.4.0"
@@ -43,7 +42,7 @@ features = [
 axum = { version = "0.5.17", features = ["ws"] }
 tokio = { version = "1.21.2", features = ["full"] }
 axum-extra = { version = "0.3.7", features = ["spa"] }
-reactive-pg = { path = "../reactive-postgres-rs/", version = "0.1.2" }
+reactive-pg = { path = "../reactive-postgres-rs/" }
 diesel = { version = "2.0.2", features = ["postgres"] }
 # bin dependencies
 env_logger = "0.9.1"

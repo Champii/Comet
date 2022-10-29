@@ -5,6 +5,8 @@ mod tests;
 
 pub mod core;
 
+pub mod macros;
+
 pub mod prelude {
     pub use crate::core::prelude::*;
 }
@@ -17,9 +19,7 @@ pub mod wasm;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod server;
 
-pub use prelude::comet;
-
-pub async fn run<Comp, Msg>(_root: Comp)
+pub async fn _run<Comp, Msg>(_root: Comp)
 where
     Comp: Component<Msg>,
     Msg: Clone + 'static,

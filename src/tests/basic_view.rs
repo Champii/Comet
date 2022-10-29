@@ -1,6 +1,6 @@
-#[cfg(target_arch = "wasm32")]
-#[cfg(test)]
-mod html_test {
+/* #[cfg(target_arch = "wasm32")]
+#[cfg(test)] */
+/* mod html_test {
     use crate::prelude::*;
 
     use wasm_bindgen_test::*;
@@ -256,4 +256,4 @@ mod html_test {
         // FIXME: Need better test for that
         assert_html::<_, _, __component_string::Msg>("lol".to_string(), "<div><input></div>");
     }
-}
+} */

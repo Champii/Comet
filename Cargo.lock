@@ -215,7 +215,6 @@ dependencies = [
  "clap",
  "colored",
  "comet_macro_procs",
- "comet_macro_rules",
  "console_error_panic_hook",
  "derive_more",
  "diesel",
@@ -247,10 +246,6 @@ dependencies = [
  "quote 0.6.13",
  "syn 0.15.44",
 ]
-
-[[package]]
-name = "comet_macro_rules"
-version = "0.1.2"
 
 [[package]]
 name = "console_error_panic_hook"
