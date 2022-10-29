@@ -4,7 +4,7 @@ Reactive isomorphic rust web framework.
 
 [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://docs.rs/comet-web/0.1.3/comet)
 [![GitHub license](https://img.shields.io/github/license/Champii/Comet.svg)](https://github.com/Champii/Comet/blob/master/LICENSE.md)
-[![GitHub release](https://img.shields.io/github/release/Champii/Comet.svg)](https://GitHub.com/Champii/Comet/releases/)
+[![GitHub release](https://img.shields.io/github/tag/Champii/Comet.svg)](https://GitHub.com/Champii/Comet/tags/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 ## Index
