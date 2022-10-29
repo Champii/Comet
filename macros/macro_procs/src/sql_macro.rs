@@ -71,6 +71,7 @@ pub fn perform_watch(input: TokenStream) -> TokenStream {
         register_sql_watch(input).unwrap_or_else(|e| syn::Error::to_compile_error(&e)),
     )
 }
+
 pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::TokenStream> {
     if mcall
         .attrs

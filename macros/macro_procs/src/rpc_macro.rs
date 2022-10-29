@@ -45,8 +45,17 @@ pub fn register_rpcs(mut mcall: syn::ItemImpl) -> Result<proc_macro2::TokenStrea
         .map(|item| syn::parse_quote! { #item })
         .collect();
 
+    let lower_model_name = quote! { #self_type }.to_string().to_lowercase();
+    let wrapper_mod_name = format!("__{}_rpcs_{}", lower_model_name, RPCS.read().unwrap().len());
+    let wrapper_mod_name: syn::Ident = syn::parse_str(&wrapper_mod_name).unwrap();
+
     Ok(quote! {
-        #mcall
+        mod #wrapper_mod_name {
+            use super::*;
+            use crate::{Proto, RPCQuery, RPCResponse};
+
+            #mcall
+        }
     })
 }
 
@@ -54,6 +63,7 @@ pub fn register_rpc(
     self_type: syn::Type,
     mcall: &syn::ImplItemMethod,
 ) -> Result<Vec<proc_macro2::TokenStream>> {
+    eprintln!("REGISTER RPC ATTRS: {:?}", mcall.attrs);
     let server_fn = mcall.clone();
     let mut client_fn = mcall.clone();
 
@@ -194,11 +204,7 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
                                 .enumerate()
                                 .map(|(id, (is_mut, _s))| {
                                     let id = syn::Ident::new(
-                                        &if *is_mut {
-                                            format!("arg_{}", id)
-                                        } else {
-                                            format!("arg_{}", id)
-                                        },
+                                        &format!("arg_{}", id),
                                         proc_macro2::Span::call_site(),
                                     );
                                     (*is_mut, syn::parse_quote! { #id })

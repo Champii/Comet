@@ -25,18 +25,17 @@ pub(crate) fn create_project_folder(name: &str) {
     create_file(
         "src/main.rs",
         r#"// This macro takes two arguments:
-// - A type for which we will implement `Component`
-// - And a root HTML element
-// We implement `Component` for a simple integer.
+// This macro first takes a type (any type), and inside it a root HTML element
+// Here we implement `Component` for a simple integer.
 component! {
     // We use an i32 here, but you can use any stucts/enums/custom type
-    i32,
-
-    // The root of this HTML element is a simple button
-    // It has a 'click' event registered that will increment our i32 by 1
-    button @click: { *self += 1 } {
-        // We display our value inside the button
-        { self }
+    i32 {
+        // The root of this HTML element is a simple button
+        // It has a 'click' event registered that will increment our i32 by 1
+        button @click: { *self += 1 } {
+            // We display our value inside the button
+            { self }
+        }
     }
 }
 

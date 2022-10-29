@@ -1,9 +1,10 @@
 component! {
-    i32,
-    div {
-        for i in (0..*self) {
-            button {
-                { i }
+    i32 {
+        div {
+            for i in (0..*self) {
+                button {
+                    { i }
+                }
             }
         }
     }

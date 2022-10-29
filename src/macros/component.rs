@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! component {
-    ($type:ty, $($e:tt)+) => {
+    ($type:ty { $($e:tt)+ }) => {
         paste! {
             mod [<__component_ $type:lower>] {
                 use super::*;

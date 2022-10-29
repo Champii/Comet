@@ -1,7 +1,12 @@
+use lazy_static::lazy_static;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
 use super::client::Client;
+
+lazy_static! {
+    pub static ref UNIVERSE: Universe = Universe::default();
+}
 
 pub type Universe = Arc<RwLock<UniverseInner>>;
 

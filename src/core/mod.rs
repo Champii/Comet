@@ -14,10 +14,11 @@ mod just_to_test {
     }
 
     component! {
-        Counter,
-        button @click: { self.value += 1 } {
-            for i in (0..10) {
-                { i }
+        Counter {
+            button @click: { self.value += 1 } {
+                for i in (0..10) {
+                    { i }
+                }
             }
         }
     }

@@ -54,7 +54,7 @@ async fn handle_socket<P: ProtoTrait + Send + 'static + Serialize + DeserializeO
 pub async fn run<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned + Debug>() {
     let app = Router::new()
         .route("/ws", get(handler::<P>))
-        .layer(Extension(Universe::default()))
+        .layer(Extension(crate::UNIVERSE.clone()))
         .merge(SpaRouter::new("/assets", "dist"));
 
     let addr = "0.0.0.0:8080";

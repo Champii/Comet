@@ -17,12 +17,13 @@ impl Todo {
 }
 
 component! {
-    Todo,
-    div {
-        { self.title }
-        { self.completed }
-        button @click: { self.toggle().await } {
-            { "Toggle" }
+    Todo {
+        div {
+            { self.title }
+            { self.completed }
+            button @click: { self.toggle().await } {
+                { "Toggle" }
+            }
         }
     }
 }
@@ -66,16 +67,17 @@ impl App {
 }
 
 component! {
-    App,
-    div {
-        for todo in (&self.list) {
-            div {
-                @{todo}
+    App {
+        div {
+            for todo in (&self.list) {
+                div {
+                    @{todo}
+                }
             }
-        }
-        input ={ self.title } {}
-        button @click: { self.new_todo().await } {
-            { "Add" }
+            input ={ self.title } {}
+            button @click: { self.new_todo().await } {
+                { "Add" }
+            }
         }
     }
 }

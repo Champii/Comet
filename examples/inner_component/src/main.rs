@@ -1,7 +1,8 @@
 component! {
-    i32,
-    button @click: { *self += 1 } {
-        { self }
+    i32 {
+        button @click: { *self += 1 } {
+            { self }
+        }
     }
 }
 
@@ -12,11 +13,12 @@ pub struct App {
 }
 
 component! {
-    App,
-    div {
-        @{self.counter}
-        @{self.counter2}
-        @{Shared::from(9)}
+    App {
+        div {
+            @{self.counter}
+            @{self.counter2}
+            @{Shared::from(9)}
+        }
     }
 }
 

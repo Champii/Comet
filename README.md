@@ -91,19 +91,17 @@ Conveniently, this generated file is already the simpliest incrementing counter 
 
 
 ```rust
-// This macro takes two arguments:
-// - A type for which we will implement `Component`
-// - And a root HTML element
-// We implement `Component` for a simple integer.
+// This macro first takes a type (any type), and inside it a root HTML element
+// Here we implement `Component` for a simple integer.
 component! {
     // We use an i32 here, but you can use any stucts/enums/custom type
-    i32,
-
-    // The root of this HTML element is a simple button
-    // It has a 'click' event registered that will increment our i32 by 1
-    button @click: { *self += 1 } {
-        // We display our value inside the button
-        { self }
+    i32 {
+	// The root of this HTML element is a simple button
+	// It has a 'click' event registered that will increment our i32 by 1
+	button @click: { *self += 1 } {
+	    // We display our value inside the button
+	    { self }
+	}
     }
 }
 
@@ -166,19 +164,20 @@ struct MyStruct {
 }
 
 component! {
-    MyStruct,
-    // Here #my_id defined the id,
-    // and the dot .class1 and .class2 add some classes to the element
-    // The #id must always preceed the classes, if any
-    div #my_id.class1.class2 {
-        span {
-            // You can access your context anywhere
-            { self.my_value }
-        }
-        // Define style properties
-        div [height: { self.my_height }}] {
-            { "Another child" }
-        }
+    MyStruct {
+	// Here #my_id defined the id,
+	// and the dot .class1 and .class2 add some classes to the element
+	// The #id must always preceed the classes, if any
+	div #my_id.class1.class2 {
+	    span {
+		// You can access your context anywhere
+		{ self.my_value }
+	    }
+	    // Define style properties
+	    div [height: { self.my_height }}] {
+		{ "Another child" }
+	    }
+	}
     }
 };
 
@@ -193,31 +192,32 @@ struct MyComponent {
 }
 
 component! {
-    MyComponent,
-    div {
-        div {
-            // Conditional rendering with if
-            // The parenthesis are necessary
-            if (self.show) {
-                { "Visible !" }
-            }
-            button @click: { self.show = !self.show } {
-                { "Toggle" }
-            }
-        }
-        div {
-            // Use a for-like loop.
-            // The parenthesis are necessary around the last part
-            for key, value in (self.value) {
-                div {
-                    { key }
-                    { value }
-                }
-            }
-            button @click: { self.value.push(42) } {
-                { "Add a number" }
-            }
-        }
+    MyComponent {
+	div {
+	    div {
+		// Conditional rendering with if
+		// The parenthesis are necessary
+		if (self.show) {
+		    { "Visible !" }
+		}
+		button @click: { self.show = !self.show } {
+		    { "Toggle" }
+		}
+	    }
+	    div {
+		// Use a for-like loop.
+		// The parenthesis are necessary around the last part
+		for key, value in (self.value) {
+		    div {
+			{ key }
+			{ value }
+		    }
+		}
+		button @click: { self.value.push(42) } {
+		    { "Add a number" }
+		}
+	    }
+	}
     }
 }
 ```
@@ -234,10 +234,11 @@ struct MyStruct {
 }
 
 component! {
-    MyStruct,
-    div {
-        input ={ self.value } {}
-        { self.value }
+    MyStruct {
+	div {
+	    input ={ self.value } {}
+	    { self.value }
+	}
     }
 }
 ```
@@ -250,9 +251,10 @@ struct Child {
 }
 
 component! {
-    Child,
-    div {
-        { self.value }
+    Child {
+	div {
+	    { self.value }
+	}
     }
 }
 
@@ -263,10 +265,11 @@ struct Parent {
 }
 
 component! {
-    Parent,
-    div {
-        // To include a component, you must wrap it inside a @{ }
-        @{ self.child }
+    Parent {
+	div {
+	    // To include a component, you must wrap it inside a @{ }
+	    @{ self.child }
+	}
     }
 }
 ```
@@ -308,16 +311,15 @@ impl Todo {
 }
 
 component! {
-    Todo,
-    div {
-        p {
-            { self.id }
-            { self.title }
-            { self.completed }
-            button @click: { self.toggle().await } {
-                { "Toggle" }
-            }
-        }
+    Todo {
+	div {
+	    { self.id }
+	    { self.title }
+	    { self.completed }
+	    button @click: { self.toggle().await } {
+		{ "Toggle" }
+	    }
+	}
     }
 }
 
@@ -354,9 +356,10 @@ impl Counter {
 }
 
 component! {
-    Counter,
-    button @click: { self.remote_increment().await } {
-        { self.count }
+    Counter {
+	button @click: { self.remote_increment().await } {
+	    { self.count }
+	}
     }
 }
 
