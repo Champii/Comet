@@ -219,6 +219,8 @@ fn impl_model_macro(
                     } */
                 }
 
+                use crate::*;
+
                 #[rpc]
                 impl #name {
                     pub async fn create(&self) -> std::result::Result<#name, String> {

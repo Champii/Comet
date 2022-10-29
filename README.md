@@ -2,6 +2,8 @@
 
 Reactive isomorphic rust web framework.
 
+---
+
 ## Index
 
   1. [Introduction](#introduction)
@@ -9,6 +11,8 @@ Reactive isomorphic rust web framework.
   3. [Getting started](#getting-started)
   4. [Quick tour](#quick-tour)
   5. [Todo list](#todo-list)
+
+---
 
 ## Introduction
 
@@ -34,6 +38,8 @@ to send push notifications over websocket to every client watching for thoses ch
 
 Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) folder.
 
+---
+
 ## Features
 
  - Isomorphic client/server
@@ -48,6 +54,8 @@ Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) fold
  - Clean Codebase (Yeaaah, ok, this one is a lie)
  - Fast (Soon™)
  - Client cache (Soon™)
+
+---
 
 ## Getting started
 
@@ -131,7 +139,17 @@ This will download and install the tools it needs to build and run your crate.
 
 Then go go to [http://localhost:8080](http://localhost:8080)
 
+---
+
 ## Quick tour
+
+  - [Easy definition of the dom](#easy-definition-of-the-dom)
+  - [Use conditional rendering and loops](#use-conditional-rendering-and-loops)
+  - [Bind your variables to `input` fields that react to events](#bind-your-variables-to-input-fields-that-react-to-events)
+  - [Embed your components between them](#embed-your-components-between-them)
+  - [Database persistence for free](#database-persistance-for-free)
+  - [Remote procedure calls](#remote-procedure-calls)
+  - [Database queries](#database-queries)
 
 ### Easy definition of the dom
 
@@ -160,7 +178,7 @@ component! {
 
 ```
 
-### Use conditional rendering and loops directly from within the view
+### Use conditional rendering and loops
 
 ```rust
 struct MyComponent {
@@ -198,7 +216,7 @@ component! {
 }
 ```
 
-### Bind you variables to `input` fields that react to events
+### Bind your variables to `input` fields that react to events
 
 This is exclusive to `input` fields for now  
 The whole component is re-rendered on input's blur event (unfocus).  
@@ -247,9 +265,19 @@ component! {
 }
 ```
 
-### Database persistance for free
+### Database persistence for free
 
-Note: This one is still a proof of concept, and needs work.
+All the previous examples until now were client-side only. Its time to introduce some persistance.
+
+Deriving with the `#[model]` macro gives you access to many default DB methods implemented for your types:
+    - async Self::fetch(i32)  -> Result<T, String>
+    - async Self::list()      -> Result<Vec<T>, String>;
+    - async self.save()       -> Result<(), String>;
+    - async Self::delete(i32) -> Result<(), String>;
+
+The `String` error type is meant to change into a real error type soon.
+
+You have a way to add your own database query methods, please read [Database queries](#database-queries) below.
 
 ```rust
 // You just have to add this little attribute to your type et voila !
@@ -261,11 +289,11 @@ struct Todo {
 }
 
 impl Todo {
-    fn toggle(&mut self) {
+    pub async fn toggle(&mut self) {
         self.completed = !self.completed;
 
         // This will save the model in the db
-        self.save();
+        self.save().await;
     }
 }
 
@@ -276,7 +304,7 @@ component! {
             { self.id }
             { self.title }
             { self.completed }
-            button @click: { self.toggle() } {
+            button @click: { self.toggle().await } {
                 { "Toggle" }
             }
         }
@@ -284,7 +312,7 @@ component! {
 }
 
 // This will create a new Todo in db every time this program runs
-comet!(Todo::create());
+comet!(Todo::default().create().await.unwrap());
 ```
 
 ### Remote procedure calls
@@ -293,11 +321,9 @@ Note: The structs involved in the `#[rpc]` macro MUST be accessible from the roo
 
 ```rust
 use comet::prelude::*;
-// this one is weird but you will need it if you have different module files
-// This is because there is a lot of generated structs and enums at the crate's root
-use crate::*;
 
 // If you have other mods that use `#[rpc]`, you have to import them explicitly in the root (assuming this file is the root)
+// This is a limitation that will not last, hopefully
 mod other_mod;
 use other_mod::OtherComponent;
 
@@ -308,24 +334,59 @@ pub struct Counter {
 }
 
 // This attribute indicate that all the following methods are to be treated as RPC
+// These special methods are only executed server side
 #[rpc]
 impl Counter {
     // The RPC methods MUST be async (at least for now)
-    // They also cannot take a mutable reference on self (yet)
-    pub async fn remote_increment(&self) -> i32 {
-        self.count + 1
+    pub async fn remote_increment(&mut self) {
+        self.count += 1;
+	
+        self.save().await;
     }
 }
 
 component! {
     Counter,
-    button @click: { self.count = self.remote_increment().await } {
+    button @click: { self.remote_increment().await } {
         { self.count }
     }
 }
 
-comet!(Counter::default());
+comet!(Counter::default().create().await.unwrap());
 ```
+
+### Database queries
+
+When dealing with Database queries, it is obvious that they should only be executed server side.
+The most simple way to define a new one is with the macro `#[sql]`, that uses `#[rpc]` underneath.
+
+All your models have been augmented with auto-generated diesel bindings, so you can use a familiar syntax.
+There will be a way to give raw SQL in the near future.
+
+```rust
+#[model]
+#[derive(Default, Debug)]
+pub struct Todo {
+    pub title: String,
+    pub completed: bool,
+}
+
+#[sql]
+impl Todo {
+    pub async fn db_get_all(limit: u16) -> Vec<Todo> {
+	// The diesel schema has been generated for you
+        use crate::schema::todos;
+
+        // You don't have to actually execute the query, all the machinery of creating a db connection
+	// and feeding it everywhere have been abstracted away so you can concentrate on what matters
+        todos::table.select(todos::all_columns).limit(limit as i64)
+    }
+}
+```
+
+Soon there will also be a `#[watch]` attribute that will trigger the reactive redraw when your model change
+
+---
 
 ## Todo List
 - Allow for iterators inside html
