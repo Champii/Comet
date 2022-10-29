@@ -1,9 +1,6 @@
 use colored::*;
 
-use std::{
-    io::Write,
-    process::{Command, Stdio},
-};
+use std::{io::Write, process::Command};
 
 fn print(msg: &str) {
     let mut stdout = std::io::stdout();

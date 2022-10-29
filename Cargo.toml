@@ -10,7 +10,7 @@ repository = "https://github.com/Champii/Comet"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-path = "comet_bin/src/main.rs"
+path = "bin/main.rs"
 name = "comet"
 
 [dependencies]
@@ -18,8 +18,8 @@ wasm-bindgen = "0.2.83"
 wasm-bindgen-futures = "0.4.30"
 futures = { version = "0.3"}
 paste = "1.0.9"
-comet_macro_procs = { path = "./comet_macros/macro_procs/" }
-comet_macro_rules = { path = "./comet_macros/macro_rules/" }
+comet_macro_procs = { path = "./macros/macro_procs/" }
+comet_macro_rules = { path = "./macros/macro_rules/" }
 serde = { version = "1.0.147", features = ["derive"] }
 serde_cbor = "0.11.2"
 lazy_static = "1.4.0"
