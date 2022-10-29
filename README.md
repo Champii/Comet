@@ -2,8 +2,6 @@
 
 Reactive isomorphic rust web framework.
 
----
-
 ## Index
 
   1. [Introduction](#introduction)
@@ -147,7 +145,7 @@ Then go go to [http://localhost:8080](http://localhost:8080)
   - [Use conditional rendering and loops](#use-conditional-rendering-and-loops)
   - [Bind your variables to `input` fields that react to events](#bind-your-variables-to-input-fields-that-react-to-events)
   - [Embed your components between them](#embed-your-components-between-them)
-  - [Database persistence for free](#database-persistance-for-free)
+  - [Database persistence for free](#database-persistence-for-free)
   - [Remote procedure calls](#remote-procedure-calls)
   - [Database queries](#database-queries)
 
@@ -269,11 +267,13 @@ component! {
 
 All the previous examples until now were client-side only. Its time to introduce some persistance.
 
-Deriving with the `#[model]` macro gives you access to many default DB methods implemented for your types:
-    - async Self::fetch(i32)  -> Result<T, String>
-    - async Self::list()      -> Result<Vec<T>, String>;
+Deriving with the `#[model]` macro gives you access to many default DB methods implemented for your types:  
+```
+    - async Self::fetch(i32)  -> Result<T, String>;  
+    - async Self::list()      -> Result<Vec<T>, String>;  
     - async self.save()       -> Result<(), String>;
     - async Self::delete(i32) -> Result<(), String>;
+```
 
 The `String` error type is meant to change into a real error type soon.
 
@@ -282,6 +282,8 @@ You have a way to add your own database query methods, please read [Database que
 ```rust
 // You just have to add this little attribute to your type et voila !
 // It will add a field `id: i32` to the struct, for database storing purpose
+// Also, when adding/changing a field to this struct, the db will 
+// automatically update its schema and generate new diesel bindings
 #[model]
 struct Todo {
     title: String,
@@ -322,8 +324,8 @@ Note: The structs involved in the `#[rpc]` macro MUST be accessible from the roo
 ```rust
 use comet::prelude::*;
 
-// If you have other mods that use `#[rpc]`, you have to import them explicitly in the root (assuming this file is the root)
-// This is a limitation that will not last, hopefully
+// If you have other mods that use `#[rpc]`, you have to import them explicitly
+// in the root (assuming this file is the root). This is a limitation that will not last, hopefully
 mod other_mod;
 use other_mod::OtherComponent;
 
@@ -377,8 +379,9 @@ impl Todo {
 	// The diesel schema has been generated for you
         use crate::schema::todos;
 
-        // You don't have to actually execute the query, all the machinery of creating a db connection
-	// and feeding it everywhere have been abstracted away so you can concentrate on what matters
+        // You don't have to actually execute the query, all the machinery
+	// of creating a db connection and feeding it everywhere have been 
+	// abstracted away so you can concentrate on what matters
         todos::table.select(todos::all_columns).limit(limit as i64)
     }
 }
