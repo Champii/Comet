@@ -32,12 +32,13 @@ where
 
         spawn_local(async move {
             component2
-                .borrow_mut()
+                .write()
+                .await
                 .update_bindings(bindings_clone.clone());
 
             if let Some(msg) = msg {
                 let component3 = component2.clone();
-                component3.borrow_mut().update(msg).await;
+                component3.write().await.update(msg).await;
             }
 
             let parent3 = parent2.clone();
@@ -47,7 +48,7 @@ where
         })
     };
 
-    let view = component.borrow().view(cb, bindings.clone());
+    let view = component.read().await.view(cb, bindings.clone());
 
     parent.set_inner_html("");
     parent.append_child(&view).unwrap();

@@ -7,7 +7,7 @@ macro_rules! comet {
         #[cfg(target_arch = "wasm32")]
         use std::panic;
 
-        #[cfg(not(target_arch = "wasm32"))]
+        // #[cfg(not(target_arch = "wasm32"))]
         mod schema;
         // #[cfg(not(target_arch = "wasm32"))]
         // use schema::*;
@@ -32,14 +32,18 @@ macro_rules! comet {
         pub fn main() {
             panic::set_hook(Box::new(comet::prelude::console_error_panic_hook::hook));
 
-
             spawn_local(async { main_async().await });
         }
 
         #[cfg(target_arch = "wasm32")]
         pub async fn main_async() {
+            let (ready_tx, ready_rx) = comet::prelude::futures::channel::oneshot::channel();
+
+            spawn_local(start_socket(ready_tx));
+
+            ready_rx.await.unwrap();
+
             comet::run($($e)+).await;
-            spawn_local(start_socket());
         }
 
         #[cfg(target_arch = "wasm32")]
@@ -47,12 +51,8 @@ macro_rules! comet {
             pub static ref SOCKET: Arc<RwLock<Option<Socket<Proto>>>> = Arc::new(RwLock::new(None));
         }
 
-        /* lazy_static! {
-            pub static ref RPCS_IDS: Arc<RwLock<HashMap<u64, Box<dyn
-        } */
-
         #[cfg(target_arch = "wasm32")]
-        pub async fn start_socket() {
+        pub async fn start_socket(ready: comet::prelude::futures::channel::oneshot::Sender<()>) {
             use comet::prelude::futures::StreamExt;
 
             let addr = "ws://localhost:8080/ws".to_string();
@@ -62,6 +62,8 @@ macro_rules! comet {
             let mut rx = socket.take_receiver().unwrap();
 
             SOCKET.write().await.replace(socket);
+
+            ready.send(()).unwrap();
 
             while let Some(packet) = rx.next().await {
                 comet::console_log!("packet {:#?}", packet);

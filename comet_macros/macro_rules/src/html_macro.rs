@@ -123,7 +123,7 @@ macro_rules! html_arr {
                         );
 
                         if binding.is_some() {
-                            $bindings.borrow_mut().push(elem.clone());
+                            $bindings.blocking_write().push(elem.clone());
                         }
 
                         let children: Vec<HtmlNode> = html_arr! {$self, $f, $bindings, $($e)*};

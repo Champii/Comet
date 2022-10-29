@@ -23,6 +23,7 @@ fn impl_model_macro(
 
     let fields = &item_struct.fields;
     let derives = item_struct.attrs.clone();
+    let derives2 = derives.clone();
 
     let res = match fields {
         Fields::Named(fields) => {
@@ -83,7 +84,7 @@ fn impl_model_macro(
                     use super::*;
 
                     #(#derives)*
-                    #[derive(Serialize, Deserialize, Debug, Clone)]
+                    #[derive(Serialize, Deserialize, Clone)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     pub struct #name {
                         pub id: i32,
@@ -91,7 +92,7 @@ fn impl_model_macro(
                     }
 
                     // #(#derives2)*
-                    #[derive(Debug, Clone, Serialize, Deserialize)]
+                    #[derive(Clone, Serialize, Deserialize)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     #item_struct
 
@@ -125,7 +126,8 @@ fn impl_model_macro(
                     use comet::prelude::diesel::prelude::*;
                     use crate::schema::#table_name_ident;
 
-                    #[derive(Identifiable, Serialize, Deserialize, Queryable, Debug, Clone, AsChangeset)]
+                    #(#derives2)*
+                    #[derive(Identifiable, Serialize, Deserialize, Queryable, Clone, AsChangeset)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     // #[diesel(table_name = #table_name)]
                     #[diesel(treat_none_as_null = true)]
@@ -134,7 +136,7 @@ fn impl_model_macro(
                         #named
                     }
 
-                    #[derive(Insertable, Debug, Clone, Serialize, Deserialize, AsChangeset)]
+                    #[derive(Insertable, Clone, Serialize, Deserialize, AsChangeset)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     #[diesel(table_name = #table_name_ident)]
                     #[diesel(treat_none_as_null = true)]

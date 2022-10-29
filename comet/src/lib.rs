@@ -25,5 +25,5 @@ where
     Msg: Clone + 'static,
 {
     #[cfg(target_arch = "wasm32")]
-    App::new(Rc::new(RefCell::new(Box::new(_root)))).run().await;
+    App::new(_root.into()).run().await;
 }

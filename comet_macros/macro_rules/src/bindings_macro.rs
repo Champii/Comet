@@ -160,7 +160,7 @@ macro_rules! extract_bindings {
     ) => {
         use wasm_bindgen::JsCast;
         use web_sys::HtmlInputElement;
-        let mut bindings = $bindings.borrow().clone();
+        let mut bindings = $bindings.blocking_write().clone();
         bindings.reverse();
         $(
             let elem = bindings.pop().unwrap();

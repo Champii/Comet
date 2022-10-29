@@ -5,6 +5,7 @@ use std::sync::{Arc, RwLock};
 use quote::quote;
 use syn::{parse::Result, parse_macro_input, ImplItem};
 
+#[derive(Debug)]
 pub struct RpcEntry {
     model_name: String,
     method_name: String,
@@ -21,6 +22,8 @@ lazy_static! {
 
 pub fn perform(input: TokenStream) -> TokenStream {
     let mcall = parse_macro_input!(input as syn::ItemImpl);
+
+    eprintln!("HERE BEGIN");
 
     proc_macro::TokenStream::from(
         register_rpcs(mcall).unwrap_or_else(|e| syn::Error::to_compile_error(&e)),
@@ -77,8 +80,11 @@ pub fn register_rpc(
 
     let response_variant = format!("RPCResponse{}", rpc_nb);
 
+    eprintln!("HERE1");
     let query_variant_real: syn::Ident = syn::parse_str(&query_variant).unwrap();
     let response_variant_real: syn::Ident = syn::parse_str(&response_variant).unwrap();
+
+    eprintln!("HERE2");
 
     let response_type = match &mcall.sig.decl.output {
         syn::ReturnType::Default => syn::parse_quote! { () },
@@ -153,6 +159,7 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         .unwrap()
         .iter()
         .map(|rpc_entry| {
+            eprintln!("HERE3 {:#?}", rpc_entry);
             (
                 (
                     syn::parse_str::<syn::Type>(&rpc_entry.model_name).unwrap(),
@@ -183,12 +190,13 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
                     ),
                     (
                         syn::parse_str::<syn::Variant>(&rpc_entry.response_variant).unwrap(),
-                        syn::parse_str::<syn::Variant>(&rpc_entry.response_type).unwrap(),
+                        syn::parse_str::<syn::Type>(&rpc_entry.response_type).unwrap(),
                     ),
                 ),
             )
         })
         .unzip();
+    eprintln!("HERE4");
 
     let (models, methods): (Vec<_>, Vec<_>) = to_call.into_iter().unzip();
     let (query, response): (Vec<_>, Vec<_>) = enum_stuff.into_iter().unzip();
@@ -221,7 +229,7 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         })
         .collect::<Vec<_>>();
 
-    println!("query_variants: {:?}", query_variants);
+    eprintln!("query_variants: {:?}", query_variants);
 
     let proto = quote! {
         #[derive(Serialize, Deserialize, Debug, Clone)]

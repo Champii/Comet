@@ -1,5 +1,3 @@
-use std::{cell::RefCell, rc::Rc};
-
 use crate::prelude::*;
 
 pub struct App<Comp, Msg>
@@ -7,7 +5,7 @@ where
     Comp: Component<Msg>,
     Msg: Clone + 'static,
 {
-    pub root: Rc<RefCell<Box<Comp>>>,
+    pub root: Shared<Comp>,
     phantom: std::marker::PhantomData<Msg>,
 }
 
@@ -16,7 +14,7 @@ where
     Comp: Component<Msg>,
     Msg: Clone,
 {
-    pub fn new(root: Rc<RefCell<Box<Comp>>>) -> Self {
+    pub fn new(root: Shared<Comp>) -> Self {
         Self {
             root,
             phantom: std::marker::PhantomData,

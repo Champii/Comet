@@ -3,7 +3,7 @@ use proc_macro::TokenStream;
 use std::sync::{Arc, RwLock};
 
 use quote::quote;
-use syn::{parse::Result, parse_macro_input};
+use syn::{parse::Result, parse_macro_input, ImplItem};
 
 lazy_static! {
     // TODO: replace with atomics
@@ -11,43 +11,75 @@ lazy_static! {
 }
 
 pub fn perform(input: TokenStream) -> TokenStream {
-    let mcall = parse_macro_input!(input as syn::ItemFn);
+    let input = parse_macro_input!(input as syn::ItemImpl);
 
     proc_macro::TokenStream::from(
-        register_sql_query(mcall).unwrap_or_else(|e| syn::Error::to_compile_error(&e)),
+        register_sql_queries(input).unwrap_or_else(|e| syn::Error::to_compile_error(&e)),
     )
 }
 
-pub fn register_sql_query(mcall: syn::ItemFn) -> Result<proc_macro2::TokenStream> {
-    let mut server_fn = mcall.clone();
-    let client_fn = mcall.clone();
-    let stmts = server_fn.block.stmts.clone();
-
-    /* mcall.attrs.push(syn::parse_quote! {
+pub fn register_sql_queries(mut mcall: syn::ItemImpl) -> Result<proc_macro2::TokenStream> {
+    mcall.attrs.push(syn::parse_quote! {
         #[rpc]
-    }); */
-    println!("stmts: {:#?}", stmts);
+    });
 
-    // let last = stmts.pop().unwrap();
+    // let self_type = *mcall.self_ty.clone();
+    let res = mcall
+        .items
+        .iter()
+        .map(|item| match item {
+            ImplItem::Method(method) => register_sql_query(method).unwrap(),
+            _ => unimplemented!(),
+        })
+        .collect::<Vec<_>>();
 
-    let wrap: syn::Block = syn::parse_quote! {
-        {
-            // #(#stmts)*
-            /* let query = #last;
-            let conn = crate::db::get_connection();
-            les res = query.execute::<Self>(&mut conn).unwrap();
-            res */
-            2
+    mcall.items = res
+        .iter()
+        .flatten()
+        .map(|item| syn::parse_quote! { #item })
+        .collect();
+
+    Ok(quote! {
+        // #[rpc]
+        #mcall
+    })
+}
+
+pub fn register_sql_query(
+    mut mcall: &syn::ImplItemMethod,
+) -> Result<Vec<proc_macro2::TokenStream>> {
+    let mut server_fn = mcall.clone();
+    let mut client_fn = mcall.clone();
+    let mut stmts = server_fn.block.stmts.clone();
+
+    eprintln!("stmts: {:#?}", stmts);
+
+    let last = stmts.pop().unwrap();
+    let server_wrap: syn::Block = syn::parse_quote! { {
+            #(#stmts)*
+            // #last
+            let query = #last;
+             let mut conn = crate::establish_connection();
+            let res = query.load::<Self>(&mut conn).unwrap();
+        println!("res: {:#?}", res);
+            res
         }
     };
 
-    *server_fn.block = wrap;
+    // let mut sql_method = mcall.clone();
 
-    Ok(quote! {
-        #[cfg(not(target_arch = "wasm32"))]
-        #server_fn
+    // sql_method.sig.decl.output = syn::ReturnType::Default;
 
-        #[cfg(target_arch = "wasm32")]
-        #client_fn
-    })
+    server_fn.block = server_wrap;
+
+    Ok(vec![
+        quote! {
+            #[cfg(not(target_arch = "wasm32"))]
+            #server_fn
+        },
+        quote! {
+            #[cfg(target_arch = "wasm32")]
+            #client_fn
+        },
+    ])
 }
