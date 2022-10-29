@@ -207,7 +207,7 @@ dependencies = [
 
 [[package]]
 name = "comet"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "async-trait",
  "axum",
@@ -234,7 +234,7 @@ dependencies = [
 
 [[package]]
 name = "comet_bin"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "clap",
  "colored",
@@ -245,7 +245,7 @@ dependencies = [
 
 [[package]]
 name = "comet_macro_procs"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "itertools",
  "lazy_static",
@@ -256,7 +256,7 @@ dependencies = [
 
 [[package]]
 name = "comet_macro_rules"
-version = "0.1.0"
+version = "0.1.2"
 
 [[package]]
 name = "console_error_panic_hook"
