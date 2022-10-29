@@ -65,7 +65,7 @@ Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) fold
 ### Install Comet Binary and dependencies
 
 ```bash
-$> cargo install cargo-web
+$> cargo install comet-web
 ```
 
 You will need to install and run an instance of PostgreSQL.
@@ -83,7 +83,7 @@ $> comet new my_counter && cd my_counter
 There is already the dependency setup in the Cargo.toml:
 
 ```toml
-cargo-web = "0.1.3"
+comet-web = "0.1.3"
 ```
 
 This newly generated project contains all you need to get started. Your journey starts with `src/main.rs`.  
