@@ -91,6 +91,7 @@ pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::Tok
     let server_wrap: syn::Block = syn::parse_quote! {
         {
             #(#orig_stmts)*
+
             let query_str = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
             let strs = query_str.split("--").collect::<Vec<_>>();
             let mut query_str = strs[0].to_string();
@@ -100,7 +101,7 @@ pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::Tok
                 query_str = query_str.replace(&format!("${}", id + 1), bind);
             });
             query_str = query_str.replace("\"", "");
-            eprintln!("query: {}", query_str);
+
             use reactive_pg::{Event, watch};
 
             let handler = watch::<Self>(
