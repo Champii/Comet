@@ -15,7 +15,7 @@ mod html_test {
     ) {
         let view = view.into();
 
-        let elem = view.borrow().view(|_| {}, vec![].into());
+        let elem = view.blocking_read().view(|_| {}, vec![].into());
 
         assert_eq!(elem.outer_html(), expected);
     }

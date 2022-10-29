@@ -1,9 +1,19 @@
 use comet::prelude::*;
 
-#[derive(Default)]
+#[model]
+#[derive(Default, Debug)]
 pub struct Todo {
     pub title: String,
     pub completed: bool,
+}
+
+#[rpc]
+impl Todo {
+    pub async fn toggle(&mut self) {
+        self.completed = !self.completed;
+
+        self.save().await.unwrap();
+    }
 }
 
 component! {
@@ -11,7 +21,7 @@ component! {
     div {
         { self.title }
         { self.completed }
-        button @click: { self.completed = !self.completed } {
+        button @click: { self.toggle().await } {
             { "Toggle" }
         }
     }
@@ -24,29 +34,30 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> Self {
-        let mut list = Vec::new();
-
-        list.push(
-            Todo {
-                title: "Hello".into(),
-                completed: false,
-            }
-            .into(),
-        );
+    pub async fn new() -> Self {
+        let list = Todo::list()
+            .await
+            .unwrap()
+            .into_iter()
+            .map(Shared::from)
+            .collect::<Vec<_>>();
 
         Self {
             list,
-            title: "Haha".into(),
+            title: "".into(),
         }
     }
 
-    pub fn new_todo(&mut self) {
+    pub async fn new_todo(&mut self) {
         self.list.push(
             Todo {
+                id: -1,
                 title: self.title.clone(),
                 completed: false,
             }
+            .create()
+            .await
+            .unwrap()
             .into(),
         );
 
@@ -57,16 +68,16 @@ impl App {
 component! {
     App,
     div {
-        for todo in (self.list.iter()) {
+        for todo in (&self.list) {
             div {
                 @{todo}
             }
         }
         input ={ self.title } {}
-        button @click: { self.new_todo() } {
+        button @click: { self.new_todo().await } {
             { "Add" }
         }
     }
 }
 
-comet!(App::new());
+comet!(App::new().await);

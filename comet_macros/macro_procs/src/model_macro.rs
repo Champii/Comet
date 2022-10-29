@@ -219,7 +219,7 @@ fn impl_model_macro(
                     } */
                 }
 
-                use crate::*;
+                // use crate::{RPCQuery, RPCResult, Proto};
 
                 #[rpc]
                 impl #name {

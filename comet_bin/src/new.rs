@@ -60,10 +60,6 @@ edition = "2021"
 path = "src/main.rs"
 crate-type = ["cdylib", "rlib"]
 
-[[bin]]
-path = "src/main.rs"
-name = "comet_test"
-
 [dependencies]
 comet = { git = "https://github.com/Champii/Comet" }
         "#
