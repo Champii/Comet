@@ -160,7 +160,11 @@ macro_rules! extract_bindings {
     ) => {
         use wasm_bindgen::JsCast;
         use web_sys::HtmlInputElement;
+        #[cfg(target_arch = "wasm32")]
+        crate::console_log!("BEFORE WRITE");
         let mut bindings = $bindings.blocking_write().clone();
+        #[cfg(target_arch = "wasm32")]
+        crate::console_log!("AFTER WRITE");
         bindings.reverse();
         $(
             let elem = bindings.pop().unwrap();

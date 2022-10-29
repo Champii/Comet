@@ -10,7 +10,7 @@ pub struct RpcEntry {
     model_name: String,
     method_name: String,
     query_variant: String,
-    query_types: Vec<String>,
+    query_types: Vec<(bool, String)>, // (is_mut, type)
     response_variant: String,
     response_type: String,
 }
@@ -22,8 +22,6 @@ lazy_static! {
 
 pub fn perform(input: TokenStream) -> TokenStream {
     let mcall = parse_macro_input!(input as syn::ItemImpl);
-
-    eprintln!("HERE BEGIN");
 
     proc_macro::TokenStream::from(
         register_rpcs(mcall).unwrap_or_else(|e| syn::Error::to_compile_error(&e)),
@@ -65,12 +63,18 @@ pub fn register_rpc(
         .inputs
         .iter()
         .map(|arg| {
-            let ty = match arg {
-                syn::FnArg::SelfRef(_) => self_type.clone(),
-                syn::FnArg::Captured(c) => c.ty.clone(),
+            let (is_mut, ty) = match arg {
+                syn::FnArg::SelfRef(fn_arg) => {
+                    if fn_arg.mutability.is_some() {
+                        (true, self_type.clone())
+                    } else {
+                        (false, self_type.clone())
+                    }
+                }
+                syn::FnArg::Captured(c) => (false, c.ty.clone()),
                 _ => unimplemented!(),
             };
-            quote! { #ty }.to_string()
+            (is_mut, quote! { #ty }.to_string())
         })
         .collect::<Vec<_>>();
 
@@ -80,11 +84,8 @@ pub fn register_rpc(
 
     let response_variant = format!("RPCResponse{}", rpc_nb);
 
-    eprintln!("HERE1");
     let query_variant_real: syn::Ident = syn::parse_str(&query_variant).unwrap();
     let response_variant_real: syn::Ident = syn::parse_str(&response_variant).unwrap();
-
-    eprintln!("HERE2");
 
     let response_type = match &mcall.sig.decl.output {
         syn::ReturnType::Default => syn::parse_quote! { () },
@@ -159,7 +160,6 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         .unwrap()
         .iter()
         .map(|rpc_entry| {
-            eprintln!("HERE3 {:#?}", rpc_entry);
             (
                 (
                     syn::parse_str::<syn::Type>(&rpc_entry.model_name).unwrap(),
@@ -172,20 +172,26 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
                             rpc_entry
                                 .query_types
                                 .iter()
-                                .map(|s| syn::parse_str::<syn::Type>(&s).unwrap())
+                                .map(|(is_mut, s)| {
+                                    (*is_mut, syn::parse_str::<syn::Type>(&s).unwrap())
+                                })
                                 .collect::<Vec<_>>(),
                             rpc_entry
                                 .query_types
                                 .iter()
                                 .enumerate()
-                                .map(|(id, _s)| {
+                                .map(|(id, (is_mut, _s))| {
                                     let id = syn::Ident::new(
-                                        &format!("arg{}", id),
+                                        &if *is_mut {
+                                            format!("arg_{}", id)
+                                        } else {
+                                            format!("arg_{}", id)
+                                        },
                                         proc_macro2::Span::call_site(),
                                     );
-                                    syn::parse_quote! { #id }
+                                    (*is_mut, syn::parse_quote! { #id })
                                 })
-                                .collect::<Vec<syn::Ident>>(),
+                                .collect::<Vec<(bool, syn::Ident)>>(),
                         ),
                     ),
                     (
@@ -196,7 +202,6 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
             )
         })
         .unzip();
-    eprintln!("HERE4");
 
     let (models, methods): (Vec<_>, Vec<_>) = to_call.into_iter().unzip();
     let (query, response): (Vec<_>, Vec<_>) = enum_stuff.into_iter().unzip();
@@ -218,9 +223,14 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
             params
                 .iter()
                 .zip(types)
-                .map(|(param, ty)| {
-                    if ty == model.clone() {
-                        syn::parse_quote! { &#param }
+                .enumerate()
+                .map(|(id, ((_, param), (is_mut, ty)))| {
+                    if id == 0 && ty == model.clone() {
+                        if is_mut {
+                            syn::parse_quote! { &mut #param }
+                        } else {
+                            syn::parse_quote! { & #param }
+                        }
                     } else {
                         syn::parse_quote! { #param }
                     }
@@ -229,7 +239,28 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         })
         .collect::<Vec<_>>();
 
-    eprintln!("query_variants: {:?}", query_variants);
+    // fix query_params that are mut
+    let query_params = query_params
+        .iter()
+        .map(|params| {
+            params
+                .iter()
+                .enumerate()
+                .map(|(id, (is_mut, param))| {
+                    if id == 0 && *is_mut {
+                        syn::parse_quote! { mut #param }
+                    } else {
+                        syn::parse_quote! { #param }
+                    }
+                })
+                .collect::<Vec<syn::Pat>>()
+        })
+        .collect::<Vec<_>>();
+
+    let query_types = query_types
+        .iter()
+        .map(|vecs| vecs.iter().map(|(_, ty)| ty.clone()).collect::<Vec<_>>())
+        .collect::<Vec<_>>();
 
     let proto = quote! {
         #[derive(Serialize, Deserialize, Debug, Clone)]

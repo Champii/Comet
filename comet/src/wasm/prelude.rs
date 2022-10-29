@@ -1,3 +1,4 @@
+pub use crate::console_log;
 pub use crate::wasm::log_macro::*;
 pub use console_error_panic_hook;
 

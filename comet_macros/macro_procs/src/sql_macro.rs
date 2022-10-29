@@ -45,23 +45,17 @@ pub fn register_sql_queries(mut mcall: syn::ItemImpl) -> Result<proc_macro2::Tok
     })
 }
 
-pub fn register_sql_query(
-    mut mcall: &syn::ImplItemMethod,
-) -> Result<Vec<proc_macro2::TokenStream>> {
+pub fn register_sql_query(mcall: &syn::ImplItemMethod) -> Result<Vec<proc_macro2::TokenStream>> {
     let mut server_fn = mcall.clone();
-    let mut client_fn = mcall.clone();
+    let client_fn = mcall.clone();
     let mut stmts = server_fn.block.stmts.clone();
-
-    eprintln!("stmts: {:#?}", stmts);
 
     let last = stmts.pop().unwrap();
     let server_wrap: syn::Block = syn::parse_quote! { {
             #(#stmts)*
-            // #last
             let query = #last;
              let mut conn = crate::establish_connection();
             let res = query.load::<Self>(&mut conn).unwrap();
-        println!("res: {:#?}", res);
             res
         }
     };
