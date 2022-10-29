@@ -158,11 +158,13 @@ macro_rules! extract_bindings {
             }
         }
     ) => {
+
         let mut bindings = $bindings.blocking_write().clone();
         bindings.reverse();
         $(
+            use comet::prelude::wasm_bindgen::JsCast;
             let elem = bindings.pop().unwrap();
-            let input_elem: HtmlInputElement = elem.dyn_into().unwrap();
+            let input_elem: comet::prelude::web_sys::HtmlInputElement = elem.dyn_into().unwrap();
             $($binding)* = input_elem.value();
         )*
     };

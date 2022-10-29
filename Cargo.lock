@@ -200,7 +200,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "comet"
+name = "comet-web"
 version = "0.1.2"
 dependencies = [
  "async-trait",

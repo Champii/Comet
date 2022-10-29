@@ -9,4 +9,4 @@ path = "src/main.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-comet = { path = "../.." }
+comet-web = { path = "../.." }

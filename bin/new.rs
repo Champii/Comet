@@ -24,10 +24,7 @@ pub(crate) fn create_project_folder(name: &str) {
 
     create_file(
         "src/main.rs",
-        r#"// The mandatory imports
-use comet::prelude::*;
-
-// This macro takes two arguments:
+        r#"// This macro takes two arguments:
 // - A type for which we will implement `Component`
 // - And a root HTML element
 // We implement `Component` for a simple integer.
@@ -45,7 +42,7 @@ component! {
 
 // This is where all the magic happens
 // We run the application with an instance of our i32 component that starts with the value 0
-comet!(0);
+comet::run!(0);
 "#,
     );
 
@@ -61,9 +58,10 @@ path = "src/main.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-comet = { git = "https://github.com/Champii/Comet" }
+comet-web = "{{version}}"
         "#
-        .replace("{{name}}", name),
+        .replace("{{name}}", name)
+        .replace("{{version}}", env!("CARGO_PKG_VERSION")),
     );
 
     create_file(

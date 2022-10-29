@@ -1,5 +1,3 @@
-use comet::prelude::*;
-
 component! {
     i32,
     button @click: { *self += 1 } {
@@ -22,4 +20,4 @@ component! {
     }
 }
 
-comet!(App::default());
+comet::run!(App::default());

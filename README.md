@@ -80,9 +80,6 @@ Conveniently, this generated file is already the simpliest incrementing counter 
 
 
 ```rust
-// The mandatory imports
-use comet::prelude::*;
-
 // This macro takes two arguments:
 // - A type for which we will implement `Component`
 // - And a root HTML element
@@ -101,7 +98,7 @@ component! {
 
 // This is where all the magic happens
 // We run the application with an instance of our i32 component that starts with the value 0
-comet!(0);
+comet::run!(0);
 ```
 
 ### Run it
@@ -314,7 +311,7 @@ component! {
 }
 
 // This will create a new Todo in db every time this program runs
-comet!(Todo::default().create().await.unwrap());
+comet::run!(Todo::default().create().await.unwrap());
 ```
 
 ### Remote procedure calls
@@ -322,8 +319,6 @@ comet!(Todo::default().create().await.unwrap());
 Note: The structs involved in the `#[rpc]` macro MUST be accessible from the root module (i.e. `src/main.rs`)
 
 ```rust
-use comet::prelude::*;
-
 // If you have other mods that use `#[rpc]`, you have to import them explicitly
 // in the root (assuming this file is the root). This is a limitation that will not last, hopefully
 mod other_mod;
@@ -354,7 +349,7 @@ component! {
     }
 }
 
-comet!(Counter::default().create().await.unwrap());
+comet::run!(Counter::default().create().await.unwrap());
 ```
 
 ### Database queries

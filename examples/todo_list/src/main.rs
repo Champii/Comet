@@ -80,4 +80,4 @@ component! {
     }
 }
 
-comet!(App::new().await);
+comet::run!(App::new().await);

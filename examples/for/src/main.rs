@@ -1,5 +1,3 @@
-use comet::prelude::*;
-
 component! {
     i32,
     div {
@@ -11,4 +9,4 @@ component! {
     }
 }
 
-comet!(10);
+comet::run!(10);

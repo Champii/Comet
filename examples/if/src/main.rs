@@ -1,5 +1,3 @@
-use comet::prelude::*;
-
 #[derive(Default)]
 pub struct Toggle {
     show: bool,
@@ -19,4 +17,4 @@ component! {
     }
 }
 
-comet!(Toggle::default());
+comet::run!(Toggle::default());

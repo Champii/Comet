@@ -1,5 +1,3 @@
-use comet::prelude::*;
-
 component! {
     i32,
     button
@@ -9,4 +7,4 @@ component! {
     }
 }
 
-comet!(0);
+comet::run!(0);
