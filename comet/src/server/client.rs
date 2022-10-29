@@ -9,7 +9,7 @@ use std::fmt::Debug;
 use futures::stream::SplitSink;
 use std::sync::Arc;
 
-use crate::core::prelude::Proto;
+use crate::core::prelude::ProtoTrait;
 
 use super::universe::Universe;
 
@@ -37,7 +37,7 @@ impl Client {
         self.session_id = session_id;
     }
 
-    pub async fn handle_msg<P: Proto + Send + Serialize + DeserializeOwned + Debug>(&self, msg: Vec<u8>) {
+    pub async fn handle_msg<P: ProtoTrait + Send + Serialize + DeserializeOwned + Debug>(&self, msg: Vec<u8>) {
         let msg = crate::Message::from_bytes(&msg);
         
         let proto = P::from_bytes(&msg.msg);

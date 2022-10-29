@@ -23,6 +23,7 @@ fn impl_model_macro(
 
     let fields = &item_struct.fields;
     let derives = item_struct.attrs.clone();
+    let derives2 = derives.clone();
 
     let res = match fields {
         Fields::Named(fields) => {
@@ -83,7 +84,7 @@ fn impl_model_macro(
                     use super::*;
 
                     #(#derives)*
-                    #[derive(Serialize, Deserialize, Debug, Clone)]
+                    #[derive(Serialize, Deserialize, Clone)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     pub struct #name {
                         pub id: i32,
@@ -91,11 +92,11 @@ fn impl_model_macro(
                     }
 
                     // #(#derives2)*
-                    #[derive(Debug, Clone, Serialize, Deserialize)]
+                    #[derive(Clone, Serialize, Deserialize)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     #item_struct
 
-                    impl #name {
+                    /* impl #name {
                         pub fn create(#lower_name_ident: #name) -> std::result::Result<#name, String> {
                             // crate::SOCKET.write().unwrap().as_mut().map(|socket| socket.send_async(Proto::#name(#proto_name::New(self.clone()))));
                             Err("lol".to_string())
@@ -112,11 +113,11 @@ fn impl_model_macro(
 
                         /* #[sql]
                         pub fn create_sql() */
-                    }
+                    } */
                 }
 
                 #[cfg(target_arch = "wasm32")]
-                use #lower_name_ident::{#name, #new_name_ident};
+                pub use #lower_name_ident::{#name, #new_name_ident};
 
                 #[cfg(not(target_arch = "wasm32"))]
                 mod #lower_name_ident {
@@ -125,7 +126,8 @@ fn impl_model_macro(
                     use comet::prelude::diesel::prelude::*;
                     use crate::schema::#table_name_ident;
 
-                    #[derive(Identifiable, Serialize, Deserialize, Queryable, Debug, Clone, AsChangeset)]
+                    #(#derives2)*
+                    #[derive(Identifiable, Serialize, Deserialize, Queryable, Clone, AsChangeset)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     // #[diesel(table_name = #table_name)]
                     #[diesel(treat_none_as_null = true)]
@@ -134,7 +136,7 @@ fn impl_model_macro(
                         #named
                     }
 
-                    #[derive(Insertable, Debug, Clone, Serialize, Deserialize, AsChangeset)]
+                    #[derive(Insertable, Clone, Serialize, Deserialize, AsChangeset)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     #[diesel(table_name = #table_name_ident)]
                     #[diesel(treat_none_as_null = true)]
@@ -148,7 +150,7 @@ fn impl_model_macro(
                         }
                     }
 
-                    impl #name {
+                    /* impl #name {
                         pub fn create(#lower_name_ident: #name) -> std::result::Result<#name, diesel::result::Error> {
                             let mut conn = crate::establish_connection();
 
@@ -214,11 +216,87 @@ fn impl_model_macro(
 
                             #table_name_ident::table.filter(#table_name_ident::dsl::id.eq(id_given)).first::<#name>(&mut conn)
                         }
+                    } */
+                }
+
+                // use crate::{RPCQuery, RPCResult, Proto};
+
+                #[rpc]
+                impl #name {
+                    pub async fn create(&self) -> std::result::Result<#name, String> {
+                        use crate::schema::#table_name_ident;
+
+                        let mut conn = crate::establish_connection();
+
+                        let #lower_name_ident = #new_name_ident::#from_name(self);
+
+                        diesel::insert_into(#table_name_ident::table)
+                            .values(#lower_name_ident)
+                            .execute(&mut conn).map_err(|e| "Error insert".to_string())?;
+
+                        #table_name_ident::table
+                            .order(#table_name_ident::dsl::id.desc())
+                            .first(&mut conn).map_err(|e| "Error create".to_string())
+                    }
+
+                    pub async fn list() -> std::result::Result<Vec<#name>, String> {
+                        use crate::schema::#table_name_ident;
+
+                        let mut conn = crate::establish_connection();
+
+
+                        #table_name_ident::table
+                            .order(#table_name_ident::dsl::id)
+                            .load::<#name>(&mut conn).map_err(|e| "Error list".to_string())
+                    }
+
+                    pub async fn update(id_given: i32, #lower_name_ident: #name) -> std::result::Result<usize, String> {
+                        use crate::schema::#table_name_ident;
+
+                        let mut conn = crate::establish_connection();
+
+                        let #lower_name_ident = #new_name_ident::#from_name(&#lower_name_ident);
+
+                        diesel::update(#table_name_ident::table.find(id_given))
+                            .set(&#lower_name_ident)
+                            .execute(&mut conn).map_err(|e| "Error update".to_string())
+                    }
+
+                    pub async fn save(&mut self) -> std::result::Result<(), String> {
+                        use crate::schema::#table_name_ident;
+
+                        if self.id == -1 {
+                            let res = self.create().await?;
+
+                            self.id = res.id;
+
+                        } else {
+                            #name::update(self.id, self.clone()).await?;
+                        }
+
+                        Ok(())
+                    }
+
+                    pub async fn delete(id_given: i32) -> std::result::Result<usize, String> {
+                        use crate::schema::#table_name_ident;
+
+                        let mut conn = crate::establish_connection();
+
+                        diesel::delete(#table_name_ident::table.find(id_given))
+                            .execute(&mut conn).map_err(|e| "Error delete".to_string())
+                    }
+
+                    pub async fn fetch(id_given: i32) -> std::result::Result<#name, String> {
+                        use crate::schema::#table_name_ident;
+
+                        let mut conn = crate::establish_connection();
+
+                        #table_name_ident::table.filter(#table_name_ident::dsl::id.eq(id_given)).first::<#name>(&mut conn).map_err(|e| "Error fetch".to_string())
                     }
                 }
 
                 #[cfg(not(target_arch = "wasm32"))]
-                use #lower_name_ident::{#name, #new_name_ident};
+                pub use #lower_name_ident::{#name, #new_name_ident};
             );
 
             res

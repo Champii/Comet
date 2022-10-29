@@ -1,4 +1,3 @@
 pub use tokio;
 
-pub use diesel;
-pub use diesel::prelude::*;
+pub use tokio::task::spawn_local;

@@ -123,7 +123,12 @@ macro_rules! html_arr {
                         );
 
                         if binding.is_some() {
-                            $bindings.borrow_mut().push(elem.clone());
+
+        #[cfg(target_arch = "wasm32")]
+        crate::console_log!("BEFORE WRITE2");
+                            $bindings.blocking_write().push(elem.clone());
+        #[cfg(target_arch = "wasm32")]
+        crate::console_log!("AFTER WRITE2");
                         }
 
                         let children: Vec<HtmlNode> = html_arr! {$self, $f, $bindings, $($e)*};
@@ -168,7 +173,11 @@ macro_rules! html_arr {
                             $($comp)+
                         ).clone();
 
-                        comet::core::component::run_rec(component, &component_container);
+
+                        let component_container2 = component_container.clone();
+                        spawn_local(async move {
+                            comet::core::component::run_rec(component, &component_container2).await;
+                        });
 
                         HtmlNode::Element(component_container)
                     }

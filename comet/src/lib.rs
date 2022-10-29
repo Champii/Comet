@@ -17,11 +17,13 @@ pub mod wasm;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod server;
 
+pub use prelude::comet;
+
 pub async fn run<Comp, Msg>(_root: Comp)
 where
     Comp: Component<Msg>,
     Msg: Clone + 'static,
 {
     #[cfg(target_arch = "wasm32")]
-    App::new(Rc::new(RefCell::new(Box::new(_root)))).run().await;
+    App::new(_root.into()).run().await;
 }

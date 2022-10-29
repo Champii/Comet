@@ -23,7 +23,7 @@ pub(crate) fn create_project_folder(name: &str) {
     };
 
     create_file(
-        "src/lib.rs",
+        "src/main.rs",
         r#"// The mandatory imports
 use comet::prelude::*;
 
@@ -57,6 +57,7 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
+path = "src/main.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
@@ -82,17 +83,6 @@ comet = { git = "https://github.com/Champii/Comet" }
     </script>
   </body>
 </html>
-        "#
-        .replace("{{name}}", name),
-    );
-    create_file(
-        "src/main.rs",
-        &r#"use comet::prelude::*;
-
-#[tokio::main]
-pub async fn main() {
-    {{name}}::main().await;
-}
         "#
         .replace("{{name}}", name),
     );

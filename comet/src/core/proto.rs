@@ -20,8 +20,8 @@ impl Message {
 }
 
 #[async_trait]
-pub trait Proto {
-    type Response: Proto + Send + Serialize + DeserializeOwned;
+pub trait ProtoTrait {
+    type Response: ProtoTrait + Send + Serialize + DeserializeOwned;
 
     async fn dispatch(self) -> Option<Self::Response>
     where

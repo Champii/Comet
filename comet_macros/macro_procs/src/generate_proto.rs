@@ -43,7 +43,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
         }
 
         #[async_trait]
-        impl comet::prelude::Proto for Proto {
+        impl comet::prelude::ProtoTrait for Proto {
             type Response = Proto;
 
             async fn dispatch(self) -> Option<Self::Response> {

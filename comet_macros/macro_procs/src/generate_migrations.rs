@@ -62,7 +62,7 @@ fn generate_migrations() {
         // replace 'diesel' with 'crate::diesel' in the file src/schema.rs with sed
         std::process::Command::new("sed")
             .arg("-i")
-            .arg("s/^diesel::table/crate::diesel::table/g")
+            .arg("s/^diesel::/crate::diesel::/g")
             .arg("src/schema.rs")
             .output()
             .expect("failed to execute process");

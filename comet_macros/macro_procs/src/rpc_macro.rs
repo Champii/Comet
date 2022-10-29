@@ -5,13 +5,14 @@ use std::sync::{Arc, RwLock};
 use quote::quote;
 use syn::{parse::Result, parse_macro_input, ImplItem};
 
+#[derive(Debug)]
 pub struct RpcEntry {
     model_name: String,
     method_name: String,
     query_variant: String,
-    query_types: Vec<String>,
+    query_types: Vec<(bool, String)>, // (is_mut, type)
     response_variant: String,
-    response_type: String,
+    response_type: (bool, String), // (is mut self, ret)
 }
 
 lazy_static! {
@@ -62,12 +63,18 @@ pub fn register_rpc(
         .inputs
         .iter()
         .map(|arg| {
-            let ty = match arg {
-                syn::FnArg::SelfRef(_) => self_type.clone(),
-                syn::FnArg::Captured(c) => c.ty.clone(),
+            let (is_mut, ty) = match arg {
+                syn::FnArg::SelfRef(fn_arg) => {
+                    if fn_arg.mutability.is_some() {
+                        (true, self_type.clone())
+                    } else {
+                        (false, self_type.clone())
+                    }
+                }
+                syn::FnArg::Captured(c) => (false, c.ty.clone()),
                 _ => unimplemented!(),
             };
-            quote! { #ty }.to_string()
+            (is_mut, quote! { #ty }.to_string())
         })
         .collect::<Vec<_>>();
 
@@ -85,10 +92,22 @@ pub fn register_rpc(
         syn::ReturnType::Type(_, ty) => ty.clone(),
     };
 
+    let response_type = quote! { #response_type }.to_string();
+    let response_type = if let Some((true, _)) = query_types.get(0) {
+        (true, response_type)
+    } else {
+        (false, response_type)
+    };
+
     let model_name = quote! { #self_type }.to_string();
     let fn_name = mcall.sig.ident.to_string();
 
-    let response_type = quote! { #response_type }.to_string();
+    let response_self: Vec<syn::Ident> = if let (true, _) = response_type.clone() {
+        vec![syn::parse_quote! { returned_self }]
+    } else {
+        vec![]
+    };
+    let response_self2 = response_self.clone();
 
     RPCS.write().unwrap().push(RpcEntry {
         model_name,
@@ -124,7 +143,7 @@ pub fn register_rpc(
             };
 
             let response = match response {
-                Proto::RPCResponse(RPCResponse::#response_variant_real(response)) => response,
+                Proto::RPCResponse(RPCResponse::#response_variant_real(#(#response_self,)* response)) => { #(*self = #response_self2;)* response},
                 _ => unimplemented!(),
             };
 
@@ -147,6 +166,7 @@ pub fn register_rpc(
 }
 
 pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
+    // FIXME: WTF !!! This is why I should stop coding after the 20th consecutive hour haha
     let (to_call, enum_stuff): (Vec<_>, Vec<_>) = RPCS
         .read()
         .unwrap()
@@ -164,25 +184,34 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
                             rpc_entry
                                 .query_types
                                 .iter()
-                                .map(|s| syn::parse_str::<syn::Type>(&s).unwrap())
+                                .map(|(is_mut, s)| {
+                                    (*is_mut, syn::parse_str::<syn::Type>(&s).unwrap())
+                                })
                                 .collect::<Vec<_>>(),
                             rpc_entry
                                 .query_types
                                 .iter()
                                 .enumerate()
-                                .map(|(id, _s)| {
+                                .map(|(id, (is_mut, _s))| {
                                     let id = syn::Ident::new(
-                                        &format!("arg{}", id),
+                                        &if *is_mut {
+                                            format!("arg_{}", id)
+                                        } else {
+                                            format!("arg_{}", id)
+                                        },
                                         proc_macro2::Span::call_site(),
                                     );
-                                    syn::parse_quote! { #id }
+                                    (*is_mut, syn::parse_quote! { #id })
                                 })
-                                .collect::<Vec<syn::Ident>>(),
+                                .collect::<Vec<(bool, syn::Ident)>>(),
                         ),
                     ),
                     (
                         syn::parse_str::<syn::Variant>(&rpc_entry.response_variant).unwrap(),
-                        syn::parse_str::<syn::Variant>(&rpc_entry.response_type).unwrap(),
+                        (
+                            rpc_entry.response_type.0,
+                            syn::parse_str::<syn::Type>(&rpc_entry.response_type.1).unwrap(),
+                        ),
                     ),
                 ),
             )
@@ -209,9 +238,14 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
             params
                 .iter()
                 .zip(types)
-                .map(|(param, ty)| {
-                    if ty == model.clone() {
-                        syn::parse_quote! { &#param }
+                .enumerate()
+                .map(|(id, ((_, param), (is_mut, ty)))| {
+                    if id == 0 && ty == model.clone() {
+                        if is_mut {
+                            syn::parse_quote! { &mut #param }
+                        } else {
+                            syn::parse_quote! { & #param }
+                        }
                     } else {
                         syn::parse_quote! { #param }
                     }
@@ -220,32 +254,78 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         })
         .collect::<Vec<_>>();
 
-    println!("query_variants: {:?}", query_variants);
+    // fix query_params that are mut
+    let query_params = query_params
+        .iter()
+        .map(|params| {
+            params
+                .iter()
+                .enumerate()
+                .map(|(id, (is_mut, param))| {
+                    if id == 0 && *is_mut {
+                        syn::parse_quote! { mut #param }
+                    } else {
+                        syn::parse_quote! { #param }
+                    }
+                })
+                .collect::<Vec<syn::Pat>>()
+        })
+        .collect::<Vec<_>>();
+
+    let response_types = response_types
+        .into_iter()
+        .zip(models.clone())
+        .map(|((is_self_mut, ty), model)| {
+            if is_self_mut {
+                vec![syn::parse_quote! { #model }, ty]
+            } else {
+                vec![ty]
+            }
+        })
+        .collect::<Vec<Vec<syn::Type>>>();
+
+    let query_types = query_types
+        .iter()
+        .map(|vecs| vecs.iter().map(|(_, ty)| ty.clone()).collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+
+    let response_self = response_types
+        .iter()
+        .map(|types| {
+            if types.len() == 2 {
+                vec![syn::parse_quote! { arg_0 }]
+            } else {
+                vec![]
+            }
+        })
+        .collect::<Vec<Vec<syn::Ident>>>();
+    let response_self2 = response_self.clone();
 
     let proto = quote! {
         #[derive(Serialize, Deserialize, Debug, Clone)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub enum RPCQuery {
-            #(#query_variants(#(#query_types),*)),*,
+            #(#query_variants(#(#query_types),*)),*
         }
         #[derive(Serialize, Deserialize, Debug, Clone)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub enum RPCResponse {
-            #(#response_variants(#response_types)),*
+            #(#response_variants(#(#response_types),*)),*
         }
 
         impl RPCQuery {
         }
 
         #[async_trait]
-        impl comet::prelude::Proto for RPCQuery {
+        impl comet::prelude::ProtoTrait for RPCQuery {
             type Response = Proto;
 
             async fn dispatch(self) -> Option<Self::Response> {
                 match self {
                     #(RPCQuery::#query_variants2(#(#query_params),*) => {
-                        Some(Proto::RPCResponse(RPCResponse::#response_variants2(#models::#methods(#(#query_params_with_ref),*).await)))
-                    }),*,
+                        let res = #models::#methods(#(#query_params_with_ref),*).await;
+                        Some(Proto::RPCResponse(RPCResponse::#response_variants2(#(#response_self,)* res)))
+                    }),*
                     _ => todo!(),
                 }
             }
@@ -255,14 +335,14 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         }
 
         #[async_trait]
-        impl comet::prelude::Proto for RPCResponse {
+        impl comet::prelude::ProtoTrait for RPCResponse {
             type Response = Proto;
 
             async fn dispatch(self) -> Option<Self::Response> {
                 match self {
-                    #(RPCResponse::#response_variants3(arg) => {
+                    #(RPCResponse::#response_variants3(#(#response_self2,)* arg) => {
                         None
-                    }),*,
+                    }),*
                     _ => todo!(),
                 }
             }

@@ -5,6 +5,9 @@ pub use derive_more::*;
 pub use async_trait::async_trait;
 pub use lazy_static::lazy_static;
 
+pub use diesel;
+pub use diesel::prelude::*;
+
 pub use paste::paste;
 pub use serde;
 pub use serde::{Deserialize, Serialize};
@@ -18,7 +21,7 @@ pub use crate::core::app::*;
 pub use crate::core::component::*;
 pub use crate::core::shared::*;
 
-pub use crate::core::proto::{Message, Proto};
+pub use crate::core::proto::{Message, ProtoTrait};
 pub use crate::core::utils::*;
 pub use crate::core::*;
 
