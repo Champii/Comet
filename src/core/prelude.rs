@@ -45,6 +45,7 @@ pub use comet_macro_procs::generate_rpc_proto;
 pub use comet_macro_procs::model;
 pub use comet_macro_procs::rpc;
 pub use comet_macro_procs::sql;
+pub use comet_macro_procs::watch;
 
 // These are safe to be in both client and server
 pub use wasm_bindgen;

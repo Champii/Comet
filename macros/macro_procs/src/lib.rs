@@ -59,6 +59,11 @@ pub fn sql(_attr: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
+pub fn watch(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    sql_macro::perform_watch(input)
+}
+
+#[proc_macro_attribute]
 pub fn rpc(_attr: TokenStream, input: TokenStream) -> TokenStream {
     rpc_macro::perform(input)
 }
