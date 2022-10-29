@@ -7,6 +7,11 @@ members = [
     "comet_bin",
 ]
 
+default-members = [
+    "comet",
+    "comet_bin",
+]
+
 exclude = [
     "examples"
 ]
