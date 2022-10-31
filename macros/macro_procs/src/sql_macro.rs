@@ -23,7 +23,6 @@ pub fn register_sql_queries(mut mcall: syn::ItemImpl) -> Result<proc_macro2::Tok
         #[rpc]
     });
 
-    // let self_type = *mcall.self_ty.clone();
     let res = mcall
         .items
         .iter()
@@ -73,15 +72,27 @@ pub fn perform_watch(input: TokenStream) -> TokenStream {
 }
 
 pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::TokenStream> {
+    let query_id = QUERIES.read().unwrap().clone();
+
+    *QUERIES.write().unwrap() = query_id + 1;
+
     if mcall
         .attrs
         .iter()
         .position(|attr| attr.tts.to_string() == "(target_arch = \"wasm32\")")
         .is_some()
     {
-        return Ok(quote! { #mcall });
+        //TODO: generate call cache here
+        generate_client_sql_watch(mcall, query_id)
+    } else {
+        generate_server_sql_watch(mcall, query_id)
     }
+}
 
+pub fn generate_server_sql_watch(
+    mcall: syn::ImplItemMethod,
+    _query_id: u64,
+) -> Result<proc_macro2::TokenStream> {
     let mut server_fn = mcall.clone();
     let stmts = server_fn.block.stmts.clone();
 
@@ -108,26 +119,17 @@ pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::Tok
             let handle = watch::<Self>(
                 &query_str,
                 Box::new(move |events| {
-                    for event in events {
-                        let event2 = event.clone();
-                        let client3 = client2.clone();
+                    let new_events = events.clone().into_iter().map(Event::from).collect::<Vec<_>>();
 
-                        match event {
-                            PgEvent::Insert(row) => {
-                                println!("insert: {:?}, req_id: {}", row, request_id);
-                            },
-                            PgEvent::Update(row) => println!("change: {:?}", row),
-                            PgEvent::Delete(id) => println!("delete: {:?}", id),
-                        }
+                    let client3 = client2.clone();
 
-                        tokio::task::spawn(async move {
-                            client3
-                                .send(
-                                    Proto::Event(event2.into())
-                                )
-                            .await
-                        });
-                    }
+                    tokio::task::spawn(async move {
+                        client3
+                            .send(
+                                Proto::Event(request_id, new_events),
+                            )
+                        .await
+                    });
                 }),
             )
             .await;
@@ -142,5 +144,45 @@ pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::Tok
 
     Ok(quote! {
         #server_fn
+    })
+}
+
+pub fn generate_client_sql_watch(
+    mcall: syn::ImplItemMethod,
+    query_id: u64,
+) -> Result<proc_macro2::TokenStream> {
+    let mut client_fn = mcall.clone();
+    let mut stmts = client_fn.block.stmts.clone();
+
+    let stmt = stmts.pop().unwrap();
+
+    let client_wrap: syn::Block = syn::parse_quote! {
+        {
+            let mut cache = crate::CACHE.write().await;
+            match cache.query(#query_id) {
+                Some(results) => return results,
+                None => {
+                    // FIXME: Beware of data races with next request id if another request is
+                    // issued between
+                    let request_id = crate::SOCKET.read().await.as_ref().map(|socket| socket.get_next_request_id()).unwrap();
+
+                    cache.register_request(request_id, #query_id);
+
+                    let results = #stmt;
+
+                    cache.update(#query_id, results.clone());
+
+                    comet::console_log!("cache after update {:#?}", *cache);
+
+                    results
+                },
+            }
+        }
+    };
+
+    client_fn.block = client_wrap;
+
+    Ok(quote! {
+        #client_fn
     })
 }

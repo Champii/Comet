@@ -161,6 +161,7 @@ pub fn register_rpc(
         .collect::<Vec<_>>();
 
     let query_args2 = query_args.clone();
+    let query_args3 = query_args.clone();
 
     let client_wrap: syn::Block = syn::parse_quote! {
         {
@@ -179,9 +180,12 @@ pub fn register_rpc(
         }
     };
 
+    client_fn.block = client_wrap;
+
     let mut generated_fns = vec![];
 
     if let Some(watch_wrapper_fn_name) = watch_wrapper_fn_name {
+        let orig_fn_args = client_fn.sig.decl.inputs.clone();
         let mut wrapper_fn_args = client_fn.sig.decl.inputs.clone();
         let request_id_arg: syn::FnArg = syn::parse_quote! { request_id: u64 };
         wrapper_fn_args.push(request_id_arg);
@@ -202,9 +206,26 @@ pub fn register_rpc(
         server_fn.attrs.retain(|attr| !attr.path.is_ident("watch"));
 
         generated_fns.push(wrapper_fn);
-    }
 
-    client_fn.block = client_wrap;
+        let client_fn_stmts = client_fn.block.stmts.clone();
+
+        let client_wrapper_fn = quote! {
+            #[cfg(target_arch = "wasm32")]
+            pub async fn #watch_wrapper_fn_name(#(#orig_fn_args,)*) -> #response_type_orig {
+                #( #client_fn_stmts )*
+            }
+        };
+
+        let new_client_fn_body: syn::Block = syn::parse_quote! {
+            {
+                #self_type::#watch_wrapper_fn_name(#(#query_args3.clone()),*).await
+            }
+        };
+
+        client_fn.block = new_client_fn_body;
+
+        generated_fns.push(client_wrapper_fn);
+    }
 
     generated_fns.extend(vec![
         quote! {

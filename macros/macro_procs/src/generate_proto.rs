@@ -30,8 +30,17 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
     let models3 = models.clone();
     let models4 = models.clone();
     let models5 = models.clone();
+    let models6 = models.clone();
+    let models7 = models.clone();
+    let _models8 = models.clone();
+    let models9 = models.clone();
+    let models10 = models.clone();
+
+    let models_ids = 0..models.len() as u64;
 
     let tt = quote! {
+        pub type ModelId = u64;
+
         #[derive(Serialize, Deserialize, Debug)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub enum Model {
@@ -44,12 +53,39 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
                     Model::#models5(m)
                 }
             }
+
+            impl From<Model> for #models6 {
+                fn from(m: Model) -> Self {
+                    match m {
+                        Model::#models7(m) => m,
+                        _ => panic!("Invalid model type"),
+                    }
+                }
+            }
         )*
+
+        impl Model {
+            pub fn id(&self) -> i32 {
+                match self {
+                    #(
+                        Model::#models9(m) => m.id,
+                    )*
+                }
+            }
+
+            pub fn model_id(&self) -> ModelId {
+                match self {
+                    #(
+                        Model::#models10(m) => #models_ids,
+                    )*
+                }
+            }
+        }
 
         #[derive(Serialize, Deserialize, Debug)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub enum Proto {
-            Event(crate::Event<Model>),
+            Event(u64, Vec<crate::Event<Model>>), // original request_id
             RPCQuery(RPCQuery),
             RPCResponse(RPCResponse),
         }
@@ -68,7 +104,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
 
             async fn dispatch(self, request_id: u64, client: Self::Client) -> Option<Self::Response> {
                 match self {
-                    Proto::Event(event) => {
+                    Proto::Event(_request_id, _event) => {
                         // update cache
                         // redraw
                         None

@@ -18,6 +18,9 @@ macro_rules! run {
         #[cfg(not(target_arch = "wasm32"))]
         generate_migrations! {}
 
+        #[cfg(target_arch = "wasm32")]
+        generate_cache! {}
+
         /* pub mod prelude {
             pub use crate::*;
             /* pub use crate::RPCQuery;
@@ -52,6 +55,11 @@ macro_rules! run {
         }
 
         #[cfg(target_arch = "wasm32")]
+        lazy_static! {
+            pub static ref CACHE: Arc<RwLock<Cache>> = Arc::new(RwLock::new(Cache::new()));
+        }
+
+        #[cfg(target_arch = "wasm32")]
         pub async fn start_socket(ready: comet::prelude::futures::channel::oneshot::Sender<()>) {
             use comet::prelude::futures::StreamExt;
 
@@ -65,8 +73,17 @@ macro_rules! run {
 
             ready.send(()).unwrap();
 
-            while let Some(packet) = rx.next().await {
-                comet::console_log!("packet {:#?}", packet);
+            while let Some(msg) = rx.next().await {
+                let proto = Proto::from_bytes(&msg.msg);
+
+                comet::console_log!("packet {:#?}", proto);
+
+                if let Proto::Event(request_id, events) = proto {
+                    comet::console_log!("cache after event {:#?}", *CACHE.read().await);
+                    CACHE.write().await.update_for_request_id(request_id, events);
+
+                    comet::console_log!("cache after event2 {:#?}", *CACHE.read().await);
+                }
             }
         }
 
@@ -87,7 +104,7 @@ macro_rules! run {
         #[cfg(not(target_arch = "wasm32"))]
         #[tokio::main]
         pub async fn main() {
-                comet::server::server::run::<Proto>().await;
+            comet::server::server::run::<Proto>().await;
         }
     }
 }

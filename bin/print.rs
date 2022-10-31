@@ -40,8 +40,18 @@ fn print_warn(log: &str) {
     );
 }
 
-pub fn log_execute_async(log: &str, name: &str, args: &[&str]) {
+pub fn log_execute_async(log: &str, name: &str, args: &[&str], verbose: bool) {
+    let mut args = args.to_vec();
+
+    if !verbose {
+        args.push("-q");
+    }
+
     print(format!("{} {} {}...", "[".purple(), "]".purple(), log).as_str());
+
+    if verbose {
+        println!("");
+    }
 
     let handle = Command::new(name)
         .env("TERM", "xterm-256color")
@@ -58,8 +68,18 @@ pub fn log_execute_async(log: &str, name: &str, args: &[&str]) {
     }
 }
 
-pub fn log_execute(log: &str, name: &str, args: &[&str]) {
+pub fn log_execute(log: &str, name: &str, args: &[&str], verbose: bool) {
+    let mut args = args.to_vec();
+
+    if !verbose {
+        args.push("-q");
+    }
+
     print(format!("{} {} {}...", "[".purple(), "]".purple(), log).as_str());
+
+    if verbose {
+        println!("");
+    }
 
     let status = Command::new(name)
         .env("TERM", "xterm-256color")

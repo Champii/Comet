@@ -4,7 +4,7 @@ use which::which;
 
 use super::log_execute;
 
-pub fn check_and_install_diesel_cli() {
+pub fn check_and_install_diesel_cli(verbose: bool) {
     if which("diesel").is_err() {
         log_execute(
             "Installing diesel-cli",
@@ -15,10 +15,10 @@ pub fn check_and_install_diesel_cli() {
                 "--no-default-features",
                 "--features",
                 "postgres",
-                "-q",
                 "--color",
                 "always",
             ],
+            verbose,
         );
     }
 
@@ -26,23 +26,25 @@ pub fn check_and_install_diesel_cli() {
         || !Path::new("migrations").exists()
         || !Path::new("src/schema.rs").exists()
     {
-        log_execute("Diesel setup", "diesel", &["setup"]);
-        log_execute("Reset database", "diesel", &["database", "reset"]);
-        log_execute("Migrating database", "diesel", &["migration", "run"]);
+        log_execute("Diesel setup", "diesel", &["setup"], false);
+        log_execute("Reset database", "diesel", &["database", "reset"], false);
+        log_execute("Migrating database", "diesel", &["migration", "run"], false);
         log_execute(
             "Patching schema",
             "sed",
             &["-i", "s/^diesel::/crate::diesel::/g", "src/schema.rs"],
+            false,
         );
     }
 }
 
-pub fn check_and_install_wasm_pack() {
+pub fn check_and_install_wasm_pack(verbose: bool) {
     if which("wasm-pack").is_err() {
         log_execute(
             "Installing wasm-pack",
             "cargo",
-            &["install", "wasm-pack", "-q", "--color", "always"],
+            &["install", "wasm-pack", "--color", "always"],
+            verbose,
         );
     }
 }

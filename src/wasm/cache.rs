@@ -3,6 +3,8 @@ use std::{
     hash::{Hash, Hasher},
 };
 
+use crate::prelude::ProtoTrait;
+
 // client check local cache for the QueryHash
 // if query exists with given params
 //   register the componentId with the QueryHash in the ComponentQueryBinder
@@ -28,15 +30,15 @@ use std::{
 
 pub type QueryId = u64;
 pub type ComponentId = String;
-
+/*
 // The message that is sent to the server and back
 pub enum Message {
     Query(Query),
     Response(Vec<Model>),
     Event(QueryHash, Vec<Model>, Vec<i32>), // query Hash, new/update models, deleted ids
 }
-
-#[derive(Hash)]
+ */
+/* #[derive(Hash)]
 pub struct Query {
     query_id: QueryId,
     params: Vec<String>,
@@ -49,9 +51,9 @@ impl Query {
         self.hash(&mut hasher);
         hasher.finish()
     }
-}
+} */
 
-pub type QueryHash = u64;
+// pub type QueryHash = u64;
 
 pub struct Cache {
     query: QueryCache,
@@ -59,7 +61,7 @@ pub struct Cache {
     pub models: ModelCache,
 }
 
-pub type ModelId = u64;
+/* pub type ModelId = u64;
 
 // generate_model_enum!();
 #[derive(Debug, Clone)]
@@ -75,13 +77,13 @@ impl Model {
         }
     }
 }
-
+ */
 // client check local cache for the queryId
 impl Cache {
     // returns the component_ids that needs to be redrawn
-    pub async fn handle_message(&mut self, message: Message) -> Option<BTreeSet<ComponentId>> {
-        match message {
-            Message::Event(query_hash, models, deleted_ids) => {
+    pub fn handle_message(&mut self, proto: Proto) -> Option<BTreeSet<ComponentId>> {
+        match proto {
+            Proto::Event(request_id, event) => {
                 self.models.update(query_hash, models.clone(), deleted_ids);
                 self.query
                     .insert_ids(query_hash, models.iter().map(|model| model.id()).collect());
@@ -96,7 +98,7 @@ impl Cache {
 
     pub async fn query(
         &mut self,
-        query: Query,
+        // query: Query,
         component_id: ComponentId,
     ) -> Result<Vec<Model>, ()> {
         let query_hash = query.calc_hash();

@@ -5,6 +5,7 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 
 mod db_macro;
+mod generate_cache;
 mod generate_hash;
 mod generate_migrations;
 mod generate_msg;
@@ -71,4 +72,9 @@ pub fn rpc(_attr: TokenStream, input: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn generate_rpc_proto(input: TokenStream) -> TokenStream {
     rpc_macro::generate_rpc_proto(input)
+}
+
+#[proc_macro]
+pub fn generate_cache(input: TokenStream) -> TokenStream {
+    generate_cache::perform(input)
 }

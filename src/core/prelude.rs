@@ -39,6 +39,7 @@ pub use crate::html_arr;
 pub use crate::replace_self;
 pub use crate::run;
 pub use comet_macro_procs::db;
+pub use comet_macro_procs::generate_cache;
 pub use comet_macro_procs::generate_migrations;
 pub use comet_macro_procs::generate_proto;
 pub use comet_macro_procs::generate_rpc_proto;

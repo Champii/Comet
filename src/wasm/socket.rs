@@ -128,4 +128,8 @@ where
     pub fn take_receiver(&mut self) -> Option<UnboundedReceiver<Message>> {
         self.rx.take()
     }
+
+    pub fn get_next_request_id(&self) -> u64 {
+        self.next_request_id
+    }
 }

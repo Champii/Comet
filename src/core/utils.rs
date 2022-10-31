@@ -109,6 +109,28 @@ pub enum Event<T> {
     Update(T),
     Delete(i32),
 }
+
+impl<T> Event<T> {
+    pub fn is_insert(&self) -> bool {
+        match self {
+            Event::Insert(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_update(&self) -> bool {
+        match self {
+            Event::Update(_) => true,
+            _ => false,
+        }
+    }
+    pub fn is_delete(&self) -> bool {
+        match self {
+            Event::Delete(_) => true,
+            _ => false,
+        }
+    }
+}
+
 //impl from<PgEvent>
 #[cfg(not(target_arch = "wasm32"))]
 use reactive_pg::Event as PgEvent;
