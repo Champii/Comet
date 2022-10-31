@@ -185,6 +185,8 @@ pub fn register_rpc(
         let mut wrapper_fn_args = client_fn.sig.decl.inputs.clone();
         let request_id_arg: syn::FnArg = syn::parse_quote! { request_id: u64 };
         wrapper_fn_args.push(request_id_arg);
+        let client_arg: syn::FnArg = syn::parse_quote! { client: comet::server::client::Client };
+        wrapper_fn_args.push(client_arg);
 
         let server_fn_stmts = server_fn.block.stmts.clone();
 
@@ -305,6 +307,7 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
             // If watch method, inject the request_id argument
             if method.to_string().matches("_watch__").count() > 0 {
                 params.push(syn::parse_quote! { request_id });
+                params.push(syn::parse_quote! { client });
             }
 
             params
@@ -376,9 +379,15 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         #[async_trait]
         impl comet::prelude::ProtoTrait for RPCQuery {
             type Response = Proto;
+            #[cfg(not(target_arch = "wasm32"))]
+            type Client = comet::server::client::Client;
+            #[cfg(target_arch = "wasm32")]
+            type Client = ();
 
             #[cfg(not(target_arch = "wasm32"))]
-            async fn dispatch(self, request_id: u64) -> Option<Self::Response> {
+            async fn dispatch(self, request_id: u64, client: Self::Client) -> Option<Self::Response>
+            where Self::Client: Send,
+            {
                 match self {
                     #(RPCQuery::#query_variants2(#(#query_params),*) => {
                         let res = #models::#methods(#(#query_params_with_ref),*).await;
@@ -395,9 +404,15 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         #[async_trait]
         impl comet::prelude::ProtoTrait for RPCResponse {
             type Response = Proto;
+            #[cfg(not(target_arch = "wasm32"))]
+            type Client = Client;
+            #[cfg(target_arch = "wasm32")]
+            type Client = ();
 
             #[cfg(target_arch = "wasm32")]
-            async fn dispatch(self, request_id: u64) -> Option<Self::Response> {
+            async fn dispatch(self, request_id: u64, client: Self::Client) -> Option<Self::Response>
+            where Self::Client: Send,
+            {
                 match self {
                     #(RPCResponse::#response_variants3(#(#response_self2,)* arg) => {
                         None

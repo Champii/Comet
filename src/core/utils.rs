@@ -102,3 +102,27 @@ impl HtmlNode {
         };
     }
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum Event<T> {
+    Insert(T),
+    Update(T),
+    Delete(i32),
+}
+//impl from<PgEvent>
+#[cfg(not(target_arch = "wasm32"))]
+use reactive_pg::Event as PgEvent;
+
+#[cfg(not(target_arch = "wasm32"))]
+impl<T, M> From<PgEvent<T>> for Event<M>
+where
+    T: Into<M>,
+{
+    fn from(event: PgEvent<T>) -> Self {
+        match event {
+            PgEvent::Insert(t) => Event::Insert(t.into()),
+            PgEvent::Update(t) => Event::Update(t.into()),
+            PgEvent::Delete(id) => Event::Delete(id),
+        }
+    }
+}

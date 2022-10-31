@@ -17,6 +17,12 @@ fn impl_model_macro(
     mut item_struct: ItemStruct,
 ) -> Result<proc_macro2::TokenStream> {
     let name = item_struct.ident.clone();
+
+    super::db_macro::MODELS
+        .write()
+        .unwrap()
+        .push(name.to_string());
+
     // let name2 = ast.ident.clone();
 
     crate::generate_migrations::register_migration(item_struct.clone());

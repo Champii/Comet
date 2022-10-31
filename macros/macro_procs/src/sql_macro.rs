@@ -101,21 +101,38 @@ pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::Tok
             });
             query_str = query_str.replace("\"", "");
 
-            use reactive_pg::{Event, watch};
+            use reactive_pg::{Event as PgEvent, watch};
 
-            let handler = watch::<Self>(
+            let client2 = client.clone();
+
+            let handle = watch::<Self>(
                 &query_str,
                 Box::new(move |events| {
                     for event in events {
+                        let event2 = event.clone();
+                        let client3 = client2.clone();
+
                         match event {
-                            Event::Insert(row) => println!("insert: {:?}, req_id: {}", row, request_id),
-                            Event::Update(row) => println!("change: {:?}", row),
-                            Event::Delete(id) => println!("delete: {:?}", id),
+                            PgEvent::Insert(row) => {
+                                println!("insert: {:?}, req_id: {}", row, request_id);
+                            },
+                            PgEvent::Update(row) => println!("change: {:?}", row),
+                            PgEvent::Delete(id) => println!("delete: {:?}", id),
                         }
+
+                        tokio::task::spawn(async move {
+                            client3
+                                .send(
+                                    Proto::Event(event2.into())
+                                )
+                            .await
+                        });
                     }
                 }),
             )
             .await;
+
+            client.add_query(request_id, handle).await;
 
             #(#rest)*
         }

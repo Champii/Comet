@@ -38,4 +38,10 @@ impl UniverseInner {
     pub fn get_client(&self, session_id: usize) -> Client {
         self.clients.get(&session_id).unwrap().clone()
     }
+
+    pub async fn remove_client(&mut self, session_id: usize) {
+        let client = self.clients.remove(&session_id).unwrap();
+
+        client.abort_queries().await;
+    }
 }

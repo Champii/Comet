@@ -3,4 +3,5 @@ pub use tokio;
 
 pub use tokio::task::spawn_local;
 
+pub use crate::server::client::Client;
 pub use crate::server::universe::UNIVERSE;

@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::fmt::Debug;
+use std::sync::Arc;
 
 use tokio::sync::RwLock;
 
@@ -23,11 +23,21 @@ use futures::stream::StreamExt;
 async fn handler<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned + Debug>(
     ws: WebSocketUpgrade,
     Extension(universe): Extension<Universe>,
-) -> Response {
+) -> Response
+where
+    <P as ProtoTrait>::Client: Send,
+    P: ProtoTrait<Client = Client>,
+{
     ws.on_upgrade(|socket| handle_socket::<P>(socket, universe))
 }
 
-async fn handle_socket<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned + Debug>(socket: WebSocket, universe: Universe) {
+async fn handle_socket<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned + Debug>(
+    socket: WebSocket,
+    universe: Universe,
+) where
+    <P as ProtoTrait>::Client: Send,
+    P: ProtoTrait<Client = Client>,
+{
     let (tx, mut rx) = socket.split();
 
     let tx = Arc::new(RwLock::new(tx));
@@ -41,17 +51,23 @@ async fn handle_socket<P: ProtoTrait + Send + 'static + Serialize + DeserializeO
         let msg = if let Ok(msg) = msg {
             msg
         } else {
-            // client disconnected
-            return;
+            break;
         };
 
         let client = universe.read().await.get_client(session_id);
 
         client.handle_msg::<P>(msg.into()).await;
     }
+
+    // client disconnected
+    universe.write().await.remove_client(session_id).await;
 }
 
-pub async fn run<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned + Debug>() {
+pub async fn run<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned + Debug>()
+where
+    <P as ProtoTrait>::Client: Send,
+    P: ProtoTrait<Client = Client>,
+{
     let app = Router::new()
         .route("/ws", get(handler::<P>))
         .layer(Extension(crate::UNIVERSE.clone()))

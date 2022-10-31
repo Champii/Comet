@@ -22,10 +22,12 @@ impl Message {
 #[async_trait]
 pub trait ProtoTrait {
     type Response: ProtoTrait + Send + Serialize + DeserializeOwned;
+    type Client;
 
-    async fn dispatch(self, _request_id: u64) -> Option<Self::Response>
+    async fn dispatch(self, _request_id: u64, _client: Self::Client) -> Option<Self::Response>
     where
         Self: Sized,
+        Self::Client: Send,
     {
         None
     }
