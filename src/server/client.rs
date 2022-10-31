@@ -39,6 +39,11 @@ impl Client {
     }
 
     pub async fn handle_msg<P: ProtoTrait + Send + Serialize + DeserializeOwned + Debug>(&self, msg: Vec<u8>) {
+        if msg.is_empty() {
+            // FIXME: add warning log
+            return;
+        }
+
         let msg = crate::Message::from_bytes(&msg);
         
         let proto = P::from_bytes(&msg.msg);
