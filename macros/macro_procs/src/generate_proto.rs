@@ -46,10 +46,10 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
         impl comet::prelude::ProtoTrait for Proto {
             type Response = Proto;
 
-            async fn dispatch(self) -> Option<Self::Response> {
+            async fn dispatch(self, request_id: u64) -> Option<Self::Response> {
                 match self {
-                    Proto::RPCQuery(rpc_proto) => rpc_proto.dispatch().await,
-                    Proto::RPCResponse(rpc_proto) => rpc_proto.dispatch().await,
+                    Proto::RPCQuery(rpc_proto) => rpc_proto.dispatch(request_id).await,
+                    Proto::RPCResponse(rpc_proto) => rpc_proto.dispatch(request_id).await,
                     // #(Proto::#models2(#inner2) => #inner3.dispatch(),)*
                     _ => todo!(),
                 }

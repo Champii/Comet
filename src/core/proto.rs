@@ -23,9 +23,12 @@ impl Message {
 pub trait ProtoTrait {
     type Response: ProtoTrait + Send + Serialize + DeserializeOwned;
 
-    async fn dispatch(self) -> Option<Self::Response>
+    async fn dispatch(self, _request_id: u64) -> Option<Self::Response>
     where
-        Self: Sized;
+        Self: Sized,
+    {
+        None
+    }
 
     fn from_bytes(bytes: &[u8]) -> Self
     where

@@ -17,6 +17,7 @@ use super::universe::Universe;
 pub struct Client {
     out: Arc<RwLock<SplitSink<WebSocket, Message>>>,
     session_id: usize,
+    // queries: Arc<RwLock<HashMap<u64, Watcher>>>,
     // universe: Universe,
     // hash: String,
     // db: DatabaseConnection,
@@ -42,7 +43,7 @@ impl Client {
         
         let proto = P::from_bytes(&msg.msg);
 
-        let response = proto.dispatch().await;
+        let response = proto.dispatch(msg.request_id).await;
 
         if let Some(response) = response {
             let response = response.to_bytes();
@@ -72,3 +73,4 @@ impl Client {
             .unwrap();
     } */
 }
+

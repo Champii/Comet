@@ -99,14 +99,15 @@ where
         self.next_request_id += 1;
 
         let (tx, rx) = futures::channel::oneshot::channel::<Message>();
-        let (future, _handle) =
+        let (future, handle) =
             futures::future::abortable(async move { P::from_bytes(&rx.await.unwrap().msg) });
 
-        // if timeoug then abort the handle
-        /* let timeout = async move {
-            // tokio::time::delay_for(std::time::Duration::from_secs(10)).await;
+        // if timeout then abort the handle
+        /* spawn_local(async move {
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+
             handle.abort();
-        }; */
+        }); */
 
         self.pending_requests.write().await.insert(request_id, tx);
 

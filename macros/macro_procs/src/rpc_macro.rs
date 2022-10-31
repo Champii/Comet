@@ -3,7 +3,7 @@ use proc_macro::TokenStream;
 use std::sync::{Arc, RwLock};
 
 use quote::quote;
-use syn::{parse::Result, parse_macro_input, ImplItem};
+use syn::{parse::Result, parse_macro_input, token::Comma, FnArg, ImplItem};
 
 #[derive(Debug)]
 pub struct RpcEntry {
@@ -64,7 +64,9 @@ pub fn register_rpc(
     mcall: &syn::ImplItemMethod,
 ) -> Result<Vec<proc_macro2::TokenStream>> {
     eprintln!("REGISTER RPC ATTRS: {:?}", mcall.attrs);
-    let server_fn = mcall.clone();
+    let is_watch = mcall.attrs.iter().any(|attr| attr.path.is_ident("watch"));
+
+    let mut server_fn = mcall.clone();
     let mut client_fn = mcall.clone();
 
     let query_types = mcall
@@ -97,12 +99,12 @@ pub fn register_rpc(
     let query_variant_real: syn::Ident = syn::parse_str(&query_variant).unwrap();
     let response_variant_real: syn::Ident = syn::parse_str(&response_variant).unwrap();
 
-    let response_type = match &mcall.sig.decl.output {
+    let response_type_orig = match &mcall.sig.decl.output {
         syn::ReturnType::Default => syn::parse_quote! { () },
         syn::ReturnType::Type(_, ty) => ty.clone(),
     };
 
-    let response_type = quote! { #response_type }.to_string();
+    let response_type = quote! { #response_type_orig }.to_string();
     let response_type = if let Some((true, _)) = query_types.get(0) {
         (true, response_type)
     } else {
@@ -110,25 +112,40 @@ pub fn register_rpc(
     };
 
     let model_name = quote! { #self_type }.to_string();
+    let fn_name_ident = mcall.sig.ident.clone();
     let fn_name = mcall.sig.ident.to_string();
 
+    let watch_wrapper_fn_name = if is_watch {
+        Some(syn::parse_str::<syn::Ident>(&format!("__{}_watch__", fn_name)).unwrap())
+    } else {
+        None
+    };
+
+    let method_name = if let Some(watch_wrapper_fn_name) = &watch_wrapper_fn_name {
+        watch_wrapper_fn_name.to_string()
+    } else {
+        fn_name.clone()
+    };
+
     let response_self: Vec<syn::Ident> = if let (true, _) = response_type.clone() {
-        vec![syn::parse_quote! { returned_self }]
+        let returned_self: syn::Ident = syn::parse_quote! { returned_self };
+
+        vec![returned_self]
     } else {
         vec![]
     };
     let response_self2 = response_self.clone();
 
     RPCS.write().unwrap().push(RpcEntry {
-        model_name,
-        method_name: fn_name,
+        model_name: model_name.clone(),
+        method_name,
         query_variant: query_variant.clone(),
         query_types,
         response_variant,
         response_type,
     });
 
-    let query_args = mcall
+    let mut query_args = mcall
         .sig
         .decl
         .inputs
@@ -143,6 +160,8 @@ pub fn register_rpc(
             _ => unimplemented!(),
         })
         .collect::<Vec<_>>();
+
+    let query_args2 = query_args.clone();
 
     let client_wrap: syn::Block = syn::parse_quote! {
         {
@@ -161,9 +180,32 @@ pub fn register_rpc(
         }
     };
 
+    let mut generated_fns = vec![];
+
+    if let Some(watch_wrapper_fn_name) = watch_wrapper_fn_name {
+        let mut wrapper_fn_args = client_fn.sig.decl.inputs.clone();
+        let request_id_arg: syn::FnArg = syn::parse_quote! { request_id: u64 };
+        wrapper_fn_args.push(request_id_arg);
+
+        let server_fn_stmts = server_fn.block.stmts.clone();
+
+        let wrapper_fn = quote! {
+            #[cfg(not(target_arch = "wasm32"))]
+            #[watch]
+            pub async fn #watch_wrapper_fn_name(#(#wrapper_fn_args,)*) -> #response_type_orig {
+                #( #server_fn_stmts )*;
+                #self_type::#fn_name_ident(#(#query_args2.clone()),*).await
+            }
+        };
+
+        server_fn.attrs.retain(|attr| !attr.path.is_ident("watch"));
+
+        generated_fns.push(wrapper_fn);
+    }
+
     client_fn.block = client_wrap;
 
-    Ok(vec![
+    generated_fns.extend(vec![
         quote! {
             #[cfg(not(target_arch = "wasm32"))]
             #server_fn
@@ -172,7 +214,9 @@ pub fn register_rpc(
             #[cfg(target_arch = "wasm32")]
             #client_fn
         },
-    ])
+    ]);
+
+    Ok(generated_fns)
 }
 
 pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
@@ -238,10 +282,11 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
 
     let query_params_with_ref = models
         .iter()
+        .zip(methods.clone())
         .zip(query_params.clone())
         .zip(query_types.clone())
-        .map(|((model, params), types)| {
-            params
+        .map(|(((model, method), params), types)| {
+            let mut params = params
                 .iter()
                 .zip(types)
                 .enumerate()
@@ -256,7 +301,14 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
                         syn::parse_quote! { #param }
                     }
                 })
-                .collect::<Vec<syn::Expr>>()
+                .collect::<Vec<syn::Expr>>();
+
+            // If watch method, inject the request_id argument
+            if method.to_string().matches("_watch__").count() > 0 {
+                params.push(syn::parse_quote! { request_id });
+            }
+
+            params
         })
         .collect::<Vec<_>>();
 
@@ -326,7 +378,8 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         impl comet::prelude::ProtoTrait for RPCQuery {
             type Response = Proto;
 
-            async fn dispatch(self) -> Option<Self::Response> {
+            #[cfg(not(target_arch = "wasm32"))]
+            async fn dispatch(self, request_id: u64) -> Option<Self::Response> {
                 match self {
                     #(RPCQuery::#query_variants2(#(#query_params),*) => {
                         let res = #models::#methods(#(#query_params_with_ref),*).await;
@@ -344,7 +397,8 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
         impl comet::prelude::ProtoTrait for RPCResponse {
             type Response = Proto;
 
-            async fn dispatch(self) -> Option<Self::Response> {
+            #[cfg(target_arch = "wasm32")]
+            async fn dispatch(self, request_id: u64) -> Option<Self::Response> {
                 match self {
                     #(RPCResponse::#response_variants3(#(#response_self2,)* arg) => {
                         None

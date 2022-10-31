@@ -85,13 +85,11 @@ pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::Tok
     let mut server_fn = mcall.clone();
     let stmts = server_fn.block.stmts.clone();
 
-    let (orig_stmts, added_stmts) = stmts.split_at(stmts.len() - 3);
-    let orig_stmts = orig_stmts.to_vec();
-    let added_stmts = added_stmts.to_vec();
+    let (query, rest) = stmts.split_at(stmts.len() - 4);
 
     let server_wrap: syn::Block = syn::parse_quote! {
         {
-            #(#orig_stmts)*
+            #(#query)*
 
             let query_str = diesel::debug_query::<diesel::pg::Pg, _>(&query).to_string();
             let strs = query_str.split("--").collect::<Vec<_>>();
@@ -110,7 +108,7 @@ pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::Tok
                 Box::new(move |events| {
                     for event in events {
                         match event {
-                            Event::Insert(row) => println!("insert: {:?}", row),
+                            Event::Insert(row) => println!("insert: {:?}, req_id: {}", row, request_id),
                             Event::Update(row) => println!("change: {:?}", row),
                             Event::Delete(id) => println!("delete: {:?}", id),
                         }
@@ -118,7 +116,8 @@ pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::Tok
                 }),
             )
             .await;
-            #(#added_stmts)*
+
+            #(#rest)*
         }
     };
 

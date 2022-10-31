@@ -368,8 +368,7 @@ comet::run!(Counter::default().create().await.unwrap());
 
 ### Database queries
 
-When dealing with Database queries, it is obvious that they should only be executed server side.
-The most simple way to define a new one is with the macro `#[sql]`, that uses `#[rpc]` underneath.
+The most simple way to define a new database query is with the macro `#[sql]`, that uses `#[rpc]` underneath.
 
 All your models have been augmented with auto-generated diesel bindings, so you can use a familiar syntax.
 There will be a way to give raw SQL in the near future.
@@ -384,6 +383,9 @@ pub struct Todo {
 
 #[sql]
 impl Todo {
+    // Use the watch macro to get back your data whenever the result set change in DB
+    // Only valid for select statement for now
+    #[watch]
     pub async fn db_get_all(limit: u16) -> Vec<Todo> {
 	// The diesel schema has been generated for you
         use crate::schema::todos;
@@ -396,11 +398,10 @@ impl Todo {
 }
 ```
 
-Soon there will also be a `#[watch]` attribute that will trigger the reactive redraw when your model change
-
 ---
 
 ## Todo List
+- Function Component
 - Allow for iterators inside html
 - Allow to mix attributes, styles and events
 - Client cache (with local wasm sql ?)
