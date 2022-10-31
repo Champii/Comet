@@ -3,7 +3,7 @@ use proc_macro::TokenStream;
 use std::sync::{Arc, RwLock};
 
 use quote::quote;
-use syn::{parse::Result, parse_macro_input, token::Comma, FnArg, ImplItem};
+use syn::{parse::Result, parse_macro_input, ImplItem};
 
 #[derive(Debug)]
 pub struct RpcEntry {
@@ -63,7 +63,6 @@ pub fn register_rpc(
     self_type: syn::Type,
     mcall: &syn::ImplItemMethod,
 ) -> Result<Vec<proc_macro2::TokenStream>> {
-    eprintln!("REGISTER RPC ATTRS: {:?}", mcall.attrs);
     let is_watch = mcall.attrs.iter().any(|attr| attr.path.is_ident("watch"));
 
     let mut server_fn = mcall.clone();
@@ -145,7 +144,7 @@ pub fn register_rpc(
         response_type,
     });
 
-    let mut query_args = mcall
+    let query_args = mcall
         .sig
         .decl
         .inputs

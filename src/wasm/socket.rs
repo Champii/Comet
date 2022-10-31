@@ -99,7 +99,7 @@ where
         self.next_request_id += 1;
 
         let (tx, rx) = futures::channel::oneshot::channel::<Message>();
-        let (future, handle) =
+        let (future, _handle) =
             futures::future::abortable(async move { P::from_bytes(&rx.await.unwrap().msg) });
 
         // if timeout then abort the handle
