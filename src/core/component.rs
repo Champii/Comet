@@ -44,6 +44,7 @@ where
             let parent3 = parent2.clone();
 
             let component4 = component2.clone();
+
             run_rec(component4.clone(), &parent3).await;
         })
     };

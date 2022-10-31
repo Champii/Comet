@@ -19,11 +19,15 @@ pub mod wasm;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod server;
 
-pub async fn _run<Comp, Msg>(_root: Comp)
+#[cfg(target_arch = "wasm32")]
+pub async fn _run<Comp, Msg>(_root: Comp) -> App<Comp, Msg>
 where
     Comp: Component<Msg>,
     Msg: Clone + 'static,
 {
-    #[cfg(target_arch = "wasm32")]
-    App::new(_root.into()).run().await;
+    let mut app = App::new(_root.into());
+
+    app.run().await;
+
+    app
 }

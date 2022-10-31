@@ -14,8 +14,8 @@ macro_rules! component {
 
                     }
                     async fn update(&mut self, msg: Msg) {
-                        let lol = &mut *self;
-                        extract_update!{lol, msg, $type, $($e)+}
+                        let this = &mut *self;
+                        extract_update!{this, msg, $type, $($e)+}
                     }
 
                     fn view<F>(&self, f: F, bindings: Shared<Vec<web_sys::Element>>) -> web_sys::Element

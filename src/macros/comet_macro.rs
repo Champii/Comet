@@ -46,7 +46,9 @@ macro_rules! run {
 
             ready_rx.await.unwrap();
 
-            comet::_run($($e)+).await;
+            let app = comet::_run($($e)+).await;
+
+            APP.write().await.replace(app);
         }
 
         #[cfg(target_arch = "wasm32")]
@@ -57,6 +59,12 @@ macro_rules! run {
         #[cfg(target_arch = "wasm32")]
         lazy_static! {
             pub static ref CACHE: Arc<RwLock<Cache>> = Arc::new(RwLock::new(Cache::new()));
+        }
+
+        // TMP
+        #[cfg(target_arch = "wasm32")]
+        lazy_static! {
+            pub static ref APP: Arc<RwLock<Option<comet::prelude::App<App, __component_app::Msg>>>> = Arc::new(RwLock::new(None));
         }
 
         #[cfg(target_arch = "wasm32")]
@@ -79,10 +87,10 @@ macro_rules! run {
                 comet::console_log!("packet {:#?}", proto);
 
                 if let Proto::Event(request_id, events) = proto {
-                    comet::console_log!("cache after event {:#?}", *CACHE.read().await);
                     CACHE.write().await.update_for_request_id(request_id, events);
 
-                    comet::console_log!("cache after event2 {:#?}", *CACHE.read().await);
+                    APP.write().await.as_mut().unwrap().run().await;
+                    comet::console_log!("app run");
                 }
             }
         }
