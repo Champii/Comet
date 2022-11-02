@@ -98,9 +98,9 @@ component! {
     i32 {
 	// The root of this HTML element is a simple button
 	// It has a 'click' event registered that will increment our i32 by 1
-	button @click: { *self += 1 } {
+	button click: *self += 1 {
 	    // We display our value inside the button
-	    { self }
+	    self
 	}
     }
 }
@@ -171,11 +171,11 @@ component! {
 	div #my_id.class1.class2 {
 	    span {
 		// You can access your context anywhere
-		{ self.my_value }
+		self.my_value
 	    }
 	    // Define style properties
-	    div [height: { self.my_height }}] {
-		{ "Another child" }
+	    div style: { height: self.my_height } {
+		"Another child"
 	    }
 	}
     }
@@ -196,25 +196,23 @@ component! {
 	div {
 	    div {
 		// Conditional rendering with if
-		// The parenthesis are necessary
-		if (self.show) {
-		    { "Visible !" }
+		if self.show {
+		    "Visible !"
 		}
-		button @click: { self.show = !self.show } {
-		    { "Toggle" }
+		button click: self.show = !self.show {
+		    "Toggle"
 		}
 	    }
 	    div {
 		// Use a for-like loop.
-		// The parenthesis are necessary around the last part
-		for key, value in (self.value) {
+		for (key, value) in self.value {
 		    div {
-			{ key }
-			{ value }
+			key
+			value
 		    }
 		}
-		button @click: { self.value.push(42) } {
-		    { "Add a number" }
+		button click: self.value.push(42)  {
+		    "Add a number"
 		}
 	    }
 	}
@@ -236,8 +234,8 @@ struct MyStruct {
 component! {
     MyStruct {
 	div {
-	    input ={ self.value } {}
-	    { self.value }
+	    input value: self.value {}
+	    self.value
 	}
     }
 }
@@ -253,7 +251,7 @@ struct Child {
 component! {
     Child {
 	div {
-	    { self.value }
+	    self.value
 	}
     }
 }
@@ -267,8 +265,8 @@ struct Parent {
 component! {
     Parent {
 	div {
-	    // To include a component, you must wrap it inside a @{ }
-	    @{ self.child }
+	    // To include a component, just include it like any other variable
+	    self.child
 	}
     }
 }
@@ -313,11 +311,11 @@ impl Todo {
 component! {
     Todo {
 	div {
-	    { self.id }
-	    { self.title }
-	    { self.completed }
-	    button @click: { self.toggle().await } {
-		{ "Toggle" }
+	    self.id
+	    self.title
+	    self.completed
+            button click: self.toggle().await {
+               "Toggle"
 	    }
 	}
     }
@@ -357,8 +355,8 @@ impl Counter {
 
 component! {
     Counter {
-	button @click: { self.remote_increment().await } {
-	    { self.count }
+	button click: self.remote_increment().await {
+	    self.count
 	}
     }
 }
