@@ -79,7 +79,7 @@ pub fn register_sql_watch(mcall: syn::ImplItemMethod) -> Result<proc_macro2::Tok
     if mcall
         .attrs
         .iter()
-        .position(|attr| attr.tts.to_string() == "(target_arch = \"wasm32\")")
+        .position(|attr| attr.tokens.to_string() == "(target_arch = \"wasm32\")")
         .is_some()
     {
         //TODO: generate call cache here

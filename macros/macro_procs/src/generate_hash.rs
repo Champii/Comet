@@ -23,8 +23,8 @@ fn insert_macro_arg(mut mcall: syn::Macro) -> Result<proc_macro2::TokenStream> {
 
     let mut inserted_ident: proc_macro2::TokenStream = parse_quote!(#sym, );
 
-    inserted_ident.extend(mcall.tts);
-    mcall.tts = inserted_ident;
+    inserted_ident.extend(mcall.tokens);
+    mcall.tokens = inserted_ident;
 
     Ok(mcall.into_token_stream())
 }

@@ -5,6 +5,9 @@ pub use derive_more::*;
 pub use async_trait::async_trait;
 pub use lazy_static::lazy_static;
 
+pub use vdom;
+pub use vdom::*;
+
 pub use diesel;
 pub use diesel::prelude::*;
 
@@ -21,7 +24,6 @@ pub use crate::core::app::*;
 pub use crate::core::component::*;
 pub use crate::core::shared::*;
 
-pub use crate::core::component::run_rec;
 pub use crate::core::proto::{Message, ProtoTrait};
 pub use crate::core::utils::*;
 
@@ -38,11 +40,13 @@ pub use crate::html;
 pub use crate::html_arr;
 pub use crate::replace_self;
 pub use crate::run;
+pub use comet_macro_procs::component2;
 pub use comet_macro_procs::db;
 pub use comet_macro_procs::generate_cache;
 pub use comet_macro_procs::generate_migrations;
 pub use comet_macro_procs::generate_proto;
 pub use comet_macro_procs::generate_rpc_proto;
+pub use comet_macro_procs::html2;
 pub use comet_macro_procs::model;
 pub use comet_macro_procs::rpc;
 pub use comet_macro_procs::sql;

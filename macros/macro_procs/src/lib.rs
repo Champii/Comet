@@ -4,6 +4,7 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 
+mod component;
 mod db_macro;
 mod generate_cache;
 mod generate_hash;
@@ -11,6 +12,7 @@ mod generate_migrations;
 mod generate_msg;
 mod generate_proto;
 mod generate_update;
+mod html;
 mod model_macro;
 mod rpc_macro;
 mod sql_macro;
@@ -77,4 +79,14 @@ pub fn generate_rpc_proto(input: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn generate_cache(input: TokenStream) -> TokenStream {
     generate_cache::perform(input)
+}
+
+#[proc_macro]
+pub fn component2(input: TokenStream) -> TokenStream {
+    component::perform(input)
+}
+
+#[proc_macro]
+pub fn html2(input: TokenStream) -> TokenStream {
+    html::perform(input)
 }

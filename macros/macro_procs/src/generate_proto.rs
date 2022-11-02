@@ -70,6 +70,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
                     #(
                         Model::#models9(m) => m.id,
                     )*
+                    _ => 0
                 }
             }
 
@@ -78,6 +79,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
                     #(
                         Model::#models10(m) => #models_ids,
                     )*
+                    _ => 0
                 }
             }
         }

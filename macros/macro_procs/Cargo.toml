@@ -12,8 +12,9 @@ path = "src/lib.rs"
 proc-macro = true
 
 [dependencies]
-syn = { version = "0.15", features = ["full", "extra-traits"] }
-proc-macro2 = "0.4"
-quote = "0.6"
+syn = { version = "1.0.103", features = ["full", "extra-traits"] }
+proc-macro2 = "1.0.47"
+quote = "1.0.21"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
+derive-syn-parse = "0.1.5"

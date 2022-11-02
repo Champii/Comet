@@ -1,19 +1,33 @@
+use std::any::Any;
+
+use async_trait::async_trait;
+use vdom::Html;
+use wasm_bindgen_futures::spawn_local;
+
+use crate::prelude::Shared;
+
 #[async_trait]
 pub trait Component<Msg>: Send + Sync + 'static
 where
     Msg: Clone + 'static,
+    Self: Sized,
 {
     async fn update(&mut self, msg: Msg);
-    fn view<F>(&self, f: F, bindings: Shared<Vec<web_sys::Element>>) -> web_sys::Element
-    where
-        F: Fn(Option<Msg>) + Clone + 'static;
-    fn update_bindings(&mut self, bindings: Shared<Vec<web_sys::Element>>);
+    fn view(&self) -> Html;
+
+    fn callback(this: Shared<Self>) -> Box<dyn Fn(Msg)> {
+        Box::new(move |msg| {
+            let this = this.clone();
+
+            spawn_local(async move {
+                this.write().await.update(msg).await;
+            })
+        })
+    }
+    // fn update_bindings(&mut self, bindings: Shared<Vec<web_sys::Element>>);
 }
 
-use crate::prelude::*;
-use wasm_bindgen_futures::spawn_local;
-
-pub async fn run_rec<Msg, Comp>(component: Shared<Comp>, parent: &web_sys::Element)
+/* pub async fn run_rec<Msg, Comp>(component: Shared<Comp>, parent: &web_sys::Element)
 where
     Comp: Component<Msg>,
     Msg: Clone + 'static,
@@ -31,10 +45,10 @@ where
         let bindings_clone = bindings_clone.clone();
 
         spawn_local(async move {
-            component2
-                .write()
-                .await
-                .update_bindings(bindings_clone.clone());
+            /* component2
+            .write()
+            .await
+            .update_bindings(bindings_clone.clone()); */
 
             if let Some(msg) = msg {
                 let component3 = component2.clone();
@@ -53,4 +67,4 @@ where
 
     parent.set_inner_html("");
     parent.append_child(&view).unwrap();
-}
+} */

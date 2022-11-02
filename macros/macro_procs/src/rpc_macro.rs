@@ -35,7 +35,7 @@ pub fn register_rpcs(mut mcall: syn::ItemImpl) -> Result<proc_macro2::TokenStrea
         .iter()
         .map(|item| match item {
             ImplItem::Method(method) => register_rpc(self_type.clone(), method).unwrap(),
-            _ => unimplemented!(),
+            _ => unreachable!(),
         })
         .collect::<Vec<_>>();
 
@@ -70,20 +70,18 @@ pub fn register_rpc(
 
     let query_types = mcall
         .sig
-        .decl
         .inputs
         .iter()
         .map(|arg| {
             let (is_mut, ty) = match arg {
-                syn::FnArg::SelfRef(fn_arg) => {
+                syn::FnArg::Receiver(fn_arg) => {
                     if fn_arg.mutability.is_some() {
                         (true, self_type.clone())
                     } else {
                         (false, self_type.clone())
                     }
                 }
-                syn::FnArg::Captured(c) => (false, c.ty.clone()),
-                _ => unimplemented!(),
+                syn::FnArg::Typed(c) => (false, *c.ty.clone()),
             };
             (is_mut, quote! { #ty }.to_string())
         })
@@ -98,7 +96,7 @@ pub fn register_rpc(
     let query_variant_real: syn::Ident = syn::parse_str(&query_variant).unwrap();
     let response_variant_real: syn::Ident = syn::parse_str(&response_variant).unwrap();
 
-    let response_type_orig = match &mcall.sig.decl.output {
+    let response_type_orig = match &mcall.sig.output {
         syn::ReturnType::Default => syn::parse_quote! { () },
         syn::ReturnType::Type(_, ty) => ty.clone(),
     };
@@ -146,17 +144,15 @@ pub fn register_rpc(
 
     let query_args = mcall
         .sig
-        .decl
         .inputs
         .iter()
         .map(|arg| match arg {
-            syn::FnArg::SelfRef(_) => quote! { self },
-            syn::FnArg::Captured(c) => {
+            syn::FnArg::Receiver(_) => quote! { self },
+            syn::FnArg::Typed(c) => {
                 let pat = &c.pat;
 
                 quote! { #pat }
             }
-            _ => unimplemented!(),
         })
         .collect::<Vec<_>>();
 
@@ -185,8 +181,8 @@ pub fn register_rpc(
     let mut generated_fns = vec![];
 
     if let Some(watch_wrapper_fn_name) = watch_wrapper_fn_name {
-        let orig_fn_args = client_fn.sig.decl.inputs.clone();
-        let mut wrapper_fn_args = client_fn.sig.decl.inputs.clone();
+        let orig_fn_args = client_fn.sig.inputs.clone().into_iter().collect::<Vec<_>>();
+        let mut wrapper_fn_args = client_fn.sig.inputs.clone().into_iter().collect::<Vec<_>>();
         let request_id_arg: syn::FnArg = syn::parse_quote! { request_id: u64 };
         wrapper_fn_args.push(request_id_arg);
         let client_arg: syn::FnArg = syn::parse_quote! { client: comet::server::client::Client };

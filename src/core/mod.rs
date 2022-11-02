@@ -6,20 +6,20 @@ mod utils;
 
 pub mod prelude;
 
-mod just_to_test {
+/* mod just_to_test {
     use crate::prelude::*;
 
     pub struct Counter {
         value: i32,
     }
 
-    component! {
+    component2! {
         Counter {
-            button @click: { self.value += 1 } {
-                for i in (0..10) {
+            button click: self.value += 1 {
+                /* for i in (0..10) {
                     { i }
-                }
+                } */
             }
         }
     }
-}
+} */

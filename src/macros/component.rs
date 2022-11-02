@@ -9,8 +9,8 @@ macro_rules! component {
 
                 #[async_trait]
                 impl Component<Msg> for $type {
-                    fn update_bindings(&mut self, elems: Shared<Vec<web_sys::Element>>) {
-                        extract_bindings!{self, elems, $($e)+}
+                    fn update_bindings(&mut self, bindings: Shared<Vec<web_sys::Element>>) {
+                        extract_bindings!{self, bindings, $($e)+}
 
                     }
                     async fn update(&mut self, msg: Msg) {
