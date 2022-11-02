@@ -61,7 +61,7 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                 fn view(&self) -> VElement
                 {
                     let mut html = #html;
-                    let events = vec![#(Msg::#variants),*];
+                    let events: Vec<Msg> = vec![#(Msg::#variants),*];
                     html.fix_events(&mut 0, &events);
                     html
                 }

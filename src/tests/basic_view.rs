@@ -1,6 +1,6 @@
-/* #[cfg(target_arch = "wasm32")]
-#[cfg(test)] */
-/* mod html_test {
+#[cfg(target_arch = "wasm32")]
+#[cfg(test)]
+mod html_test {
     use crate::prelude::*;
 
     use wasm_bindgen_test::*;
@@ -15,16 +15,19 @@
     ) {
         let view = view.into();
 
-        let elem = view.blocking_read().view(|_| {}, vec![].into());
+        let elem = view.blocking_read().view();
 
-        assert_eq!(elem.outer_html(), expected);
+        let html = elem.render::<_, Msg>(Box::new(|_| ()));
+
+        assert_eq!(html.outer_html(), expected);
     }
 
     #[wasm_bindgen_test]
     fn mono_element() {
         component! {
-            i32,
-            div {}
+            i32 {
+                div {}
+            }
         };
 
         assert_html::<_, _, __component_i32::Msg>(0, "<div></div>");
@@ -33,9 +36,10 @@
     #[wasm_bindgen_test]
     fn one_level_nested() {
         component! {
-            i32,
-            div {
-                div {}
+            i32 {
+                div {
+                    div {}
+                }
             }
         };
 
@@ -45,10 +49,11 @@
     #[wasm_bindgen_test]
     fn two_level_nested() {
         component! {
-            i32,
-            div {
+            i32 {
                 div {
-                    div {}
+                    div {
+                        div {}
+                    }
                 }
             }
         };
@@ -59,10 +64,11 @@
     #[wasm_bindgen_test]
     fn one_sibling() {
         component! {
-            i32,
-            div {
-                span {}
-                span {}
+            i32 {
+                div {
+                    span {}
+                    span {}
+                }
             }
         };
 
@@ -72,10 +78,11 @@
     #[wasm_bindgen_test]
     fn inner_text() {
         component! {
-            i32,
-            div {
-                button {
-                    { "Increment" }
+            i32 {
+                div {
+                    button {
+                        { "Increment" }
+                    }
                 }
             }
         };
@@ -86,10 +93,11 @@
     #[wasm_bindgen_test]
     fn style() {
         component! {
-            i32,
-            div [height: {100}] {
-                button [margin: {10}] {
-                    { "Increment" }
+            i32 {
+                div style: { height: 100 } {
+                    button style: { margin: 10 } {
+                        "Increment"
+                    }
                 }
             }
         };
@@ -120,9 +128,13 @@
         }
 
         component! {
-            Test,
-            div [height: {self.i}, background: {self.color()}] {
-                { self.i }
+            Test {
+                div style: {
+                    height: self.i
+                    background: self.color()
+                } {
+                    self.i
+                }
             }
         };
 
@@ -135,9 +147,10 @@
     #[wasm_bindgen_test]
     fn class_shortcut() {
         component! {
-            i32,
-            div.class1.class2 {
-                { "test" }
+            i32 {
+                div.class1.class2 {
+                    "test"
+                }
             }
         };
 
@@ -147,9 +160,10 @@
     #[wasm_bindgen_test]
     fn id_shortcut() {
         component! {
-            i32,
-            div #my_id {
-                { "test" }
+            i32 {
+                div #my_id {
+                    "test"
+                }
             }
         };
 
@@ -159,9 +173,10 @@
     #[wasm_bindgen_test]
     fn class_and_id_shortcut() {
         component! {
-            i32,
-            div #my_id.class1.class2 {
-                { "test" }
+            i32 {
+                div #my_id.class1.class2 {
+                    "test"
+                }
             }
         };
 
@@ -171,31 +186,15 @@
         );
     }
 
-    #[wasm_bindgen_test]
-    fn duplicated_event() {
-        component! {
-            i32,
-            div {
-                div @click: { *self += 1 } {
-                    { "test" }
-                }
-                div @click: { *self += 1 } {
-                    { "test" }
-                }
-            }
-        };
-
-        assert_html::<_, _, __component_i32::Msg>(0, "<div><div>test</div><div>test</div></div>");
-    }
-
-    #[wasm_bindgen_test]
+    /* #[wasm_bindgen_test]
     fn test_if() {
         component! {
-            i32,
-            div {
-                if (*self > 0) {
-                    div {
-                        { "test" }
+            i32 {
+                div {
+                    if *self > 0 {
+                        div {
+                            "test"
+                        }
                     }
                 }
             }
@@ -203,20 +202,21 @@
 
         assert_html::<_, _, __component_i32::Msg>(0, "<div></div>");
         assert_html::<_, _, __component_i32::Msg>(1, "<div><div>test</div></div>");
-    }
+    } */
 
-    struct Test2 {
+    /* struct Test2 {
         arr: Vec<i32>,
     }
 
     #[wasm_bindgen_test]
     fn test_for() {
         component! {
-            Test2,
-            div {
-                for _i, item in (self.arr.iter().enumerate()) {
-                    div {
-                        { item }
+            Test2 {
+                div {
+                    for (_i, item) in self.arr.iter().enumerate() {
+                        div {
+                            item
+                        }
                     }
                 }
             }
@@ -226,25 +226,26 @@
             Test2 { arr: vec![1, 2, 3] },
             "<div><span><div>1</div><div>2</div><div>3</div></span></div>",
         );
-    }
+    } */
 
     #[wasm_bindgen_test]
     fn mixed_text_and_node() {
         component! {
-            i32,
-            div {
-                { "test" }
+            i32 {
                 div {
-                    { "test" }
+                    "test"
+                    div {
+                        "test"
+                    }
+                    "test"
                 }
-                { "test" }
             }
         };
 
         assert_html::<_, _, __component_i32::Msg>(0, "<div>test<div>test</div>test</div>");
     }
 
-    #[wasm_bindgen_test]
+    /* #[wasm_bindgen_test]
     fn bindings() {
         component! {
             String,
@@ -255,5 +256,5 @@
 
         // FIXME: Need better test for that
         assert_html::<_, _, __component_string::Msg>("lol".to_string(), "<div><input></div>");
-    }
-} */
+    } */
+}

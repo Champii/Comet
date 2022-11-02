@@ -65,7 +65,7 @@ Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) fold
 ### Install Comet Binary and dependencies
 
 ```bash
-$> cargo install comet-web
+$> cargo install comet-cli
 ```
 
 You will need to install and run an instance of PostgreSQL.
@@ -341,8 +341,10 @@ pub struct Counter {
     pub count: i32,
 }
 
-// This attribute indicate that all the following methods are to be treated as RPC
+// This attribute indicates that all the following methods are to be treated as RPC
 // These special methods are only executed server side
+// The only difference with the similar method above is that the `self.count +=1` is done server side,
+// and the `self` sent back to the client
 #[rpc]
 impl Counter {
     // The RPC methods MUST be async (at least for now)

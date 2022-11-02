@@ -82,11 +82,11 @@ pub fn generate_cache(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro]
-pub fn component2(input: TokenStream) -> TokenStream {
+pub fn component(input: TokenStream) -> TokenStream {
     component::perform(input)
 }
 
 #[proc_macro]
-pub fn html2(input: TokenStream) -> TokenStream {
+pub fn html(input: TokenStream) -> TokenStream {
     html::perform(input)
 }

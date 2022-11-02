@@ -10,10 +10,6 @@ repository = "https://github.com/Champii/Comet"
 name = "comet"
 crate-type = ["cdylib", "rlib"]
 
-[[bin]]
-path = "bin/main.rs"
-name = "comet"
-
 [dependencies]
 wasm-bindgen = "0.2.83"
 wasm-bindgen-futures = "0.4.30"
@@ -46,12 +42,6 @@ tokio = { version = "1.21.2", features = ["full"] }
 axum-extra = { version = "0.3.7", features = ["spa"] }
 reactive-pg = { path = "../reactive-postgres-rs/" }
 diesel = { version = "2.0.2", features = ["postgres"] }
-# bin dependencies
-env_logger = "0.9.1"
-log = "0.4.17"
-colored = "2"
-which = "4.3.0"
-clap = "2.33.3"
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

@@ -4,7 +4,7 @@ use derive_syn_parse::Parse;
 use quote::{quote, ToTokens};
 use syn::{
     braced,
-    parse::{discouraged::Speculative, Parse, Result},
+    parse::{discouraged::Speculative, Parse, ParseStream, Result},
     parse_macro_input, Expr, Token,
 };
 
@@ -17,24 +17,94 @@ pub fn perform(input: TokenStream) -> TokenStream {
     .into()
 }
 
+pub fn parse_classes(input: ParseStream) -> Result<Vec<syn::Ident>> {
+    let mut classes = Vec::new();
+
+    while input.peek(Token![.]) {
+        let _ = input.parse::<Token![.]>()?;
+        let class = input.parse::<syn::Ident>()?;
+
+        classes.push(class);
+    }
+
+    Ok(classes)
+}
+
+#[allow(dead_code)]
 #[derive(Parse, Debug)]
 pub struct Tag {
     name: syn::Ident,
+
+    sharp: Option<Token![#]>,
+
+    #[parse_if(sharp.is_some())]
+    id: Option<syn::Ident>,
+
+    #[call(parse_classes)]
+    classes: Vec<syn::Ident>,
+
     #[call(Attribute::parse_inner)]
     attrs: Vec<Attribute>,
-    #[allow(dead_code)]
+
     #[brace]
     open_brace: syn::token::Brace,
+
     #[inside(open_brace)]
     #[call(Element::parse_inner)]
     children: Vec<Element>,
 }
 
+fn extend_id_classes(
+    attrs: &mut Vec<Attribute>,
+    id: &Option<syn::Ident>,
+    classes: &Vec<syn::Ident>,
+) {
+    if let Some(id) = id {
+        let id_str = id.to_string();
+
+        attrs.push(Attribute {
+            name: syn::Ident::new("id", proc_macro2::Span::call_site()),
+            value: AttrsOrExpr::Expr(syn::parse_quote! {#id_str}),
+        });
+    }
+
+    if classes.is_empty() {
+        return;
+    }
+
+    let classes_str = classes
+        .iter()
+        .map(|c| c.to_string())
+        .collect::<Vec<String>>()
+        .join(" ");
+
+    attrs.iter_mut().for_each(|attr| {
+        if attr.name == "class" {
+            let old_value = attr.value.clone();
+            attr.value =
+                AttrsOrExpr::Expr(syn::parse_quote! {format!("{} {}", #classes_str, #old_value)});
+        }
+    });
+
+    if attrs.iter().find(|attr| attr.name == "class").is_none() {
+        let class_attr = Attribute {
+            name: syn::Ident::new("class", proc_macro2::Span::call_site()),
+            value: AttrsOrExpr::Expr(syn::parse_quote! {#classes_str}),
+        };
+
+        attrs.push(class_attr);
+    }
+}
+
 impl ToTokens for Tag {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let name = &self.name.to_string();
-        let attrs = &self.attrs;
+        let mut attrs = self.attrs.clone();
         let children = &self.children;
+        let id = &self.id;
+        let classes = &self.classes;
+
+        extend_id_classes(&mut attrs, &id, &classes);
 
         let res = quote! {
             VTag::new(#name.to_string(), vec![#(#attrs),*], vec![#(#children),*])
@@ -60,14 +130,14 @@ impl Tag {
     }
 }
 
-#[derive(Parse, Debug)]
+#[derive(Parse, Debug, Clone)]
 pub struct Attribute {
     name: syn::Ident,
     #[prefix(Token![:])]
     value: AttrsOrExpr,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AttrsOrExpr {
     Attrs(Vec<Attribute>),
     Expr(Expr),

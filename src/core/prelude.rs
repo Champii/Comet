@@ -28,7 +28,7 @@ pub use crate::core::proto::{Message, ProtoTrait};
 pub use crate::core::utils::*;
 
 // macros
-pub use crate::_gen_full_variant;
+/* pub use crate::_gen_full_variant;
 pub use crate::_gen_variant;
 pub use crate::component;
 pub use crate::extract_bindings;
@@ -38,15 +38,15 @@ pub use crate::gen_full_variant;
 pub use crate::gen_variant;
 pub use crate::html;
 pub use crate::html_arr;
-pub use crate::replace_self;
+pub use crate::replace_self; */
 pub use crate::run;
-pub use comet_macro_procs::component2;
+pub use comet_macro_procs::component;
 pub use comet_macro_procs::db;
 pub use comet_macro_procs::generate_cache;
 pub use comet_macro_procs::generate_migrations;
 pub use comet_macro_procs::generate_proto;
 pub use comet_macro_procs::generate_rpc_proto;
-pub use comet_macro_procs::html2;
+pub use comet_macro_procs::html;
 pub use comet_macro_procs::model;
 pub use comet_macro_procs::rpc;
 pub use comet_macro_procs::sql;

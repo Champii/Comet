@@ -89,7 +89,9 @@ impl Render for VTag {
                 VAttributeValue::Attributes(ref attrs) => {
                     let value_str = &attrs
                         .iter()
-                        .map(|attr| format!("{}:{};", attr.key, attr.value.to_string()).to_string())
+                        .map(|attr| {
+                            format!("{}: {};", attr.key, attr.value.to_string()).to_string()
+                        })
                         .collect::<Vec<_>>()
                         .join("");
 
