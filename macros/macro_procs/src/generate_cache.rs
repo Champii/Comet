@@ -38,30 +38,53 @@ pub fn generate_cache() -> Result<proc_macro2::TokenStream> {
                     }
                 }
 
-                pub fn query<T: From<Model>>(&mut self, query_id: QueryId) -> Option<Vec<T>> {
-                    None
+                pub fn query<T: From<Model>>(&self, query_id: QueryId) -> Option<Vec<T>> {
+                    let (model_id, ids) = self.queries.get(&query_id)?;
+
+                    Some(self.models
+                        .get(model_id)?
+                        .into_iter()
+                        .filter(|(id, _)| ids.contains(id))
+                        .map(|(_, model)| T::from(model.clone()))
+                        .collect())
                 }
 
-                pub fn update<T: Into<Model>>(&mut self, model_id: ModelId, models: Vec<T>) {
+                pub fn update<T: Into<Model>>(&mut self, query_id: QueryId, model_id: ModelId, models: Vec<T>) {
+                    let (model_id_query, ids) = self.queries.get_mut(&query_id).unwrap();
+
+                    let ids_models = models.into_iter().map(|model| {
+                        let model: Model = model.into();
+
+                        (model.id(), model)
+                    }).collect::<Vec<_>>();
+
+                    ids.extend(ids_models.iter().map(|(id, _)| *id));
+
+                    if *model_id_query == ModelId::default() {
+                        *model_id_query = model_id;
+                    }
                     self.models
                         .entry(model_id)
                         .or_insert_with(BTreeMap::new)
-                        .extend(models.into_iter().map(|model| {
-                            let model = model.into();
+                        .extend(ids_models);
 
-                            (model.id(), model)
-                        }));
                 }
 
-                pub fn delete(&mut self, model_id: ModelId, ids: Vec<i32>) {
+                pub fn delete(&mut self, query_id: QueryId, model_id: ModelId, ids: Vec<i32>) {
                     self.models
                         .entry(model_id)
                         .or_insert_with(BTreeMap::new)
                         .retain(|id, _| !ids.contains(id));
+
+                    // self.queries.get(query_id).unwrap().1.iter().(models.into_iter().map(|model| model.into().id()));
                 }
 
                 pub fn update_for_request_id(&mut self, request_id: RequestId, events: Vec<Event<Model>>) {
-                    let query_id = self.requests.get(&request_id).unwrap();
+                    let query_id = if let Some(query_id) = self.requests.get(&request_id) {
+                        *query_id
+                    } else {
+                        return;
+                    };
 
                     let (upsert, deletes): (Vec<_>, Vec<_>) = events.into_iter().partition(|event| !event.is_delete());
 
@@ -83,13 +106,18 @@ pub fn generate_cache() -> Result<proc_macro2::TokenStream> {
                     if let Some(first) = events.first() {
                         let model_id = first.model_id();
 
-                        self.update(model_id, events);
-                        self.delete(model_id, deletes);
+                        self.update(query_id, model_id, events);
+                        self.delete(query_id, model_id, deletes);
                     }
                 }
 
                 pub fn register_request(&mut self, request_id: RequestId, query_id: QueryId) {
+                    if self.queries.contains_key(&query_id) {
+                        return;
+                    }
+
                     self.requests.insert(request_id, query_id);
+                    self.queries.insert(query_id, (ModelId::default(), BTreeSet::new()));
                 }
             }
         }

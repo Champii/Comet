@@ -170,7 +170,13 @@ pub fn generate_client_sql_watch(
 
                     let results = #stmt;
 
-                    cache.update(#query_id, results.clone());
+                    let model_id = if !results.is_empty() {
+                        Model::from(results.get(0).unwrap().clone()).model_id()
+                    } else {
+                        ModelId::default()
+                    };
+
+                    cache.update(#query_id, model_id, results.clone());
 
                     comet::console_log!("cache after update {:#?}", *cache);
 

@@ -41,7 +41,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
     let tt = quote! {
         pub type ModelId = u64;
 
-        #[derive(Serialize, Deserialize, Debug)]
+        #[derive(Serialize, Deserialize, Debug, Clone)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub enum Model {
             #(#models(#models2)),*
