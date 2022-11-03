@@ -1,5 +1,5 @@
 use derive_syn_parse::Parse;
-use proc_macro::{Ident, Span, TokenStream};
+use proc_macro::{Span, TokenStream};
 
 use quote::quote;
 use syn::{parse::Result, parse_macro_input, Expr};

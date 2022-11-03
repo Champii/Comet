@@ -16,13 +16,23 @@ impl Todo {
     }
 }
 
+#[sql]
+impl Todo {
+    #[watch]
+    pub async fn list_watch() -> Vec<Todo> {
+        use crate::schema::todos;
+
+        todos::table.order(todos::id.desc())
+    }
+}
+
 component! {
     Todo {
         div {
-            { self.title }
-            { self.completed }
-            button @click: { self.toggle().await } {
-                { "Toggle" }
+            self.title.clone()
+            self.completed.to_string()
+            button click: self.toggle().await {
+                "Toggle"
             }
         }
     }
@@ -31,36 +41,22 @@ component! {
 #[derive(Default)]
 pub struct App {
     title: String,
-    list: Vec<Shared<Todo>>,
 }
 
 impl App {
     pub async fn new() -> Self {
-        let list = Todo::list()
-            .await
-            .unwrap()
-            .into_iter()
-            .map(Shared::from)
-            .collect::<Vec<_>>();
-
-        Self {
-            list,
-            title: "".into(),
-        }
+        Self { title: "".into() }
     }
 
     pub async fn new_todo(&mut self) {
-        self.list.push(
-            Todo {
-                id: -1,
-                title: self.title.clone(),
-                completed: false,
-            }
-            .create()
-            .await
-            .unwrap()
-            .into(),
-        );
+        Todo {
+            id: -1,
+            title: self.title.clone(),
+            completed: false,
+        }
+        .create()
+        .await
+        .unwrap();
 
         self.title = "".into();
     }
@@ -69,14 +65,9 @@ impl App {
 component! {
     App {
         div {
-            for todo in (&self.list) {
-                div {
-                    @{todo}
-                }
-            }
-            input ={ self.title } {}
-            button @click: { self.new_todo().await } {
-                { "Add" }
+            Todo::list_watch().await
+            button click: self.new_todo().await {
+                "Add"
             }
         }
     }
