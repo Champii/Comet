@@ -65,7 +65,8 @@ impl Client {
             let response = response.to_bytes();
 
             let msg = crate::Message {
-                request_id: msg.request_id,
+                request_id: self.next_request_id.read().await.clone(),
+                response_id: Some(msg.request_id),
                 msg: response,
             };
 
@@ -84,6 +85,7 @@ impl Client {
         let msg = proto.to_bytes();
         let msg = crate::Message {
             request_id: self.next_request_id.read().await.clone(),
+            response_id: None,
             msg,
         };
         let msg = msg.to_bytes();

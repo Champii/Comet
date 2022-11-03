@@ -47,16 +47,16 @@ Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) fold
 
  - Isomorphic client/server
  - Reactive view
+ - Client cache
  - Reactive database with PostgreSQL
- - Remote procedure calls
  - Auto database generation every time your structs change
  - Websocket
  - Auto procol generation
+ - Remote procedure calls
  - Convenient wrapper binary
  - (Almost) Zero boilerplate
  - Clean Codebase (Yeaaah, ok, this one is a lie)
  - Fast (Soon™)
- - Client cache (Soon™)
 
 ---
 

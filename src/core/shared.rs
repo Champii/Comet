@@ -1,6 +1,7 @@
 use std::ops::Deref;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use vdom::VElement;
 
 #[derive(Default, Debug)]
 pub struct Shared<T>(pub Arc<RwLock<Box<T>>>);
@@ -22,5 +23,11 @@ impl<T> Deref for Shared<T> {
 
     fn deref(&self) -> &Self::Target {
         self.0.as_ref()
+    }
+}
+
+impl<T: Into<VElement> + Clone> From<Shared<T>> for VElement {
+    fn from(shared: Shared<T>) -> Self {
+        shared.blocking_read().as_ref().clone().into()
     }
 }

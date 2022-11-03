@@ -58,14 +58,21 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                     #update_match
                 }
 
-                fn view(&self) -> VElement
+                async fn view(&self) -> VElement
                 {
                     let mut html = #html;
                     let events: Vec<Msg> = vec![#(Msg::#variants),*];
                     html.fix_events(&mut 0, &events);
                     html
                 }
+            }
 
+            use comet::prelude::vdom::VElement;
+
+            impl Into<VElement> for #name {
+                fn into(self) -> VElement {
+                    comet::prelude::futures::executor::block_on(self.view())
+                }
             }
         }
     })

@@ -72,14 +72,18 @@ where
                 if let WsMessage::Binary(blob) = msg {
                     let msg = Message::from_bytes(&blob);
 
-                    if pending_requests2.read().await.contains_key(&msg.request_id) {
-                        let tx: futures::channel::oneshot::Sender<Message> = pending_requests2
-                            .write()
-                            .await
-                            .remove(&msg.request_id)
-                            .unwrap();
+                    if let Some(response_id) = msg.response_id {
+                        if pending_requests2.read().await.contains_key(&response_id) {
+                            let tx: futures::channel::oneshot::Sender<Message> = pending_requests2
+                                .write()
+                                .await
+                                .remove(&response_id)
+                                .unwrap();
 
-                        tx.send(msg).unwrap();
+                            tx.send(msg).unwrap();
+                        } else {
+                            out_tx.send(msg).await.unwrap();
+                        }
                     } else {
                         out_tx.send(msg).await.unwrap();
                     }
@@ -113,6 +117,7 @@ where
 
         let msg = Message {
             request_id,
+            response_id: None,
             msg: packet.to_bytes(),
         };
 

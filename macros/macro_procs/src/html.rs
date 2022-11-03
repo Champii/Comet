@@ -219,15 +219,15 @@ impl Attribute {
 pub enum Element {
     Tag(Tag),
     Call(Expr),
-    Text(Expr),
+    Into(Expr),
 }
 
 impl ToTokens for Element {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         match self {
             Element::Tag(tag) => quote! { VElement::Tag(#tag) }.to_tokens(tokens),
-            Element::Call(call) => quote! { #call }.to_tokens(tokens),
-            Element::Text(text) => quote! { VElement::Text(#text.to_string()) }.to_tokens(tokens),
+            Element::Call(call) => quote! { #call.into() }.to_tokens(tokens),
+            Element::Into(text) => quote! { #text.into() }.to_tokens(tokens),
         }
     }
 }
@@ -245,7 +245,7 @@ impl Parse for Element {
 
             Ok(match expr {
                 Expr::Call(_) => Element::Call(expr),
-                _ => Element::Text(expr),
+                _ => Element::Into(expr),
             })
         }
     }
@@ -266,7 +266,7 @@ impl Element {
         match self {
             Element::Tag(tag) => tag.collect_events(),
             Element::Call(call) => vec![call.clone()],
-            Element::Text(_) => Vec::new(),
+            Element::Into(_) => Vec::new(),
         }
     }
 }

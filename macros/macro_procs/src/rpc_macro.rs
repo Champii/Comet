@@ -169,7 +169,7 @@ pub fn register_rpc(
 
             let response = match response {
                 Proto::RPCResponse(RPCResponse::#response_variant_real(#(#response_self,)* response)) => { #(*self = #response_self2;)* response},
-                _ => unimplemented!(),
+                _ => panic!("Invalid response !! {:#?}", response),
             };
 
             response

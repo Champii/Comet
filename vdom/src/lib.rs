@@ -17,6 +17,7 @@ pub trait Render {
 pub enum VElement {
     Tag(VTag),
     Text(String),
+    // Custom(Box<dyn Render>),
 }
 
 impl VElement {
@@ -42,6 +43,34 @@ impl Render for VElement {
                 unimplemented!();
             }
         }
+    }
+}
+
+impl From<&str> for VElement {
+    fn from(text: &str) -> Self {
+        VElement::Text(text.to_string())
+    }
+}
+
+impl From<String> for VElement {
+    fn from(text: String) -> Self {
+        VElement::Text(text)
+    }
+}
+
+impl<T: Into<VElement>> From<Vec<T>> for VElement {
+    fn from(vec: Vec<T>) -> Self {
+        let mut children = vec![];
+
+        for child in vec {
+            children.push(child.into());
+        }
+
+        VElement::Tag(VTag {
+            tag: "div".to_string(),
+            attrs: vec![],
+            children,
+        })
     }
 }
 
@@ -162,6 +191,9 @@ pub enum VAttributeValue {
     Event(Box<dyn Any>),
     Attributes(Vec<VAttribute>),
 }
+
+// FIXME: is this safe ? The Box<dyn Any> is always a Box<Msg>
+unsafe impl Send for VAttributeValue {}
 
 impl Display for VAttributeValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

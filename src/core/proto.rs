@@ -6,6 +6,7 @@ use serde::Serialize;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Message {
     pub request_id: u64,
+    pub response_id: Option<u64>,
     pub msg: Vec<u8>,
 }
 

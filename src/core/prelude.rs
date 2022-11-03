@@ -3,6 +3,7 @@ pub use comet_macro_procs;
 pub use derive_more::*;
 
 pub use async_trait::async_trait;
+pub use futures;
 pub use lazy_static::lazy_static;
 
 pub use vdom;
