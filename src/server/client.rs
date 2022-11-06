@@ -15,6 +15,9 @@ use crate::core::prelude::ProtoTrait;
 
 use super::universe::Universe;
 
+/// lol
+/// mdr
+///
 #[derive(Clone, Debug)]
 pub struct Client {
     out: Arc<RwLock<SplitSink<WebSocket, Message>>>,

@@ -107,13 +107,10 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
             async fn dispatch(self, request_id: u64, client: Self::Client) -> Option<Self::Response> {
                 match self {
                     Proto::Event(_request_id, _event) => {
-                        // update cache
-                        // redraw
                         None
                     },
                     Proto::RPCQuery(rpc_proto) => rpc_proto.dispatch(request_id, client).await,
                     Proto::RPCResponse(rpc_proto) => rpc_proto.dispatch(request_id, client).await,
-                    // #(Proto::#models2(#inner2) => #inner3.dispatch(),)*
                     _ => todo!(),
                 }
             }

@@ -1,11 +1,11 @@
 # Comet
 
-Reactive isomorphic rust web framework.
-
 [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://docs.rs/comet-web/0.1.3/comet)
 [![GitHub license](https://img.shields.io/github/license/Champii/Comet.svg)](https://github.com/Champii/Comet/blob/master/LICENSE.md)
 [![GitHub release](https://img.shields.io/github/tag/Champii/Comet.svg)](https://GitHub.com/Champii/Comet/tags/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+
+Reactive isomorphic rust web framework.
 
 ## Index
 
@@ -19,9 +19,9 @@ Reactive isomorphic rust web framework.
 
 ## Introduction
 
-Work in progress, this is still a naive early prototype.
+Work in progress, this is still an early naive prototype.
 
-Comet is a framework for the web build with Rust+Wasm<3. It takes its inspiration from MeteorJS, Seed-rs, Yew and others.
+Comet is a framework for the web build with Rust + Wasm <3. It takes its inspiration from MeteorJS, Seed-rs, Yew and others.
 
 This crate aims to be an all-in-one all-inclusive battery-included isomorphic reactive framework.
 
@@ -403,19 +403,7 @@ impl Todo {
 ## Todo List
 - Function Component
 - Allow for iterators inside html
-- Allow to mix attributes, styles and events
-- Client cache (with local wasm sql ?)
 - Have a ComponentId that allows to fetch the corresponding root dom element
-- Have some QueryId
-  - Every user-defined raw queries will have a QueryId known from both client and server.
-  - These queries are parametrized, and only these parameters and the QueryId transit from the client to the server
-  - The client register any query's QueryHash (params+query_id) with every ComponentId that triggered it
-  - The client check the cache if this query exists, if so return the data and render
-  - Else, forward the query and the RequestId to the server
-  - Bind it to the watch query server side
-  - When triggered, the changes are passed back along with the original RequestId and QueryId
-  - Then the client update its local store and trigger the render of the component's element that originated the request
-- Have some RequestId to implement sync/async RPC-like communication
 - Find a way for global inter-component message passing
 - Allow for real time value binding for input element without losing focus (might need a real virtual dom for this one)
 

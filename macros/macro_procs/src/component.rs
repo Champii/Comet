@@ -17,9 +17,11 @@ pub fn perform(input: TokenStream) -> TokenStream {
 #[derive(Parse, Debug)]
 struct Component {
     name: syn::Type,
-    #[brace]
+
     #[allow(dead_code)]
+    #[brace]
     open_brace: syn::token::Brace,
+
     #[inside(open_brace)]
     html: Element,
 }
@@ -58,11 +60,21 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                     #update_match
                 }
 
-                async fn view(&self) -> VElement
+                async fn view(&self, shared_self: Shared<Self>) -> VElement
                 {
                     let mut html = #html;
+
+                    match html {
+                        VElement::Tag(ref mut tag) => {
+                            tag.push_attr(VAttribute::new("__component".into(), VAttributeValue::String("".into())));
+                        },
+                        _ => {}
+                    }
+
                     let events: Vec<Msg> = vec![#(Msg::#variants),*];
+
                     html.fix_events(&mut 0, &events);
+
                     html
                 }
             }

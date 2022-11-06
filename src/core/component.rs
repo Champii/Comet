@@ -11,9 +11,20 @@ where
     Self: Sized,
 {
     async fn update(&mut self, msg: Msg);
-    async fn view(&self) -> Html;
+    async fn view(&self, shared_self: Shared<Self>) -> Html;
 
-    fn callback(this: Shared<Self>) -> Box<dyn Fn(Msg)> {
+    fn callback() -> Box<dyn Fn(Shared<Self>) -> Box<dyn Fn(Msg)>> {
+        Box::new(move |shared| {
+            Box::new(move |msg| {
+                let shared = shared.clone();
+
+                spawn_local(async move {
+                    shared.write().await.update(msg).await;
+                });
+            })
+        })
+    }
+    /* fn callback(this: Shared<Self>) -> Box<dyn Fn(Msg)> {
         Box::new(move |msg| {
             let this = this.clone();
 
@@ -21,7 +32,7 @@ where
                 this.write().await.update(msg).await;
             })
         })
-    }
+    } */
     // fn update_bindings(&mut self, bindings: Shared<Vec<web_sys::Element>>);
 }
 
@@ -57,7 +68,7 @@ where
         })
     };
 
-    let view = comp.read().await.view().await;
+    let view = comp.read().await.view(comp.clone()).await;
 
     let dom = view.render(Box::new(cb));
 
@@ -65,45 +76,3 @@ where
     parent.set_inner_html("");
     parent.append_child(&dom).unwrap();
 }
-
-/* pub async fn run_rec<Msg, Comp>(component: Shared<Comp>, parent: &web_sys::Element)
-where
-    Comp: Component<Msg>,
-    Msg: Clone + 'static,
-{
-    let component2 = component.clone();
-
-    let parent2 = parent.clone();
-
-    let bindings: Shared<Vec<web_sys::Element>> = vec![].into();
-    let bindings_clone = bindings.clone();
-
-    let cb = move |msg| {
-        let component2 = component2.clone();
-        let parent2 = parent2.clone();
-        let bindings_clone = bindings_clone.clone();
-
-        spawn_local(async move {
-            /* component2
-            .write()
-            .await
-            .update_bindings(bindings_clone.clone()); */
-
-            if let Some(msg) = msg {
-                let component3 = component2.clone();
-                component3.write().await.update(msg).await;
-            }
-
-            let parent3 = parent2.clone();
-
-            let component4 = component2.clone();
-
-            run_rec(component4.clone(), &parent3).await;
-        })
-    };
-
-    let view = component.read().await.view(cb, bindings.clone());
-
-    parent.set_inner_html("");
-    parent.append_child(&view).unwrap();
-} */

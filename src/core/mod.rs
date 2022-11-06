@@ -13,7 +13,7 @@ pub mod prelude;
         value: i32,
     }
 
-    component2! {
+    component! {
         Counter {
             button click: self.value += 1 {
                 /* for i in (0..10) {

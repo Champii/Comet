@@ -3,6 +3,8 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use vdom::VElement;
 
+use crate::prelude::Component;
+
 #[derive(Default, Debug)]
 pub struct Shared<T>(pub Arc<RwLock<Box<T>>>);
 
@@ -28,6 +30,14 @@ impl<T> Deref for Shared<T> {
 
 impl<T: Into<VElement> + Clone> From<Shared<T>> for VElement {
     fn from(shared: Shared<T>) -> Self {
-        shared.blocking_read().as_ref().clone().into()
+        let comp = shared.blocking_read().as_ref();
+        comp.view(shared).into()
+    }
+}
+
+impl<Msg, T: Component<Msg> + Clone> From<Shared<T>> for VElement {
+    fn from(shared: Shared<T>) -> Self {
+        let comp = shared.blocking_read().as_ref();
+        comp.view(shared)
     }
 }

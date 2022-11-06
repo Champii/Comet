@@ -8,6 +8,7 @@ pub mod core;
 pub mod macros;
 
 pub mod prelude {
+    pub use crate::core::prelude::Rc;
     pub use crate::core::prelude::*;
 }
 use prelude::*;

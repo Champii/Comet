@@ -96,8 +96,27 @@ impl VTag {
         }
 
         for child in self.children.iter_mut() {
-            child.fix_events(i, events);
+            // Short circuit child component, they have their own fix_events
+            match child {
+                VElement::Tag(tag) => {
+                    if tag
+                        .attrs
+                        .iter()
+                        .find(|attr| attr.key == "__component")
+                        .is_some()
+                    {
+                        continue;
+                    }
+
+                    child.fix_events(i, events);
+                }
+                _ => {}
+            }
         }
+    }
+
+    pub fn push_attr(&mut self, attr: VAttribute) {
+        self.attrs.push(attr);
     }
 }
 
@@ -111,6 +130,10 @@ impl Render for VTag {
         let element = document.create_element(&self.tag).unwrap();
 
         for attr in &self.attrs {
+            if attr.key == "__component" {
+                continue;
+            }
+
             match attr.value {
                 VAttributeValue::String(ref value) => {
                     element.set_attribute(&attr.key, &value).unwrap();
@@ -149,6 +172,15 @@ impl Render for VTag {
         for child in &self.children {
             match child {
                 VElement::Tag(tag) => {
+                    if tag
+                        .attrs
+                        .iter()
+                        .find(|attr| attr.key == "__component")
+                        .is_some()
+                    {
+                        continue;
+                    }
+
                     element.append_child(&tag.render(f.clone())).unwrap();
                 }
                 VElement::Text(text) => {
@@ -189,6 +221,7 @@ impl VAttribute {
 pub enum VAttributeValue {
     String(String),
     Event(Box<dyn Any>),
+    // Event(Box<dyn Fn()>),
     Attributes(Vec<VAttribute>),
 }
 
