@@ -28,16 +28,16 @@ impl<T> Deref for Shared<T> {
     }
 }
 
-impl<T: Into<VElement> + Clone> From<Shared<T>> for VElement {
+/* impl<T: Into<VElement> + Clone> From<Shared<T>> for VElement {
     fn from(shared: Shared<T>) -> Self {
         let comp = shared.blocking_read().as_ref();
         comp.view(shared).into()
     }
-}
+} */
 
-impl<Msg, T: Component<Msg> + Clone> From<Shared<T>> for VElement {
+/* impl<Msg, T: Component<Msg> + Clone> From<Shared<T>> for VElement {
     fn from(shared: Shared<T>) -> Self {
         let comp = shared.blocking_read().as_ref();
         comp.view(shared)
     }
-}
+} */

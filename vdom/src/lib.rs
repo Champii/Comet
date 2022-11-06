@@ -7,10 +7,7 @@ use wasm_bindgen::JsCast;
 pub type Html = VElement;
 
 pub trait Render {
-    fn render<F, Msg>(&self, f: Box<F>) -> web_sys::Element
-    where
-        F: Fn(Msg) + Clone + 'static,
-        Msg: Any + Sized + Clone + 'static;
+    fn render(&self) -> web_sys::Element;
 }
 
 #[derive(Debug)]
@@ -21,10 +18,15 @@ pub enum VElement {
 }
 
 impl VElement {
-    pub fn fix_events<Msg: Clone + 'static>(&mut self, i: &mut usize, events: &Vec<Msg>) {
+    pub fn fix_events<Msg: Clone + 'static, F: Fn(Msg) + Clone + 'static>(
+        &mut self,
+        i: &mut usize,
+        events: &Vec<Msg>,
+        callback: Box<F>,
+    ) {
         match self {
             VElement::Tag(tag) => {
-                tag.fix_events(i, events);
+                tag.fix_events(i, events, callback);
             }
             VElement::Text(_) => {}
         }
@@ -32,13 +34,9 @@ impl VElement {
 }
 
 impl Render for VElement {
-    fn render<F, Msg>(&self, f: Box<F>) -> web_sys::Element
-    where
-        F: Fn(Msg) + Clone + 'static,
-        Msg: Any + Sized + Clone + 'static,
-    {
+    fn render(&self) -> web_sys::Element {
         match self {
-            VElement::Tag(tag) => tag.render(f),
+            VElement::Tag(tag) => tag.render(),
             VElement::Text(_text) => {
                 unimplemented!();
             }
@@ -74,6 +72,12 @@ impl<T: Into<VElement>> From<Vec<T>> for VElement {
     }
 }
 
+/* pub trait EventCallback: Fn(Box<dyn Any>) + Sized + Clone + 'static {
+    fn call(self) {
+        self()
+    }
+} */
+
 #[derive(Debug)]
 pub struct VTag {
     tag: String,
@@ -90,9 +94,14 @@ impl VTag {
         }
     }
 
-    pub fn fix_events<Msg: Clone + 'static>(&mut self, i: &mut usize, events: &Vec<Msg>) {
+    pub fn fix_events<Msg: Clone + 'static, F: Fn(Msg) + Clone + 'static>(
+        &mut self,
+        i: &mut usize,
+        events: &Vec<Msg>,
+        callback: Box<F>,
+    ) {
         for attr in self.attrs.iter_mut() {
-            attr.fix_events(i, events);
+            attr.fix_events(i, events, callback.clone());
         }
 
         for child in self.children.iter_mut() {
@@ -108,7 +117,7 @@ impl VTag {
                         continue;
                     }
 
-                    child.fix_events(i, events);
+                    child.fix_events(i, events, callback.clone());
                 }
                 _ => {}
             }
@@ -121,11 +130,7 @@ impl VTag {
 }
 
 impl Render for VTag {
-    fn render<F, Msg>(&self, f: Box<F>) -> web_sys::Element
-    where
-        F: Fn(Msg) + Clone + 'static,
-        Msg: Any + Sized + Clone + 'static,
-    {
+    fn render(&self) -> web_sys::Element {
         let document = web_sys::window().unwrap().document().unwrap();
         let element = document.create_element(&self.tag).unwrap();
 
@@ -134,7 +139,7 @@ impl Render for VTag {
                 continue;
             }
 
-            match attr.value {
+            match &attr.value {
                 VAttributeValue::String(ref value) => {
                     element.set_attribute(&attr.key, &value).unwrap();
                 }
@@ -149,22 +154,23 @@ impl Render for VTag {
 
                     element.set_attribute(&attr.key, value_str).unwrap();
                 }
-                VAttributeValue::Event(ref msg) => {
-                    let real_msg = msg.downcast_ref::<Msg>().unwrap();
-                    let real_msg = real_msg.clone();
-                    let f = f.clone();
-                    let closure =
-                        Closure::wrap(Box::new(move || f(real_msg.clone())) as Box<dyn FnMut()>);
+                VAttributeValue::Event(cb) => {
+                    // let real_msg = msg.downcast_ref::<Msg>().unwrap();
+                    // let real_msg = real_msg.clone();
+                    /* let f = f.clone();
+                    let closure = Closure::wrap(Box::new(move || f(msg)) as Box<dyn FnMut()>); */
+                    // let cb = cb.clone();
 
                     element
-                        .add_event_listener_with_callback(
-                            &attr.key,
-                            closure.as_ref().unchecked_ref(),
-                        )
+                        .add_event_listener_with_callback(&attr.key, cb.as_ref().unchecked_ref())
                         .unwrap();
 
+                    // cb.forget();
+
+                    // cb.forget();
+
                     // FIXME: leak
-                    closure.forget();
+                    // closure.forget();
                 }
             }
         }
@@ -172,16 +178,16 @@ impl Render for VTag {
         for child in &self.children {
             match child {
                 VElement::Tag(tag) => {
-                    if tag
+                    /* if tag
                         .attrs
                         .iter()
                         .find(|attr| attr.key == "__component")
                         .is_some()
                     {
                         continue;
-                    }
+                    } */
 
-                    element.append_child(&tag.render(f.clone())).unwrap();
+                    element.append_child(&tag.render()).unwrap();
                 }
                 VElement::Text(text) => {
                     let document = web_sys::window().unwrap().document().unwrap();
@@ -207,10 +213,21 @@ impl VAttribute {
         Self { key, value }
     }
 
-    pub fn fix_events<Msg: Clone + 'static>(&mut self, i: &mut usize, events: &Vec<Msg>) {
+    pub fn fix_events<Msg: Clone + 'static, F: Fn(Msg) + Clone + 'static>(
+        &mut self,
+        i: &mut usize,
+        events: &Vec<Msg>,
+        callback: Box<F>,
+    ) {
         match self.value {
-            VAttributeValue::Event(ref mut msg) => {
-                *msg = Box::new(events[*i].clone());
+            VAttributeValue::Event(ref mut f) => {
+                let msg = Box::new(events[*i].clone());
+                let closure = Closure::wrap(Box::new(move || {
+                    let msg = msg.clone();
+                    callback(*msg)
+                }) as Box<dyn Fn()>);
+                *f = closure;
+
                 *i += 1;
             }
             _ => {}
@@ -220,8 +237,8 @@ impl VAttribute {
 
 pub enum VAttributeValue {
     String(String),
-    Event(Box<dyn Any>),
-    // Event(Box<dyn Fn()>),
+    // Event(Box<dyn Any>),
+    Event(Closure<dyn Fn()>),
     Attributes(Vec<VAttribute>),
 }
 

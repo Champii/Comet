@@ -60,8 +60,16 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                     #update_match
                 }
 
-                async fn view(&self, shared_self: Shared<Self>) -> VElement
-                {
+                async fn view(&self, shared_self: Shared<Self>) -> VElement {
+                    // let callback = Self::callback()(shared_self);
+                    let callback = Box::new(move |msg| {
+                        let shared = shared_self.clone();
+
+                        spawn_local(async move {
+                            shared.write().await.update(msg).await;
+                        });
+                    });
+
                     let mut html = #html;
 
                     match html {
@@ -73,7 +81,7 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
                     let events: Vec<Msg> = vec![#(Msg::#variants),*];
 
-                    html.fix_events(&mut 0, &events);
+                    html.fix_events(&mut 0, &events, callback);
 
                     html
                 }
@@ -83,7 +91,10 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
             impl Into<VElement> for #name {
                 fn into(self) -> VElement {
-                    comet::prelude::futures::executor::block_on(self.view())
+                    let shared = Shared::from(self);
+                    comet::prelude::futures::executor::block_on(async {
+                        shared.read().await.view(shared.clone()).await
+                    })
                 }
             }
         }

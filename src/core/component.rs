@@ -70,7 +70,7 @@ where
 
     let view = comp.read().await.view(comp.clone()).await;
 
-    let dom = view.render(Box::new(cb));
+    let dom = view.render();
 
     // TODO: Diff + Patch
     parent.set_inner_html("");
