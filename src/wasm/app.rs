@@ -10,7 +10,7 @@ where
         let document = window.document().expect("should have a document on window");
         let body = document.body().expect("document should have a body");
 
-        let vdom = self.root.read().await.view(self.root.clone()).await;
+        let mut vdom = self.root.read().await.view(self.root.clone()).await;
 
         let element = vdom.render();
 

@@ -174,7 +174,7 @@ impl ToTokens for Attribute {
 
         let res = match name.as_str() {
             "click" => {
-                quote! {VAttribute::new(#name.to_string(), VAttributeValue::Event({ Closure::wrap(Box::new(move || {}) as Box<dyn Fn()>) }))}
+                quote! {VAttribute::new(#name.to_string(), VAttributeValue::Event(None))}
             }
             "style" => {
                 quote! {VAttribute::new(#name.to_string(), VAttributeValue::Attributes(#value))}

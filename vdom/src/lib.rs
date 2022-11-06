@@ -7,7 +7,7 @@ use wasm_bindgen::JsCast;
 pub type Html = VElement;
 
 pub trait Render {
-    fn render(&self) -> web_sys::Element;
+    fn render(&mut self) -> web_sys::Element;
 }
 
 #[derive(Debug)]
@@ -34,7 +34,7 @@ impl VElement {
 }
 
 impl Render for VElement {
-    fn render(&self) -> web_sys::Element {
+    fn render(&mut self) -> web_sys::Element {
         match self {
             VElement::Tag(tag) => tag.render(),
             VElement::Text(_text) => {
@@ -130,16 +130,16 @@ impl VTag {
 }
 
 impl Render for VTag {
-    fn render(&self) -> web_sys::Element {
+    fn render(&mut self) -> web_sys::Element {
         let document = web_sys::window().unwrap().document().unwrap();
         let element = document.create_element(&self.tag).unwrap();
 
-        for attr in &self.attrs {
+        for attr in &mut self.attrs {
             if attr.key == "__component" {
                 continue;
             }
 
-            match &attr.value {
+            match &mut attr.value {
                 VAttributeValue::String(ref value) => {
                     element.set_attribute(&attr.key, &value).unwrap();
                 }
@@ -154,17 +154,22 @@ impl Render for VTag {
 
                     element.set_attribute(&attr.key, value_str).unwrap();
                 }
-                VAttributeValue::Event(cb) => {
+                VAttributeValue::Event(ref mut cb) => {
                     // let real_msg = msg.downcast_ref::<Msg>().unwrap();
                     // let real_msg = real_msg.clone();
                     /* let f = f.clone();
                     let closure = Closure::wrap(Box::new(move || f(msg)) as Box<dyn FnMut()>); */
                     // let cb = cb.clone();
+                    let orig = cb.take().unwrap();
+
+                    // let placeholder = Closure::wrap(Box::new(move || {}) as Box<dyn Fn()>);
+                    *cb = None;
 
                     element
-                        .add_event_listener_with_callback(&attr.key, cb.as_ref().unchecked_ref())
+                        .add_event_listener_with_callback(&attr.key, orig.as_ref().unchecked_ref())
                         .unwrap();
 
+                    orig.forget();
                     // cb.forget();
 
                     // cb.forget();
@@ -175,7 +180,7 @@ impl Render for VTag {
             }
         }
 
-        for child in &self.children {
+        for child in &mut self.children {
             match child {
                 VElement::Tag(tag) => {
                     /* if tag
@@ -226,7 +231,7 @@ impl VAttribute {
                     let msg = msg.clone();
                     callback(*msg)
                 }) as Box<dyn Fn()>);
-                *f = closure;
+                *f = Some(closure);
 
                 *i += 1;
             }
@@ -238,7 +243,7 @@ impl VAttribute {
 pub enum VAttributeValue {
     String(String),
     // Event(Box<dyn Any>),
-    Event(Closure<dyn Fn()>),
+    Event(Option<Closure<dyn Fn()>>),
     Attributes(Vec<VAttribute>),
 }
 

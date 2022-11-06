@@ -49,7 +49,7 @@ where
     }
 } */
 
-pub async fn run_component<Msg, Comp>(comp: Shared<Comp>, parent: &web_sys::Element)
+/* pub async fn run_component<Msg, Comp>(comp: Shared<Comp>, parent: &web_sys::Element)
 where
     Comp: Component<Msg>,
     Msg: Clone + 'static,
@@ -75,4 +75,4 @@ where
     // TODO: Diff + Patch
     parent.set_inner_html("");
     parent.append_child(&dom).unwrap();
-}
+} */
