@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! run {
-    ($e:ident) => {
+    ($e:expr) => {
 
         pub use comet::prelude::*;
 
@@ -46,7 +46,7 @@ macro_rules! run {
 
             ready_rx.await.unwrap();
 
-            let app = comet::_run($e::default()).await;
+            let app = comet::_run($e).await;
 
             APP.write().await.replace(app);
         }
@@ -65,7 +65,7 @@ macro_rules! run {
         paste! {
             #[cfg(target_arch = "wasm32")]
             lazy_static! {
-                pub static ref APP: Arc<RwLock<Option<comet::prelude::App<$e, [<__component_ $e:lower>]::Msg>>>> = Arc::new(RwLock::new(None));
+                pub static ref APP: Arc<RwLock<Option<comet::prelude::App<Counter, __component_counter::Msg>>>> = Arc::new(RwLock::new(None));
             }
         }
 

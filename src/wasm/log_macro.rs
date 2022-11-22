@@ -8,5 +8,11 @@ extern "C" {
 
 #[macro_export]
 macro_rules! console_log {
-    ($($t:tt)*) => (consolelog(&format_args!($($t)*).to_string()))
+    ($($t:tt)*) => {
+        #[cfg(target_arch = "wasm32")]
+        consolelog(&format_args!($($t)*).to_string());
+
+        #[cfg(not(target_arch = "wasm32"))]
+        println!($($t)*);
+    }
 }

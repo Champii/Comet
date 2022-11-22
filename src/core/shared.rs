@@ -10,7 +10,7 @@ pub struct Shared<T>(pub Arc<RwLock<Box<T>>>);
 
 impl<T> Clone for Shared<T> {
     fn clone(&self) -> Self {
-        Self(self.0.clone())
+        Self(Arc::clone(&self.0))
     }
 }
 
