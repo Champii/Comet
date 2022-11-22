@@ -163,7 +163,7 @@ mod html_test {
         };
     }
 
-    /* #[wasm_bindgen_test]
+    #[wasm_bindgen_test]
     fn test_if() {
         fn view(i: u32) -> Html {
             html! {
@@ -179,7 +179,7 @@ mod html_test {
 
         assert_eq!(view(0).render().outer_html(), "<div></div>");
         assert_eq!(view(1).render().outer_html(), "<div><div>test</div></div>");
-    } */
+    }
 
     /* struct Test2 {
         arr: Vec<i32>,

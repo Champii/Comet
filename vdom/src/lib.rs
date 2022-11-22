@@ -50,6 +50,12 @@ impl From<&str> for VElement {
     }
 }
 
+impl From<()> for VElement {
+    fn from(text: ()) -> Self {
+        VElement::Text("".to_string())
+    }
+}
+
 impl From<String> for VElement {
     fn from(text: String) -> Self {
         VElement::Text(text)

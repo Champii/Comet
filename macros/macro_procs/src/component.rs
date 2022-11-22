@@ -14,7 +14,7 @@ pub fn perform(input: TokenStream) -> TokenStream {
     )
 }
 
-#[derive(Parse, Debug)]
+#[derive(Parse)]
 struct Component {
     name: syn::Type,
 

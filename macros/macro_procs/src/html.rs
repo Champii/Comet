@@ -220,6 +220,7 @@ pub enum Element {
     Tag(Tag),
     Call(Expr),
     Into(Expr),
+    If(If),
 }
 
 impl ToTokens for Element {
@@ -228,6 +229,7 @@ impl ToTokens for Element {
             Element::Tag(tag) => quote! { VElement::Tag(#tag) }.to_tokens(tokens),
             Element::Call(call) => quote! { #call.into() }.to_tokens(tokens),
             Element::Into(text) => quote! { #text.into() }.to_tokens(tokens),
+            Element::If(expr_if) => quote! { #expr_if.into() }.to_tokens(tokens),
         }
     }
 }
@@ -241,12 +243,22 @@ impl Parse for Element {
 
             Ok(Element::Tag(tag))
         } else {
-            let expr: Expr = input.parse()?;
+            // let input_forked = input.fork();
 
-            Ok(match expr {
-                Expr::Call(_) => Element::Call(expr),
-                _ => Element::Into(expr),
-            })
+            if let Ok(if_) = input.parse() {
+                // input.advance_to(&input_forked);
+                println!("IF {:#?}", if_);
+                // let if_ = Box::new(if_);
+
+                Ok(Element::If(if_))
+            } else {
+                let expr: Expr = input.parse()?;
+
+                Ok(match expr {
+                    Expr::Call(_) => Element::Call(expr),
+                    _ => Element::Into(expr),
+                })
+            }
         }
     }
 }
@@ -267,6 +279,61 @@ impl Element {
             Element::Tag(tag) => tag.collect_events(),
             Element::Call(call) => vec![call.clone()],
             Element::Into(_) => Vec::new(),
+            Element::If(expr_if) => expr_if.collect_events(),
         }
+    }
+}
+
+#[derive(Parse, Debug)]
+pub struct If {
+    pub if_token: Token![if],
+    pub cond: Expr,
+
+    #[brace]
+    pub open_brace: syn::token::Brace,
+
+    #[inside(open_brace)]
+    pub then: Box<Element>,
+    pub else_token: Option<Token![else]>,
+    #[parse_if(else_token.is_some())]
+    pub else_: Option<Box<Element>>,
+}
+
+impl ToTokens for If {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let cond = &self.cond;
+        let then = &self.then;
+
+        let empty_elem = Box::new(Element::Into(syn::parse_quote! { () }));
+
+        let else_ = if let Some(else_) = &self.else_ {
+            else_
+        } else {
+            &empty_elem
+        };
+
+        quote! {
+            if #cond {
+                #then
+            } else {
+                #else_
+            }
+        }
+        .to_tokens(tokens)
+    }
+}
+
+impl If {
+    pub fn collect_events(&self) -> Vec<Expr> {
+        let mut res = vec![];
+
+        res.extend(self.then.collect_events());
+
+        // FIXME: Not sure about that, could f*** up the fix_event phase
+        if let Some(else_) = &self.else_ {
+            res.extend(else_.collect_events());
+        }
+
+        res
     }
 }
