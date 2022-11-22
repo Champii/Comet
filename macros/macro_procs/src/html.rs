@@ -5,7 +5,7 @@ use quote::{quote, ToTokens};
 use syn::{
     braced,
     parse::{discouraged::Speculative, Parse, ParseStream, Result},
-    parse_macro_input, Expr, Token,
+    parse_macro_input, Expr, Pat, Token,
 };
 
 pub fn perform(input: TokenStream) -> TokenStream {
@@ -221,6 +221,7 @@ pub enum Element {
     Call(Expr),
     Into(Expr),
     If(If),
+    For(For),
 }
 
 impl ToTokens for Element {
@@ -230,6 +231,7 @@ impl ToTokens for Element {
             Element::Call(call) => quote! { #call.into() }.to_tokens(tokens),
             Element::Into(text) => quote! { #text.into() }.to_tokens(tokens),
             Element::If(expr_if) => quote! { #expr_if.into() }.to_tokens(tokens),
+            Element::For(expr_for) => quote! {#expr_for.into() }.to_tokens(tokens),
         }
     }
 }
@@ -246,11 +248,9 @@ impl Parse for Element {
             // let input_forked = input.fork();
 
             if let Ok(if_) = input.parse() {
-                // input.advance_to(&input_forked);
-                println!("IF {:#?}", if_);
-                // let if_ = Box::new(if_);
-
                 Ok(Element::If(if_))
+            } else if let Ok(for_) = input.parse() {
+                Ok(Element::For(for_))
             } else {
                 let expr: Expr = input.parse()?;
 
@@ -280,6 +280,7 @@ impl Element {
             Element::Call(call) => vec![call.clone()],
             Element::Into(_) => Vec::new(),
             Element::If(expr_if) => expr_if.collect_events(),
+            Element::For(expr_for) => expr_for.collect_events(),
         }
     }
 }
@@ -335,5 +336,46 @@ impl If {
         }
 
         res
+    }
+}
+
+#[derive(Parse, Debug)]
+pub struct For {
+    pub for_token: Token![for],
+    pub pat: Pat,
+    pub in_token: Token![in],
+    pub cond: Expr,
+
+    #[brace]
+    pub open_brace: syn::token::Brace,
+
+    #[inside(open_brace)]
+    pub block: Box<Element>,
+}
+
+impl ToTokens for For {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let pat = &self.pat;
+        let cond = &self.cond;
+        let block = &self.block;
+
+        quote! {
+            {
+                let mut arr = vec![];
+
+                for #pat in #cond {
+                    arr.push(#block);
+                }
+
+                arr
+            }
+        }
+        .to_tokens(tokens)
+    }
+}
+
+impl For {
+    pub fn collect_events(&self) -> Vec<Expr> {
+        self.block.collect_events()
     }
 }

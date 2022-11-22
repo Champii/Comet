@@ -9,23 +9,6 @@ mod html_test {
     #[derive(Clone, Debug)]
     struct Msg;
 
-    /* async fn assert_component<
-        T: Into<Shared<Comp>>,
-        Comp: Component<Msg> + 'static,
-        Msg: Clone + 'static,
-    >(
-        view: T,
-        expected: &str,
-    ) {
-        let view = view.into();
-
-        let elem = view.blocking_read().view(view.clone()).await;
-
-        let html = elem.render::<_, Msg>(Box::new(|_| ()));
-
-        assert_eq!(html.outer_html(), expected);
-    } */
-
     macro_rules! assert_html {
         ($s:expr, $($t:tt)+) => {
             let elem = html! {
@@ -181,29 +164,28 @@ mod html_test {
         assert_eq!(view(1).render().outer_html(), "<div><div>test</div></div>");
     }
 
-    /* struct Test2 {
+    struct Test2 {
         arr: Vec<i32>,
     }
 
     #[wasm_bindgen_test]
     fn test_for() {
-        component! {
-            Test2 {
-                div {
-                    for (_i, item) in self.arr.iter().enumerate() {
-                        div {
-                            item
-                        }
+        let test = Test2 { arr: vec![1, 2, 3] };
+        let mut view = html! {
+            div {
+                for item in test.arr.iter() {
+                    div {
+                        item
                     }
                 }
             }
         };
 
-        assert_html::<_, _, __component_test2::Msg>(
-            Test2 { arr: vec![1, 2, 3] },
-            "<div><span><div>1</div><div>2</div><div>3</div></span></div>",
+        assert_eq!(
+            view.render().outer_html(),
+            "<div><div><div>1</div><div>2</div><div>3</div></div></div>"
         );
-    } */
+    }
 
     #[wasm_bindgen_test]
     fn mixed_text_and_node() {

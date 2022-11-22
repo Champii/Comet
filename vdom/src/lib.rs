@@ -51,7 +51,7 @@ impl From<&str> for VElement {
 }
 
 impl From<()> for VElement {
-    fn from(text: ()) -> Self {
+    fn from(_text: ()) -> Self {
         VElement::Text("".to_string())
     }
 }
@@ -68,17 +68,17 @@ impl From<i32> for VElement {
     }
 }
 
+impl From<&i32> for VElement {
+    fn from(i: &i32) -> Self {
+        VElement::Text(i.to_string())
+    }
+}
+
 impl From<u32> for VElement {
     fn from(i: u32) -> Self {
         VElement::Text(i.to_string())
     }
 }
-
-/* impl<T: ToString> From<T> for VElement {
-    fn from(t: T) -> Self {
-        VElement::Text(t.to_string())
-    }
-} */
 
 impl<T: Into<VElement>> From<Vec<T>> for VElement {
     fn from(vec: Vec<T>) -> Self {
@@ -95,12 +95,6 @@ impl<T: Into<VElement>> From<Vec<T>> for VElement {
         })
     }
 }
-
-/* pub trait EventCallback: Fn(Box<dyn Any>) + Sized + Clone + 'static {
-    fn call(self) {
-        self()
-    }
-} */
 
 #[derive(Debug)]
 pub struct VTag {
