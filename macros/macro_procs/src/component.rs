@@ -70,9 +70,6 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                             // let vdom = shared.read().await.view(shared.clone()).await;
 
                             #[cfg(target_arch = "wasm32")]
-                            crate::console_log!("{:#?}", shared.read().await);
-
-                            #[cfg(target_arch = "wasm32")]
                             crate::APP.write().await.as_mut().unwrap().run().await;
                         });
                     });

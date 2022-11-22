@@ -39,7 +39,5 @@ pub fn init_logger() {
         Ok(())
     });
 
-    // builder.filter_level(LevelFilter::Warn);
-
     builder.init();
 }

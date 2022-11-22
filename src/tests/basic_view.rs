@@ -1,4 +1,4 @@
-/* #[cfg(target_arch = "wasm32")]
+#[cfg(target_arch = "wasm32")]
 #[cfg(test)]
 mod html_test {
     use crate::prelude::*;
@@ -9,7 +9,7 @@ mod html_test {
     #[derive(Clone, Debug)]
     struct Msg;
 
-    async fn assert_html<
+    /* async fn assert_component<
         T: Into<Shared<Comp>>,
         Comp: Component<Msg> + 'static,
         Msg: Clone + 'static,
@@ -19,108 +19,97 @@ mod html_test {
     ) {
         let view = view.into();
 
-        let elem = view.blocking_read().view().await;
+        let elem = view.blocking_read().view(view.clone()).await;
 
         let html = elem.render::<_, Msg>(Box::new(|_| ()));
 
         assert_eq!(html.outer_html(), expected);
+    } */
+
+    macro_rules! assert_html {
+        ($s:expr, $($t:tt)+) => {
+            let elem = html! {
+                $($t)+
+            }.render().outer_html();
+
+            assert_eq!(elem, $s);
+        };
     }
 
-    #[tokio::test]
     #[wasm_bindgen_test]
-    async fn mono_element() {
-        component! {
-            i32 {
-                div {}
-            }
+    fn mono_element() {
+        assert_html! {
+            "<div></div>",
+            div {}
         };
-
-        assert_html::<_, _, __component_i32::Msg>(0, "<div></div>").await;
     }
 
     #[wasm_bindgen_test]
     fn one_level_nested() {
-        component! {
-            i32 {
+        assert_html! {
+            "<div><div></div></div>",
+            div {
+                div {}
+            }
+        };
+    }
+
+    #[wasm_bindgen_test]
+    fn two_level_nested() {
+        assert_html! {
+            "<div><div><div></div></div></div>",
+            div {
                 div {
                     div {}
                 }
             }
         };
-
-        assert_html::<_, _, __component_i32::Msg>(0, "<div><div></div></div>");
-    }
-
-    #[wasm_bindgen_test]
-    fn two_level_nested() {
-        component! {
-            i32 {
-                div {
-                    div {
-                        div {}
-                    }
-                }
-            }
-        };
-
-        assert_html::<_, _, __component_i32::Msg>(0, "<div><div><div></div></div></div>");
     }
 
     #[wasm_bindgen_test]
     fn one_sibling() {
-        component! {
-            i32 {
-                div {
-                    span {}
-                    span {}
-                }
+        assert_html! {
+            "<div><span></span><span></span></div>",
+            div {
+                span {}
+                span {}
             }
         };
-
-        assert_html::<_, _, __component_i32::Msg>(0, "<div><span></span><span></span></div>");
     }
 
     #[wasm_bindgen_test]
     fn inner_text() {
-        component! {
-            i32 {
-                div {
-                    button {
-                        { "Increment" }
-                    }
+        assert_html! {
+            "<div><button>Increment</button></div>",
+            div {
+                button {
+                    "Increment"
                 }
             }
-        };
 
-        assert_html::<_, _, __component_i32::Msg>(0, "<div><button>Increment</button></div>");
+        };
     }
 
     #[wasm_bindgen_test]
     fn style() {
-        component! {
-            i32 {
-                div style: { height: 100 } {
-                    button style: { margin: 10 } {
-                        "Increment"
-                    }
+        assert_html! {
+            "<div style=\"height: 100;\"><button style=\"margin: 10;\">Increment</button></div>",
+            div style: { height: 100 } {
+                button style: { margin: 10 } {
+                    "Increment"
                 }
             }
         };
-
-        assert_html::<_, _, __component_i32::Msg>(
-            0,
-            "<div style=\"height: 100;\"><button style=\"margin: 10;\">Increment</button></div>",
-        );
     }
 
     // FIXME: Why the component doesnt have access to this struct when declared inside the
     // test function ?
-    pub struct Test {
-        pub i: i32,
-    }
-
     #[wasm_bindgen_test]
-    fn self_usage() {
+    fn struct_usage() {
+        pub struct Test {
+            pub i: i32,
+        }
+
         impl Test {
             fn color(&self) -> &'static str {
                 match self.i {
@@ -131,82 +120,65 @@ mod html_test {
                 }
             }
         }
+        let test = Test { i: 0 };
 
-        component! {
-            Test {
-                div style: {
-                    height: self.i
-                    background: self.color()
-                } {
-                    self.i
-                }
+        assert_html! {
+            "<div style=\"height: 0;background: red;\">0</div>",
+            div style: {
+                height: test.i
+                background: test.color()
+            } {
+                test.i
             }
         };
-
-        assert_html::<_, _, __component_test::Msg>(
-            Test { i: 0 },
-            "<div style=\"height: 0;background: red;\">0</div>",
-        );
     }
 
     #[wasm_bindgen_test]
     fn class_shortcut() {
-        component! {
-            i32 {
-                div.class1.class2 {
-                    "test"
-                }
+        assert_html! {
+            "<div class=\"class1 class2\">test</div>",
+            div.class1.class2 {
+                "test"
             }
         };
-
-        assert_html::<_, _, __component_i32::Msg>(0, "<div class=\"class1 class2\">test</div>");
     }
 
     #[wasm_bindgen_test]
     fn id_shortcut() {
-        component! {
-            i32 {
-                div #my_id {
-                    "test"
-                }
+        assert_html! {
+            "<div id=\"my_id\">test</div>",
+            div #my_id {
+                "test"
             }
         };
-
-        assert_html::<_, _, __component_i32::Msg>(0, "<div id=\"my_id\">test</div>");
     }
 
     #[wasm_bindgen_test]
     fn class_and_id_shortcut() {
-        component! {
-            i32 {
-                div #my_id.class1.class2 {
-                    "test"
-                }
+        assert_html! {
+            "<div id=\"my_id\" class=\"class1 class2\">test</div>",
+            div #my_id.class1.class2 {
+                "test"
             }
         };
-
-        assert_html::<_, _, __component_i32::Msg>(
-            0,
-            "<div id=\"my_id\" class=\"class1 class2\">test</div>",
-        );
     }
 
     /* #[wasm_bindgen_test]
     fn test_if() {
-        component! {
-            i32 {
+        fn view(i: u32) -> Html {
+            html! {
                 div {
-                    if *self > 0 {
+                    if i > 0 {
                         div {
                             "test"
                         }
                     }
                 }
             }
-        };
+        }
 
-        assert_html::<_, _, __component_i32::Msg>(0, "<div></div>");
-        assert_html::<_, _, __component_i32::Msg>(1, "<div><div>test</div></div>");
+        assert_eq!(view(0).render().outer_html(), "<div></div>");
+        assert_eq!(view(1).render().outer_html(), "<div><div>test</div></div>");
     } */
 
     /* struct Test2 {
@@ -235,19 +207,16 @@ mod html_test {
 
     #[wasm_bindgen_test]
     fn mixed_text_and_node() {
-        component! {
-            i32 {
+        assert_html! {
+            "<div>test<div>test</div>test</div>",
+            div {
+                "test"
                 div {
                     "test"
-                    div {
-                        "test"
-                    }
-                    "test"
                 }
+                "test"
             }
         };
-
-        assert_html::<_, _, __component_i32::Msg>(0, "<div>test<div>test</div>test</div>");
     }
 
     /* #[wasm_bindgen_test]
@@ -262,4 +231,4 @@ mod html_test {
         // FIXME: Need better test for that
         assert_html::<_, _, __component_string::Msg>("lol".to_string(), "<div><input></div>");
     } */
-} */
+}

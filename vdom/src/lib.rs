@@ -56,6 +56,24 @@ impl From<String> for VElement {
     }
 }
 
+impl From<i32> for VElement {
+    fn from(i: i32) -> Self {
+        VElement::Text(i.to_string())
+    }
+}
+
+impl From<u32> for VElement {
+    fn from(i: u32) -> Self {
+        VElement::Text(i.to_string())
+    }
+}
+
+/* impl<T: ToString> From<T> for VElement {
+    fn from(t: T) -> Self {
+        VElement::Text(t.to_string())
+    }
+} */
+
 impl<T: Into<VElement>> From<Vec<T>> for VElement {
     fn from(vec: Vec<T>) -> Self {
         let mut children = vec![];
