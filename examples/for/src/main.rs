@@ -1,13 +1,19 @@
+use comet::prelude::*;
+
+pub struct Counter {
+    pub i: i32,
+}
+
 component! {
-    i32 {
+    Counter {
         div {
-            for i in (0..*self) {
+            for i in 0..self.i {
                 button {
-                    { i }
+                    i
                 }
             }
         }
     }
 }
 
-comet::run!(10);
+comet::run!(Counter { i: 10 });

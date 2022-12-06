@@ -1,11 +1,17 @@
+use comet::prelude::*;
+
+pub struct Counter {
+    pub i: i32,
+}
+
 component! {
-    i32 {
+    Counter {
         button
-            [height: { 20 + self * 10 }]
-            @click: { *self += 1 } {
-            { self }
+            click: self.i += 1
+            style: { height: (20 + self.i * 10).to_string() } {
+            self.i
         }
     }
 }
 
-comet::run!(0);
+comet::run!(Counter { i: 0 });

@@ -24,24 +24,30 @@ pub(crate) fn create_project_folder(name: &str) {
 
     create_file(
         "src/main.rs",
-        r#"// This macro takes two arguments:
-// This macro first takes a type (any type), and inside it a root HTML element
-// Here we implement `Component` for a simple integer.
+        r#"use comet::prelude::*;
+
+pub struct Counter {
+    pub value: i32,
+}
+
+// This macro takes two arguments:
+// This macro first takes a type (any type defined in the current crate), and inside it a root HTML element
+// Here we implement `Component` for a simple struct containing an integer.
 component! {
-    // We use an i32 here, but you can use any stucts/enums/custom type
-    i32 {
+    // We use a struct here, but you can use any stucts/enums/custom type
+    Counter {
         // The root of this HTML element is a simple button
         // It has a 'click' event registered that will increment our i32 by 1
-        button @click: { *self += 1 } {
+        button click: self.value += 1 {
             // We display our value inside the button
-            { self }
+            self.value 
         }
     }
 }
 
 // This is where all the magic happens
 // We run the application with an instance of our i32 component that starts with the value 0
-comet::run!(0);
+comet::run!(Counter { value: 0 });
 "#,
     );
 

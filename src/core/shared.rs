@@ -20,6 +20,13 @@ impl<T> From<T> for Shared<T> {
     }
 }
 
+impl<T: Into<VElement>> Into<VElement> for Shared<T> {
+    fn into(self) -> VElement {
+        let t = self.blocking_read();
+        t.into()
+    }
+}
+
 impl<T> Deref for Shared<T> {
     type Target = RwLock<Box<T>>;
 

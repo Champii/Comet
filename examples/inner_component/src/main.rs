@@ -1,23 +1,30 @@
+use comet::prelude::*;
+
+#[derive(Default)]
+pub struct Counter {
+    pub value: i32,
+}
+
 component! {
-    i32 {
-        button @click: { *self += 1 } {
-            { self }
+    Counter {
+        button click: self.value += 1 {
+            self.value
         }
     }
 }
 
 #[derive(Default)]
 pub struct App {
-    counter: Shared<i32>,
-    counter2: Shared<i32>,
+    counter: Shared<Counter>,
+    counter2: Shared<Counter>,
 }
 
 component! {
     App {
         div {
-            @{self.counter}
-            @{self.counter2}
-            @{Shared::from(9)}
+            self.counter
+            self.counter2
+            9
         }
     }
 }

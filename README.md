@@ -20,6 +20,7 @@ Reactive isomorphic rust web framework.
 ## Introduction
 
 Work in progress, this is still an early naive prototype.
+Don't expect anything to work properly, expect things to break often.
 
 Comet is a framework for the web build with Rust + Wasm <3. It takes its inspiration from MeteorJS, Seed-rs, Yew and others.
 
@@ -91,23 +92,21 @@ Conveniently, this generated file is already the simpliest incrementing counter 
 
 
 ```rust
-// This macro first takes a type (any type), and inside it a root HTML element
-// Here we implement `Component` for a simple integer.
+use comet::prelude::*;
+
+pub struct Counter {
+    pub value: i32,
+}
+
 component! {
-    // We use an i32 here, but you can use any stucts/enums/custom type
-    i32 {
-	// The root of this HTML element is a simple button
-	// It has a 'click' event registered that will increment our i32 by 1
-	button click: *self += 1 {
-	    // We display our value inside the button
-	    self
-	}
+    Counter {
+        button click: self.value += 1 {
+            self.value 
+        }
     }
 }
 
-// This is where all the magic happens
-// We run the application with an instance of our i32 component that starts with the value 0
-comet::run!(0);
+comet::run!(Counter { value: 0 });
 ```
 
 ### Run it
@@ -158,6 +157,8 @@ Then go go to [http://localhost:8080](http://localhost:8080)
 ### Easy definition of the dom
 
 ```rust
+use comet::prelude::*;
+
 struct MyStruct {
     my_value: String,
     my_height: u32,
@@ -186,6 +187,8 @@ component! {
 ### Use conditional rendering and loops
 
 ```rust
+use comet::prelude::*;
+
 struct MyComponent {
     show: bool,
     value: HashMap<String, i32>,
@@ -227,6 +230,8 @@ The whole component is re-rendered on input's blur event (unfocus).
 Each binding should be unique, as in a different variable for each one
 
 ```rust
+use comet::prelude::*;
+
 struct MyStruct {
     value: String,
 }
@@ -244,6 +249,8 @@ component! {
 ### Embed your components between them
 
 ```rust
+use comet::prelude::*;
+
 struct Child {
     value: String,
 }
@@ -289,6 +296,8 @@ The `String` error type is meant to change into a real error type soon.
 You have a way to add your own database query methods, please read [Database queries](#database-queries) below.
 
 ```rust
+use comet::prelude::*;
+
 // You just have to add this little attribute to your type et voila !
 // It will add a field `id: i32` to the struct, for database storing purpose
 // Also, when adding/changing a field to this struct, the db will 
@@ -330,6 +339,8 @@ comet::run!(Todo::default().create().await.unwrap());
 Note: The structs involved in the `#[rpc]` macro MUST be accessible from the root module (i.e. `src/main.rs`)
 
 ```rust
+use comet::prelude::*;
+
 // If you have other mods that use `#[rpc]`, you have to import them explicitly
 // in the root (assuming this file is the root). This is a limitation that will not last, hopefully
 mod other_mod;
@@ -374,6 +385,8 @@ All your models have been augmented with auto-generated diesel bindings, so you 
 There will be a way to give raw SQL in the near future.
 
 ```rust
+use comet::prelude::*;
+
 #[model]
 #[derive(Default, Debug)]
 pub struct Todo {

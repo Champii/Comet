@@ -1,4 +1,3 @@
-use std::any::Any;
 use std::fmt::{Display, Formatter};
 
 use wasm_bindgen::closure::Closure;

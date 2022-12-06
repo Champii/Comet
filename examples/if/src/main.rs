@@ -1,3 +1,5 @@
+use comet::prelude::*;
+
 #[derive(Default)]
 pub struct Toggle {
     show: bool,
@@ -6,12 +8,12 @@ pub struct Toggle {
 component! {
     Toggle {
         div {
-            button @click: { self.show = !self.show } {
-                { if self.show { "Visible" } else { "Hidden" } }
+            button click: self.show = !self.show {
+                if self.show { "Visible" } else { "Hidden" }
             }
-            if (self.show) {
+            if self.show {
                 div {
-                    { "This is visible" }
+                    "This is visible"
                 }
             }
         }
