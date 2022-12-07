@@ -95,6 +95,12 @@ impl<T: Into<VElement>> From<Vec<T>> for VElement {
     }
 }
 
+impl<T: Into<VElement>> From<Box<T>> for VElement {
+    fn from(b: Box<T>) -> VElement {
+        b.into()
+    }
+}
+
 #[derive(Debug)]
 pub struct VTag {
     tag: String,

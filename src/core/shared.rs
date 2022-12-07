@@ -22,8 +22,7 @@ impl<T> From<T> for Shared<T> {
 
 impl<T: Into<VElement>> Into<VElement> for Shared<T> {
     fn into(self) -> VElement {
-        let t = self.blocking_read();
-        t.into()
+        self.try_into().unwrap()
     }
 }
 

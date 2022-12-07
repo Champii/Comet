@@ -1,7 +1,6 @@
 #[macro_export]
 macro_rules! run {
     ($e:expr) => {
-
         pub use comet::prelude::*;
 
         #[cfg(target_arch = "wasm32")]
@@ -46,9 +45,17 @@ macro_rules! run {
 
             ready_rx.await.unwrap();
 
-            let app = comet::_run($e).await;
+            let mut app = comet::_run($e).await;
 
-            APP.write().await.replace(app);
+            let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+
+            spawn_local(async move {
+                while let Some(_) = rx.recv().await {
+                    app.run().await;
+                }
+            });
+
+            REDRAW_CHANNEL.write().await.replace(tx);
         }
 
         #[cfg(target_arch = "wasm32")]
@@ -61,12 +68,21 @@ macro_rules! run {
             pub static ref CACHE: Arc<RwLock<Cache>> = Arc::new(RwLock::new(Cache::new()));
         }
 
-        // TMP
-        paste! {
-            #[cfg(target_arch = "wasm32")]
-            lazy_static! {
-                pub static ref APP: Arc<RwLock<Option<comet::prelude::App<Counter, __component_counter::Msg>>>> = Arc::new(RwLock::new(None));
-            }
+        #[cfg(target_arch = "wasm32")]
+        lazy_static! {
+            pub static ref REDRAW_CHANNEL: Arc<RwLock<Option<tokio::sync::mpsc::Sender<()>>>> =
+                Arc::new(RwLock::new(None));
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        pub async fn redraw_root() {
+            crate::REDRAW_CHANNEL
+                .write()
+                .await
+                .as_mut()
+                .unwrap()
+                .send(())
+                .await;
         }
 
         #[cfg(target_arch = "wasm32")]
@@ -89,9 +105,13 @@ macro_rules! run {
                 comet::console_log!("packet {:#?}", proto);
 
                 if let Proto::Event(request_id, events) = proto {
-                    CACHE.write().await.update_for_request_id(request_id, events);
+                    CACHE
+                        .write()
+                        .await
+                        .update_for_request_id(request_id, events);
 
-                    APP.write().await.as_mut().unwrap().run().await;
+                    redraw_root().await;
+
                     comet::console_log!("app run");
                 }
             }
@@ -116,5 +136,5 @@ macro_rules! run {
         pub async fn main() {
             comet::server::server::run::<Proto>().await;
         }
-    }
+    };
 }
