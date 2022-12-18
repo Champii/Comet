@@ -1,4 +1,7 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
+use std::sync::Arc;
+
+use tokio::sync::RwLock;
 
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
@@ -13,7 +16,6 @@ pub trait Render {
 pub enum VElement {
     Tag(VTag),
     Text(String),
-    // Custom(Box<dyn Render>),
 }
 
 impl VElement {
@@ -95,9 +97,17 @@ impl<T: Into<VElement>> From<Vec<T>> for VElement {
     }
 }
 
-impl<T: Into<VElement>> From<Box<T>> for VElement {
-    fn from(b: Box<T>) -> VElement {
-        b.into()
+impl<T: Into<VElement> + Debug> From<Arc<RwLock<Box<T>>>> for VElement {
+    fn from(b: Arc<RwLock<Box<T>>>) -> VElement {
+        let t = b.blocking_write();
+
+        // This is a trick to avoid requiring T to be Clone
+        // Very bad, very unsafe
+        unsafe {
+            let t: T = std::mem::transmute_copy(&**t);
+
+            t.into()
+        }
     }
 }
 
@@ -178,27 +188,16 @@ impl Render for VTag {
                     element.set_attribute(&attr.key, value_str).unwrap();
                 }
                 VAttributeValue::Event(ref mut cb) => {
-                    // let real_msg = msg.downcast_ref::<Msg>().unwrap();
-                    // let real_msg = real_msg.clone();
-                    /* let f = f.clone();
-                    let closure = Closure::wrap(Box::new(move || f(msg)) as Box<dyn FnMut()>); */
-                    // let cb = cb.clone();
                     let orig = cb.take().unwrap();
 
-                    // let placeholder = Closure::wrap(Box::new(move || {}) as Box<dyn Fn()>);
                     *cb = None;
 
                     element
                         .add_event_listener_with_callback(&attr.key, orig.as_ref().unchecked_ref())
                         .unwrap();
 
-                    orig.forget();
-                    // cb.forget();
-
-                    // cb.forget();
-
                     // FIXME: leak
-                    // closure.forget();
+                    orig.forget();
                 }
             }
         }
@@ -206,15 +205,6 @@ impl Render for VTag {
         for child in &mut self.children {
             match child {
                 VElement::Tag(tag) => {
-                    /* if tag
-                        .attrs
-                        .iter()
-                        .find(|attr| attr.key == "__component")
-                        .is_some()
-                    {
-                        continue;
-                    } */
-
                     element.append_child(&tag.render()).unwrap();
                 }
                 VElement::Text(text) => {
@@ -265,7 +255,6 @@ impl VAttribute {
 
 pub enum VAttributeValue {
     String(String),
-    // Event(Box<dyn Any>),
     Event(Option<Closure<dyn Fn()>>),
     Attributes(Vec<VAttribute>),
 }
@@ -291,7 +280,7 @@ impl Display for VAttributeValue {
     }
 }
 
-impl std::fmt::Debug for VAttributeValue {
+impl Debug for VAttributeValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             VAttributeValue::String(s) => write!(f, "String({})", s),

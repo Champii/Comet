@@ -20,9 +20,15 @@ impl<T> From<T> for Shared<T> {
     }
 }
 
-impl<T: Into<VElement>> Into<VElement> for Shared<T> {
+/* impl<T: Into<VElement>> Into<VElement> for Shared<T> {
     fn into(self) -> VElement {
         self.try_into().unwrap()
+    }
+} */
+
+impl<T: Into<VElement> + std::fmt::Debug> From<Shared<T>> for VElement {
+    fn from(shared: Shared<T>) -> VElement {
+        shared.0.into()
     }
 }
 

@@ -229,7 +229,7 @@ impl ToTokens for Element {
         match self {
             Element::Tag(tag) => quote! { VElement::Tag(#tag) }.to_tokens(tokens),
             Element::Call(call) => quote! { #call.into() }.to_tokens(tokens),
-            Element::Into(text) => quote! { #text.into() }.to_tokens(tokens),
+            Element::Into(text) => quote! { #text.clone().into() }.to_tokens(tokens),
             Element::If(expr_if) => quote! { #expr_if.into() }.to_tokens(tokens),
             Element::For(expr_for) => quote! {#expr_for.into() }.to_tokens(tokens),
         }

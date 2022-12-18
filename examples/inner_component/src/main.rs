@@ -1,6 +1,6 @@
 use comet::prelude::*;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Counter {
     pub value: i32,
 }
