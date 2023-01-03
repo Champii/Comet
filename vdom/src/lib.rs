@@ -1,3 +1,5 @@
+#![feature(mem_copy_fn)]
+
 use std::fmt::{Debug, Display, Formatter};
 use std::sync::Arc;
 
@@ -97,19 +99,26 @@ impl<T: Into<VElement>> From<Vec<T>> for VElement {
     }
 }
 
-impl<T: Into<VElement> + Debug> From<Arc<RwLock<Box<T>>>> for VElement {
-    fn from(b: Arc<RwLock<Box<T>>>) -> VElement {
-        let t = b.blocking_write();
+impl<T: Into<VElement> + Debug> From<Arc<RwLock<T>>> for VElement {
+    fn from(b: Arc<RwLock<T>>) -> VElement {
+        unimplemented!();
+    }
+}
+/* impl<T: Into<VElement> + Debug> From<Arc<RwLock<T>>> for VElement {
+    fn from(b: Arc<RwLock<T>>) -> VElement {
+        unimplemented!();
+        /* let t = b.blocking_read();
 
+        // FIXME:
         // This is a trick to avoid requiring T to be Clone
         // Very bad, very unsafe
         unsafe {
-            let t: T = std::mem::transmute_copy(&**t);
+            let t: T = std::mem::transmute_copy(&*t);
 
             t.into()
-        }
+        } */
     }
-}
+} */
 
 #[derive(Debug)]
 pub struct VTag {
@@ -240,10 +249,13 @@ impl VAttribute {
         match self.value {
             VAttributeValue::Event(ref mut f) => {
                 let msg = Box::new(events[*i].clone());
+
                 let closure = Closure::wrap(Box::new(move || {
                     let msg = msg.clone();
+
                     callback(*msg)
                 }) as Box<dyn Fn()>);
+
                 *f = Some(closure);
 
                 *i += 1;

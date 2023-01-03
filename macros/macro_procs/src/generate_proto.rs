@@ -56,6 +56,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
 
             impl From<Model> for #models6 {
                 fn from(m: Model) -> Self {
+                    #[allow(unreachable_code)]
                     match m {
                         Model::#models7(m) => m,
                         _ => panic!("Invalid model type"),

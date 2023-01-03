@@ -65,9 +65,17 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                     let callback = Box::new(move |msg| {
                         let shared = shared_self.clone();
 
+                        #[cfg(target_arch = "wasm32")]
+                        comet::console_log!("Callback");
+
                         spawn_local(async move {
                             shared.write().await.update(msg).await;
+
+                            #[cfg(target_arch = "wasm32")]
+                            comet::console_log!("shared {:#?}", shared.read().await);
+
                             // let vdom = shared.read().await.view(shared.clone()).await;
+
 
                             #[cfg(target_arch = "wasm32")]
                             crate::redraw_root().await;
@@ -95,13 +103,41 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
             impl Into<VElement> for #name {
                 fn into(self) -> VElement {
-                    let shared = Shared::from(self);
+                    unimplemented!()
+                }
+            }
+            /* impl From<Arc<tokio::sync::RwLock<#name>>> for VElement {
+                fn from(shared: Arc<RwLock<#name>>) -> VElement { */
+
+            impl ToVElement for Arc<tokio::sync::RwLock<#name>> {
+                fn to_velement(self) -> VElement {
+                    #[cfg(target_arch = "wasm32")]
+                    comet::console_log!("Into VElement");
+
+                    /* // FIXME: the problem is here
+                    let shared = Shared::from(self); */
+                    let shared = self;
 
                     comet::prelude::futures::executor::block_on(async {
                         shared.read().await.view(shared.clone()).await
                     })
                 }
             }
+
+            /* impl Into<VElement> for Arc<tokio::sync::RwLock<#name>> {
+                fn into(self) -> VElement {
+                    #[cfg(target_arch = "wasm32")]
+                    comet::console_log!("Into VElement");
+
+                    /* // FIXME: the problem is here
+                    let shared = Shared::from(self); */
+                    let shared = self;
+
+                    comet::prelude::futures::executor::block_on(async {
+                        shared.read().await.view(shared.clone()).await
+                    })
+                }
+            } */
         }
     })
 }

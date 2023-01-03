@@ -82,7 +82,8 @@ macro_rules! run {
                 .as_mut()
                 .unwrap()
                 .send(())
-                .await;
+                .await
+                .unwrap();
         }
 
         #[cfg(target_arch = "wasm32")]
@@ -136,5 +137,7 @@ macro_rules! run {
         pub async fn main() {
             comet::server::server::run::<Proto>().await;
         }
+
+        // pub struct Wrapper<T>(pub Shared<T>);
     };
 }

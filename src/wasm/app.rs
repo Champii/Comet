@@ -14,9 +14,8 @@ where
 
         let element = vdom.render();
 
+        // Temporary, need vdom diff
         body.set_inner_html("");
         body.append_child(&element).expect("should append child");
-
-        // crate::core::component::run_component(self.root.clone(), &body).await;
     }
 }

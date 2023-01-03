@@ -3,10 +3,10 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use vdom::VElement;
 
-use crate::prelude::Component;
+use crate::prelude::{Component, ToVElement};
 
 #[derive(Default, Debug)]
-pub struct Shared<T>(pub Arc<RwLock<Box<T>>>);
+pub struct Shared<T>(pub Arc<RwLock<T>>);
 
 impl<T> Clone for Shared<T> {
     fn clone(&self) -> Self {
@@ -16,40 +16,30 @@ impl<T> Clone for Shared<T> {
 
 impl<T> From<T> for Shared<T> {
     fn from(t: T) -> Self {
-        Self(Arc::new(RwLock::new(Box::new(t))))
+        Self(Arc::new(RwLock::new(t)))
     }
 }
 
-/* impl<T: Into<VElement>> Into<VElement> for Shared<T> {
-    fn into(self) -> VElement {
-        self.try_into().unwrap()
+impl<T: ToVElement + std::fmt::Debug> From<Shared<T>> for VElement {
+    fn from(shared: Shared<T>) -> VElement {
+        shared.0.to_velement()
+    }
+}
+
+/* impl<T, Msg> From<Shared<T>> for VElement
+where
+    T: Component<Msg> + 'static,
+    Msg: Clone + 'static,
+{
+    fn from(shared: Shared<T>) -> VElement {
+        futures::executor::block_on(async { shared.read().await.view(shared.clone()).await })
     }
 } */
-
-impl<T: Into<VElement> + std::fmt::Debug> From<Shared<T>> for VElement {
-    fn from(shared: Shared<T>) -> VElement {
-        shared.0.into()
-    }
-}
 
 impl<T> Deref for Shared<T> {
-    type Target = RwLock<Box<T>>;
+    type Target = RwLock<T>;
 
     fn deref(&self) -> &Self::Target {
-        self.0.as_ref()
+        &self.0
     }
 }
-
-/* impl<T: Into<VElement> + Clone> From<Shared<T>> for VElement {
-    fn from(shared: Shared<T>) -> Self {
-        let comp = shared.blocking_read().as_ref();
-        comp.view(shared).into()
-    }
-} */
-
-/* impl<Msg, T: Component<Msg> + Clone> From<Shared<T>> for VElement {
-    fn from(shared: Shared<T>) -> Self {
-        let comp = shared.blocking_read().as_ref();
-        comp.view(shared)
-    }
-} */

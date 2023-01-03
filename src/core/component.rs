@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use vdom::{Html, Render};
+use vdom::{Html, VElement};
 use wasm_bindgen_futures::spawn_local;
 
 use crate::prelude::Shared;
@@ -34,6 +34,10 @@ where
         })
     } */
     // fn update_bindings(&mut self, bindings: Shared<Vec<web_sys::Element>>);
+}
+
+pub trait ToVElement {
+    fn to_velement(self) -> VElement;
 }
 
 /* impl<Msg> Render for Component<Msg>
