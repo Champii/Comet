@@ -46,7 +46,7 @@ impl Client {
         self.session_id = session_id;
     }
 
-    pub async fn handle_msg<P: ProtoTrait + Send + Serialize + DeserializeOwned + Debug>(
+    pub async fn handle_msg<P: ProtoTrait + Send + Serialize + DeserializeOwned>(
         &self,
         msg: Vec<u8>,
     ) where

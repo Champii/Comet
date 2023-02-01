@@ -71,8 +71,8 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                         spawn_local(async move {
                             shared.write().await.update(msg).await;
 
-                            #[cfg(target_arch = "wasm32")]
-                            comet::console_log!("shared {:#?}", shared.read().await);
+                            /* #[cfg(target_arch = "wasm32")]
+                            comet::console_log!("shared {:#?}", shared.read().await); */
 
                             // let vdom = shared.read().await.view(shared.clone()).await;
 
@@ -103,15 +103,17 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
             impl Into<VElement> for #name {
                 fn into(self) -> VElement {
-                    unimplemented!()
+                    // unimplemented!()
+                    // panic!("LOL");
+                    Wrapper(Shared::from(self)).into()
                 }
             }
 
-            impl ToVElement for #name {
+            /* impl ToVElement for #name {
                 fn to_velement(self) -> VElement {
                     unimplemented!()
                 }
-            }
+            } */
 
             /* impl From<Arc<tokio::sync::RwLock<#name>>> for VElement {
                 fn from(shared: Arc<RwLock<#name>>) -> VElement { */

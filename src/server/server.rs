@@ -20,7 +20,7 @@ use super::{client::Client, universe::Universe};
 
 use futures::stream::StreamExt;
 
-async fn handler<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned + Debug>(
+async fn handler<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned>(
     ws: WebSocketUpgrade,
     Extension(universe): Extension<Universe>,
 ) -> Response
@@ -31,7 +31,7 @@ where
     ws.on_upgrade(|socket| handle_socket::<P>(socket, universe))
 }
 
-async fn handle_socket<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned + Debug>(
+async fn handle_socket<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned>(
     socket: WebSocket,
     universe: Universe,
 ) where
@@ -63,7 +63,7 @@ async fn handle_socket<P: ProtoTrait + Send + 'static + Serialize + DeserializeO
     universe.write().await.remove_client(session_id).await;
 }
 
-pub async fn run<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned + Debug>()
+pub async fn run<P: ProtoTrait + Send + 'static + Serialize + DeserializeOwned>()
 where
     <P as ProtoTrait>::Client: Send,
     P: ProtoTrait<Client = Client>,

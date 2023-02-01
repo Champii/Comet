@@ -5,7 +5,7 @@ use vdom::VElement;
 
 use crate::prelude::{Component, ToVElement};
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct Shared<T>(pub Arc<RwLock<T>>);
 
 impl<T> Clone for Shared<T> {

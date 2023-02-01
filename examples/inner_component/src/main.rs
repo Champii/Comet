@@ -1,6 +1,6 @@
 use comet::prelude::*;
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct Counter {
     pub value: i32,
 }
@@ -13,7 +13,7 @@ component! {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct App {
     counter: Shared<Counter>,
     counter2: Shared<Counter>,

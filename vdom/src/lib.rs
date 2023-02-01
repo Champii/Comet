@@ -99,11 +99,11 @@ impl<T: Into<VElement>> From<Vec<T>> for VElement {
     }
 }
 
-impl<T: Into<VElement> + Debug> From<Arc<RwLock<T>>> for VElement {
+/* impl<T: Into<VElement>> From<Arc<RwLock<T>>> for VElement {
     fn from(b: Arc<RwLock<T>>) -> VElement {
         unimplemented!();
     }
-}
+} */
 
 /* impl<T: Into<VElement> + Debug> From<Arc<RwLock<T>>> for VElement {
     fn from(b: Arc<RwLock<T>>) -> VElement {

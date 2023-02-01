@@ -26,6 +26,30 @@ macro_rules! run {
             }
         }
 
+        impl From<Wrapper<&str>> for VElement {
+            fn from(wrapper: Wrapper<&str>) -> VElement {
+                wrapper.0.into()
+            }
+        }
+
+        impl From<Wrapper<String>> for VElement {
+            fn from(wrapper: Wrapper<String>) -> VElement {
+                wrapper.0.into()
+            }
+        }
+
+        impl From<Wrapper<()>> for VElement {
+            fn from(wrapper: Wrapper<()>) -> VElement {
+                wrapper.0.into()
+            }
+        }
+
+        impl<T: Into<VElement>> From<Wrapper<Vec<T>>> for VElement {
+            fn from(wrapper: Wrapper<Vec<T>>) -> VElement {
+                wrapper.0.into()
+            }
+        }
+
         generate_rpc_proto! {}
         generate_proto! {}
 
@@ -118,7 +142,7 @@ macro_rules! run {
             while let Some(msg) = rx.next().await {
                 let proto = Proto::from_bytes(&msg.msg);
 
-                comet::console_log!("packet {:#?}", proto);
+                // comet::console_log!("packet {:#?}", proto);
 
                 if let Proto::Event(request_id, events) = proto {
                     CACHE
