@@ -61,7 +61,6 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                 }
 
                 async fn view(&self, shared_self: Shared<Self>) -> VElement {
-                    // let callback = Self::callback()(shared_self);
                     let callback = Box::new(move |msg| {
                         let shared = shared_self.clone();
 
@@ -71,11 +70,7 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                         spawn_local(async move {
                             shared.write().await.update(msg).await;
 
-                            /* #[cfg(target_arch = "wasm32")]
-                            comet::console_log!("shared {:#?}", shared.read().await); */
-
                             // let vdom = shared.read().await.view(shared.clone()).await;
-
 
                             #[cfg(target_arch = "wasm32")]
                             crate::redraw_root().await;
@@ -103,31 +98,14 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
             impl Into<VElement> for #name {
                 fn into(self) -> VElement {
-                    // unimplemented!()
-                    // panic!("LOL");
+                    // FIXME
                     Wrapper(Shared::from(self)).into()
                 }
             }
 
-            /* impl ToVElement for #name {
-                fn to_velement(self) -> VElement {
-                    unimplemented!()
-                }
-            } */
-
-            /* impl From<Arc<tokio::sync::RwLock<#name>>> for VElement {
-                fn from(shared: Arc<RwLock<#name>>) -> VElement { */
-
             impl From<crate::Wrapper<Shared<#name>>> for VElement {
                 fn from(shared: crate::Wrapper<Shared<#name>>) -> VElement {
 
-            /* impl ToVElement for Arc<tokio::sync::RwLock<#name>> {
-                fn to_velement(self) -> VElement { */
-                    #[cfg(target_arch = "wasm32")]
-                    comet::console_log!("Into VElement");
-
-                    /* // FIXME: the problem is here
-                    let shared = Shared::from(self); */
                     let shared = shared.0;
 
                     comet::prelude::futures::executor::block_on(async {
@@ -135,33 +113,6 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                     })
                 }
             }
-
-            /* impl<T: ToVElement + std::fmt::Debug> From<Arc<RwLock<T>>> for VElement {
-                fn from(shared: Arc<RwLock<T>>) -> VElement {
-                    shared.to_velement()
-                }
-            } */
-
-
-            /* impl<T: ToVElement + std::fmt::Debug> From<Shared<T>> for VElement {
-                fn from(shared: Shared<T>) -> VElement {
-                    shared.0.to_velement()
-                }
-            } */
-            /* impl Into<VElement> for Arc<tokio::sync::RwLock<#name>> {
-                fn into(self) -> VElement {
-                    #[cfg(target_arch = "wasm32")]
-                    comet::console_log!("Into VElement");
-
-                    /* // FIXME: the problem is here
-                    let shared = Shared::from(self); */
-                    let shared = self;
-
-                    comet::prelude::futures::executor::block_on(async {
-                        shared.read().await.view(shared.clone()).await
-                    })
-                }
-            } */
         }
     })
 }

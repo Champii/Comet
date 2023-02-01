@@ -24,59 +24,9 @@ where
             })
         })
     }
-    /* fn callback(this: Shared<Self>) -> Box<dyn Fn(Msg)> {
-        Box::new(move |msg| {
-            let this = this.clone();
-
-            spawn_local(async move {
-                this.write().await.update(msg).await;
-            })
-        })
-    } */
-    // fn update_bindings(&mut self, bindings: Shared<Vec<web_sys::Element>>);
 }
 
 pub trait ToVElement {
     fn to_velement(self) -> VElement;
 }
 
-/* impl<Msg> Render for Component<Msg>
-where
-    Msg: Clone + 'static,
-{
-    fn render<F>(&self, f: Box<F>) -> web_sys::Element
-    where
-        F: Fn(Msg) + Clone + 'static,
-        Msg: Any + Sized + Clone + 'static,
-    {
-        self.view().render(f)
-    }
-} */
-
-/* pub async fn run_component<Msg, Comp>(comp: Shared<Comp>, parent: &web_sys::Element)
-where
-    Comp: Component<Msg>,
-    Msg: Clone + 'static,
-{
-    let comp2 = comp.clone();
-    let parent2 = parent.clone();
-
-    let cb = move |msg| {
-        let comp = comp2.clone();
-        let parent = parent2.clone();
-
-        spawn_local(async move {
-            comp.write().await.update(msg).await;
-
-            run_component(comp, &parent).await;
-        })
-    };
-
-    let view = comp.read().await.view(comp.clone()).await;
-
-    let dom = view.render();
-
-    // TODO: Diff + Patch
-    parent.set_inner_html("");
-    parent.append_child(&dom).unwrap();
-} */

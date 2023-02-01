@@ -6,20 +6,11 @@ macro_rules! run {
         #[cfg(target_arch = "wasm32")]
         use std::panic;
 
-        // #[cfg(not(target_arch = "wasm32"))]
         mod schema;
-        // #[cfg(not(target_arch = "wasm32"))]
-        // use schema::*;
-        //
 
         #[derive(Clone)]
         pub struct Wrapper<T>(pub T);
 
-        /* impl<T: Into<VElement>> From<Wrapper<T>> for VElement {
-            fn from(wrapper: Wrapper<T>) -> VElement {
-                wrapper.0.into()
-            }
-        } */
         impl From<Wrapper<i32>> for VElement {
             fn from(wrapper: Wrapper<i32>) -> VElement {
                 wrapper.0.into()
@@ -59,14 +50,6 @@ macro_rules! run {
         #[cfg(target_arch = "wasm32")]
         generate_cache! {}
 
-        /* pub mod prelude {
-            pub use crate::*;
-            /* pub use crate::RPCQuery;
-            pub use crate::RPCResponse;
-            pub use crate::Proto; */
-            pub use comet::prelude::*;
-        } */
-        // pub use crate::prelude::*;
 
         #[cfg(target_arch = "wasm32")]
         #[wasm_bindgen(start)]
@@ -176,7 +159,5 @@ macro_rules! run {
         pub async fn main() {
             comet::server::server::run::<Proto>().await;
         }
-
-        // pub struct Wrapper<T>(pub Shared<T>);
     };
 }

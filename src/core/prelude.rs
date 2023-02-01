@@ -1,5 +1,4 @@
 pub use comet_macro_procs;
-// pub use comet_macro_rules;
 pub use derive_more::*;
 
 pub use async_trait::async_trait;
@@ -28,18 +27,6 @@ pub use crate::core::shared::*;
 pub use crate::core::proto::{Message, ProtoTrait};
 pub use crate::core::utils::*;
 
-// macros
-/* pub use crate::_gen_full_variant;
-pub use crate::_gen_variant;
-pub use crate::component;
-pub use crate::extract_bindings;
-pub use crate::extract_msg;
-pub use crate::extract_update;
-pub use crate::gen_full_variant;
-pub use crate::gen_variant;
-pub use crate::html;
-pub use crate::html_arr;
-pub use crate::replace_self; */
 pub use crate::run;
 pub use comet_macro_procs::component;
 pub use comet_macro_procs::db;

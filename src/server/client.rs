@@ -15,18 +15,12 @@ use crate::core::prelude::ProtoTrait;
 
 use super::universe::Universe;
 
-/// lol
-/// mdr
-///
 #[derive(Clone, Debug)]
 pub struct Client {
     out: Arc<RwLock<SplitSink<WebSocket, Message>>>,
     session_id: usize,
     queries: Arc<RwLock<HashMap<u64, JoinHandle<()>>>>,
     next_request_id: Arc<RwLock<u64>>,
-    // universe: Universe,
-    // hash: String,
-    // db: DatabaseConnection,
 }
 
 impl Client {
@@ -36,9 +30,6 @@ impl Client {
             session_id: 0,
             queries: Arc::new(RwLock::new(HashMap::new())),
             next_request_id: Arc::new(RwLock::new(0)),
-            // universe,
-            // hash: "".to_string(),
-            // db: DatabaseConnection::new(),
         }
     }
 
