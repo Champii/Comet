@@ -1,6 +1,5 @@
 use comet::prelude::*;
 
-// #[model]
 #[derive(Default, Debug)]
 pub struct Counter {
     pub value: i32,
@@ -26,10 +25,7 @@ component! {
         div {
             self.counter
             self.counter2
-            9
-            button click: self.value += 1 {
-                self.value
-            }
+            2
         }
     }
 }

@@ -106,24 +106,46 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                     unimplemented!()
                 }
             }
+
+            impl ToVElement for #name {
+                fn to_velement(self) -> VElement {
+                    unimplemented!()
+                }
+            }
+
             /* impl From<Arc<tokio::sync::RwLock<#name>>> for VElement {
                 fn from(shared: Arc<RwLock<#name>>) -> VElement { */
 
-            impl ToVElement for Arc<tokio::sync::RwLock<#name>> {
-                fn to_velement(self) -> VElement {
+            impl From<crate::Wrapper<Shared<#name>>> for VElement {
+                fn from(shared: crate::Wrapper<Shared<#name>>) -> VElement {
+
+            /* impl ToVElement for Arc<tokio::sync::RwLock<#name>> {
+                fn to_velement(self) -> VElement { */
                     #[cfg(target_arch = "wasm32")]
                     comet::console_log!("Into VElement");
 
                     /* // FIXME: the problem is here
                     let shared = Shared::from(self); */
-                    let shared = self;
+                    let shared = shared.0;
 
                     comet::prelude::futures::executor::block_on(async {
-                        shared.read().await.view(shared.clone()).await
+                        shared.0.read().await.view(shared.clone()).await
                     })
                 }
             }
 
+            /* impl<T: ToVElement + std::fmt::Debug> From<Arc<RwLock<T>>> for VElement {
+                fn from(shared: Arc<RwLock<T>>) -> VElement {
+                    shared.to_velement()
+                }
+            } */
+
+
+            /* impl<T: ToVElement + std::fmt::Debug> From<Shared<T>> for VElement {
+                fn from(shared: Shared<T>) -> VElement {
+                    shared.0.to_velement()
+                }
+            } */
             /* impl Into<VElement> for Arc<tokio::sync::RwLock<#name>> {
                 fn into(self) -> VElement {
                     #[cfg(target_arch = "wasm32")]

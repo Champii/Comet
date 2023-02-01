@@ -20,11 +20,17 @@ impl<T> From<T> for Shared<T> {
     }
 }
 
-impl<T: ToVElement + std::fmt::Debug> From<Shared<T>> for VElement {
+/* impl<T: ToVElement + std::fmt::Debug> From<Shared<T>> for VElement {
     fn from(shared: Shared<T>) -> VElement {
         shared.0.to_velement()
     }
-}
+} */
+
+/* impl<T: ToVElement + std::fmt::Debug> From<Arc<RwLock<T>>> for VElement {
+    fn from(shared: Arc<RwLock<T>>) -> VElement {
+        shared.to_velement()
+    }
+} */
 
 /* impl<T, Msg> From<Shared<T>> for VElement
 where

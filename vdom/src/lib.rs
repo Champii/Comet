@@ -104,6 +104,7 @@ impl<T: Into<VElement> + Debug> From<Arc<RwLock<T>>> for VElement {
         unimplemented!();
     }
 }
+
 /* impl<T: Into<VElement> + Debug> From<Arc<RwLock<T>>> for VElement {
     fn from(b: Arc<RwLock<T>>) -> VElement {
         unimplemented!();

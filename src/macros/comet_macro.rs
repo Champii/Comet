@@ -10,6 +10,21 @@ macro_rules! run {
         mod schema;
         // #[cfg(not(target_arch = "wasm32"))]
         // use schema::*;
+        //
+
+        #[derive(Clone)]
+        pub struct Wrapper<T>(pub T);
+
+        /* impl<T: Into<VElement>> From<Wrapper<T>> for VElement {
+            fn from(wrapper: Wrapper<T>) -> VElement {
+                wrapper.0.into()
+            }
+        } */
+        impl From<Wrapper<i32>> for VElement {
+            fn from(wrapper: Wrapper<i32>) -> VElement {
+                wrapper.0.into()
+            }
+        }
 
         generate_rpc_proto! {}
         generate_proto! {}
