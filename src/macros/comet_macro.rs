@@ -50,7 +50,6 @@ macro_rules! run {
         #[cfg(target_arch = "wasm32")]
         generate_cache! {}
 
-
         #[cfg(target_arch = "wasm32")]
         #[wasm_bindgen(start)]
         pub fn main() {
@@ -78,6 +77,8 @@ macro_rules! run {
             });
 
             REDRAW_CHANNEL.write().await.replace(tx);
+
+            println!("HERE");
         }
 
         #[cfg(target_arch = "wasm32")]

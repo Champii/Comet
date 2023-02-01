@@ -1,9 +1,6 @@
 #![feature(mem_copy_fn)]
 
 use std::fmt::{Debug, Display, Formatter};
-use std::sync::Arc;
-
-use tokio::sync::RwLock;
 
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;

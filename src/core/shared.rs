@@ -1,9 +1,6 @@
 use std::ops::Deref;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use vdom::VElement;
-
-use crate::prelude::{Component, ToVElement};
 
 #[derive(Default)]
 pub struct Shared<T>(pub Arc<RwLock<T>>);

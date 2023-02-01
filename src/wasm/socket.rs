@@ -9,7 +9,7 @@ use futures::{
 };
 use serde::{de::DeserializeOwned, Serialize};
 
-use std::{collections::HashMap, fmt::Debug};
+use std::collections::HashMap;
 
 use crate::prelude::*;
 

@@ -55,6 +55,8 @@ pub fn generate_cache() -> Result<proc_macro2::TokenStream> {
                     let ids_models = models.into_iter().map(|model| {
                         let model: Model = model.into();
 
+                        #[allow(unreachable_code)]
+
                         (model.id(), model)
                     }).collect::<Vec<_>>();
 
