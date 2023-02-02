@@ -17,7 +17,6 @@ component! {
 pub struct App {
     counter: Shared<Counter>,
     counter2: Shared<Counter>,
-    value: i32,
 }
 
 component! {
@@ -25,7 +24,6 @@ component! {
         div {
             self.counter
             self.counter2
-            2
         }
     }
 }

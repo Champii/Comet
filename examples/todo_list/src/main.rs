@@ -7,7 +7,7 @@ pub struct Todo {
     pub completed: bool,
 }
 
-#[rpc]
+// #[rpc]
 impl Todo {
     pub async fn toggle(&mut self) {
         self.completed = !self.completed;
@@ -18,7 +18,7 @@ impl Todo {
 
 #[sql]
 impl Todo {
-    #[watch]
+    // #[watch]
     pub async fn list_watch() -> Vec<Todo> {
         use crate::schema::todos;
 
@@ -44,7 +44,7 @@ pub struct App {
 }
 
 impl App {
-    pub async fn new() -> Self {
+    pub fn new() -> Self {
         Self { title: "".into() }
     }
 
@@ -69,8 +69,9 @@ component! {
             button click: self.new_todo().await {
                 "Add"
             }
+            input value: self.title.clone() {}
         }
     }
 }
 
-comet::run!(App::new().await);
+comet::run!(App::new());

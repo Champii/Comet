@@ -105,7 +105,6 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
             impl From<crate::Wrapper<Shared<#name>>> for VElement {
                 fn from(shared: crate::Wrapper<Shared<#name>>) -> VElement {
-
                     let shared = shared.0;
 
                     comet::prelude::futures::executor::block_on(async {
