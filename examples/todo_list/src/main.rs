@@ -7,7 +7,20 @@ pub struct Todo {
     pub completed: bool,
 }
 
-// #[rpc]
+impl Todo {
+    pub async fn new(title: &str) -> Self {
+        Self {
+            id: -1,
+            title: title.into(),
+            completed: false,
+        }
+        .create()
+        .await
+        .unwrap()
+    }
+}
+
+#[rpc]
 impl Todo {
     pub async fn toggle(&mut self) {
         self.completed = !self.completed;
@@ -18,7 +31,7 @@ impl Todo {
 
 #[sql]
 impl Todo {
-    // #[watch]
+    #[watch]
     pub async fn list_watch() -> Vec<Todo> {
         use crate::schema::todos;
 
@@ -29,6 +42,7 @@ impl Todo {
 component! {
     Todo {
         div {
+            self.id
             self.title.clone()
             self.completed.to_string()
             button click: self.toggle().await {
@@ -44,19 +58,8 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> Self {
-        Self { title: "".into() }
-    }
-
     pub async fn new_todo(&mut self) {
-        Todo {
-            id: -1,
-            title: self.title.clone(),
-            completed: false,
-        }
-        .create()
-        .await
-        .unwrap();
+        Todo::new(&self.title).await;
 
         self.title = "".into();
     }
@@ -74,4 +77,4 @@ component! {
     }
 }
 
-comet::run!(App::new());
+comet::run!(App::default());
