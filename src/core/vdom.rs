@@ -1,5 +1,3 @@
-#![feature(mem_copy_fn)]
-
 use std::fmt::{Debug, Display, Formatter};
 
 use wasm_bindgen::closure::Closure;

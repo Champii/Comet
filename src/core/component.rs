@@ -1,5 +1,5 @@
+use crate::prelude::vdom::{Html, VElement};
 use async_trait::async_trait;
-use vdom::{Html, VElement};
 use wasm_bindgen_futures::spawn_local;
 
 use crate::prelude::Shared;

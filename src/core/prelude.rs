@@ -5,8 +5,8 @@ pub use async_trait::async_trait;
 pub use futures;
 pub use lazy_static::lazy_static;
 
-pub use vdom;
-pub use vdom::*;
+pub use crate::core::vdom;
+pub use crate::core::vdom::*;
 
 pub use diesel;
 pub use diesel::prelude::*;
