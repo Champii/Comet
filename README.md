@@ -81,7 +81,7 @@ $> comet new my_counter && cd my_counter
 There is already the dependency setup in the Cargo.toml:
 
 ```toml
-comet-web = "0.1.3"
+comet-web = "0.1.4"
 ```
 
 This newly generated project contains all you need to get started. Your journey starts with `src/main.rs`.  

@@ -821,7 +821,7 @@ dependencies = [
 [[package]]
 name = "postgres_query"
 version = "0.3.3"
-source = "git+https://github.com/nolanderc/rust-postgres-query#b4422051c8a31fbba4a35f88004c1cefb1878dd5"
+source = "git+https://github.com/nolanderc/rust-postgres-query?rev=b4422051c8a31fbba4a35f88004c1cefb1878dd5#b4422051c8a31fbba4a35f88004c1cefb1878dd5"
 dependencies = [
  "async-trait",
  "futures",
@@ -836,7 +836,7 @@ dependencies = [
 [[package]]
 name = "postgres_query_macro"
 version = "0.3.3"
-source = "git+https://github.com/nolanderc/rust-postgres-query#b4422051c8a31fbba4a35f88004c1cefb1878dd5"
+source = "git+https://github.com/nolanderc/rust-postgres-query?rev=b4422051c8a31fbba4a35f88004c1cefb1878dd5#b4422051c8a31fbba4a35f88004c1cefb1878dd5"
 dependencies = [
  "proc-macro-hack",
  "proc-macro2",

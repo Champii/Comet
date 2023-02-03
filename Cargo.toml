@@ -40,7 +40,7 @@ features = [
 axum = { version = "0.5.17", features = ["ws"] }
 tokio = { version = "1.21.2", features = ["full"] }
 axum-extra = { version = "0.3.7", features = ["spa"] }
-reactive-pg = { path = "../reactive-postgres-rs/" }
+reactive-pg = { path = "../reactive-postgres-rs/", version = "0.2.0" }
 diesel = { version = "2.0.2", features = ["postgres"] }
 
 

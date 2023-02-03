@@ -48,6 +48,9 @@ component! {
             button click: self.toggle().await {
                 "Toggle"
             }
+            button click: Todo::delete(self.id).await.unwrap() {
+                "Delete"
+            }
         }
     }
 }
