@@ -11,36 +11,36 @@ macro_rules! run {
         #[derive(Clone)]
         pub struct Wrapper<T>(pub T);
 
-        impl From<Wrapper<i32>> for VElement {
-            fn from(wrapper: Wrapper<i32>) -> VElement {
+        /* impl From<Wrapper<i32>> for VirtualNode {
+            fn from(wrapper: Wrapper<i32>) -> VirtualNode {
+                wrapper.0.into()
+            }
+        } */
+
+        impl From<Wrapper<&str>> for VirtualNode {
+            fn from(wrapper: Wrapper<&str>) -> VirtualNode {
                 wrapper.0.into()
             }
         }
 
-        impl From<Wrapper<&str>> for VElement {
-            fn from(wrapper: Wrapper<&str>) -> VElement {
+        impl From<Wrapper<String>> for VirtualNode {
+            fn from(wrapper: Wrapper<String>) -> VirtualNode {
                 wrapper.0.into()
             }
         }
 
-        impl From<Wrapper<String>> for VElement {
-            fn from(wrapper: Wrapper<String>) -> VElement {
-                wrapper.0.into()
-            }
-        }
+        /* impl From<Wrapper<()>> for VirtualNode {
+                   fn from(wrapper: Wrapper<()>) -> VirtualNode {
+                       wrapper.0.into()
+                   }
+               }
 
-        impl From<Wrapper<()>> for VElement {
-            fn from(wrapper: Wrapper<()>) -> VElement {
-                wrapper.0.into()
-            }
-        }
-
-        impl<T: Into<VElement>> From<Wrapper<Vec<T>>> for VElement {
-            fn from(wrapper: Wrapper<Vec<T>>) -> VElement {
-                wrapper.0.into()
-            }
-        }
-
+               impl<T: Into<VirtualNode>> From<Wrapper<Vec<T>>> for VirtualNode {
+                   fn from(wrapper: Wrapper<Vec<T>>) -> VirtualNode {
+                       wrapper.0.into()
+                   }
+               }
+        */
         generate_rpc_proto! {}
         generate_proto! {}
 
@@ -68,11 +68,13 @@ macro_rules! run {
 
             let mut app = comet::_run($e).await;
 
+            let mut vdom = app.run().await;
+
             let (tx, mut rx) = tokio::sync::mpsc::channel(1);
 
             spawn_local(async move {
                 while let Some(_) = rx.recv().await {
-                    app.run().await;
+                    app.update(&mut vdom).await;
                 }
             });
 

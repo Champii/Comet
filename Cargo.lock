@@ -199,6 +199,7 @@ dependencies = [
  "futures",
  "lazy_static",
  "paste",
+ "percy-dom",
  "pharos",
  "reactive-pg",
  "serde",
@@ -500,6 +501,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "html-macro"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33254888025a9473ee1bedeffa85a04918c4267e931504583e8941bada110463"
+dependencies = [
+ "html-validation",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "html-validation"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1db2f65f15fd0ad8b2f07e8ef73c05fa5d7f231395c2f8083aaee794932464b1"
+dependencies = [
+ "lazy_static",
+]
+
+[[package]]
 name = "http"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -726,6 +748,19 @@ name = "percent-encoding"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
+
+[[package]]
+name = "percy-dom"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04613a5b5a493274bccead08aeb77b29e8d9a08012e998088eefeff025c9b5a2"
+dependencies = [
+ "html-macro",
+ "js-sys",
+ "virtual-node",
+ "wasm-bindgen",
+ "web-sys",
+]
 
 [[package]]
 name = "pharos"
@@ -1462,6 +1497,18 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
+
+[[package]]
+name = "virtual-node"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e7e9bd48a8c0486f08364efd322ab712487034dc06a6d7fe5d03b3c58a76034"
+dependencies = [
+ "html-validation",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
+]
 
 [[package]]
 name = "want"

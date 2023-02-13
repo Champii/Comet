@@ -299,3 +299,109 @@ impl Debug for VAttributeValue {
         }
     }
 }
+//
+// A diff/patch implementation for this vdom
+pub trait Diff {
+    fn diff(&self, other: &Self) -> Vec<dyn Patch>;
+}
+
+pub trait Patch {
+    fn apply(&self, element: &mut web_sys::Element);
+}
+
+pub struct VTagPatch {
+    tag: String,
+    attrs: Vec<VAttribute>,
+    children: Vec<VElement>,
+}
+
+impl VTagPatch {
+    pub fn new(tag: String, attrs: Vec<VAttribute>, children: Vec<VElement>) -> Self {
+        Self {
+            tag,
+            attrs,
+            children,
+        }
+    }
+}
+
+impl Patch for VTagPatch {
+    fn apply(&self, element: &mut web_sys::Element) {
+        for attr in &self.attrs {
+            match &attr.value {
+                VAttributeValue::String(value) => {
+                    element.set_attribute(&attr.key, &value).unwrap();
+                }
+                VAttributeValue::Attributes(attrs) => {
+                    let value_str = &attrs
+                        .iter()
+                        .map(|attr| {
+                            format!("{}: {};", attr.key, attr.value.to_string()).to_string()
+                        })
+                        .collect::<Vec<_>>()
+                        .join("");
+
+                    element.set_attribute(&attr.key, value_str).unwrap();
+                }
+                VAttributeValue::Event(ref mut cb) => {
+                    let orig = cb.take().unwrap();
+
+                    *cb = None;
+
+                    element
+                        .add_event_listener_with_callback(&attr.key, orig.as_ref().unchecked_ref())
+                        .unwrap();
+
+                    // FIXME: leak
+                    orig.forget();
+                }
+            }
+        }
+
+        for child in &self.children {
+            match child {
+                VElement::Tag(tag) => {
+                    element.append_child(&tag.render()).unwrap();
+                }
+                VElement::Text(text) => {
+                    let document = web_sys::window().unwrap().document().unwrap();
+                    let text_node = document.create_text_node(&text);
+
+                    element.append_child(&text_node).unwrap();
+                }
+            }
+        }
+    }
+}
+
+impl Diff for VTag {
+    fn diff(&self, other: &Self) -> Vec<dyn Patch> {
+        let mut patches = vec![];
+
+        for attr in &self.attrs {
+            if let Some(other_attr) = other.attrs.iter().find(|a| a.key == attr.key) {
+                if attr.value != other_attr.value {
+                    patches.push(VTagPatch::new(
+                        self.tag.clone(),
+                        vec![VAttribute::new(attr.key.clone(), other_attr.value.clone())],
+                        vec![],
+                    ));
+                }
+            }
+        }
+
+        patches
+    }
+}
+
+impl Diff for VElement {
+    fn diff(&self, other: &Self) -> Vec<dyn Patch> {
+        match self {
+            VElement::Tag(tag) => match other {
+                VElement::Tag(other_tag) => tag.diff(other_tag),
+                _ => vec![],
+            },
+            _ => vec![],
+        }
+    }
+}

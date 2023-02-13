@@ -5,13 +5,12 @@ pub use async_trait::async_trait;
 pub use futures;
 pub use lazy_static::lazy_static;
 
-pub use crate::core::vdom;
-pub use crate::core::vdom::*;
-
 pub use diesel;
 pub use diesel::prelude::*;
 
 pub use paste::paste;
+pub use percy_dom;
+pub use percy_dom::{event::EventName, prelude::*, AttributeValue, VElement};
 pub use serde;
 pub use serde::{Deserialize, Serialize};
 pub use serde_cbor;

@@ -163,7 +163,6 @@ fn impl_model_macro(
 
                         let mut conn = crate::establish_connection();
 
-
                         #table_name_ident::table
                             .order(#table_name_ident::dsl::id)
                             .load::<#name>(&mut conn).map_err(|e| "Error list".to_string())

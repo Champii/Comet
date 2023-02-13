@@ -27,9 +27,5 @@ where
     Comp: Component<Msg>,
     Msg: Clone + 'static,
 {
-    let mut app = App::new(_root.into());
-
-    app.run().await;
-
-    app
+    App::new(_root.into())
 }

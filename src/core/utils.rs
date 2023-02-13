@@ -13,7 +13,8 @@ where
     F: Fn(Option<Msg>) + Clone + 'static,
     Msg: Clone + 'static,
 {
-    use wasm_bindgen::JsCast;
+    // use wasm_bindgen::JsCast;
+    use percy_dom::JsCast;
 
     let elem = document().create_element(tag).unwrap();
 
@@ -148,3 +149,53 @@ where
         }
     }
 }
+
+/* impl From<&str> for VirtualNode {
+    fn from(text: &str) -> Self {
+        VirtualNode::text(text.to_string())
+    }
+}
+
+impl From<()> for VirtualNode {
+    fn from(_text: ()) -> Self {
+        VirtualNode::text("".to_string())
+    }
+}
+
+impl From<String> for VirtualNode {
+    fn from(text: String) -> Self {
+        VirtualNode::text(text)
+    }
+}
+
+impl From<i32> for VirtualNode {
+    fn from(i: i32) -> Self {
+        VirtualNode::text(i.to_string())
+    }
+}
+
+impl From<&i32> for VirtualNode {
+    fn from(i: &i32) -> Self {
+        VirtualNode::text(i.to_string())
+    }
+}
+
+impl From<u32> for VirtualNode {
+    fn from(i: u32) -> Self {
+        VirtualNode::text(i.to_string())
+    }
+}
+
+impl<T: Into<VirtualNode>> From<Vec<T>> for VirtualNode {
+    fn from(vec: Vec<T>) -> Self {
+        let mut children = vec![];
+
+        for child in vec {
+            children.push(child.into());
+        }
+        let mut elem = VElement::new("div");
+        elem.children = children;
+
+        VirtualNode::from(elem)
+    }
+} */

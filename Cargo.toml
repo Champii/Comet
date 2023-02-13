@@ -21,6 +21,7 @@ serde_cbor = "0.11.2"
 lazy_static = "1.4.0"
 derive_more = "0.99.17"
 async-trait = "0.1.58"
+percy-dom = { version = "0.9.0", default-features = false, features = ["macro"] }
 
 [dependencies.web-sys]
 version = "0.3.4"
@@ -42,7 +43,6 @@ axum-extra = { version = "0.3.7", features = ["spa"] }
 reactive-pg = { path = "../reactive-postgres-rs/", version = "0.2.0" }
 diesel = { version = "2.0.2", features = ["postgres"] }
 
-
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 ws_stream_wasm = "0.7.3"
 pharos = "0.5"
@@ -50,7 +50,6 @@ wasm-bindgen-futures = "0.4.30"
 console_error_panic_hook = "0.1.7"
 tokio = { version = "1.21.2", features = ["sync", "rt", "macros"] }
 diesel = { version = "2.0.2", default-features = false }
-
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"

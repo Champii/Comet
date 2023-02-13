@@ -60,7 +60,7 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                     #update_match
                 }
 
-                async fn view(&self, shared_self: Shared<Self>) -> VElement {
+                async fn view(&self, shared_self: Shared<Self>) -> VirtualNode {
                     let callback = Box::new(move |msg| {
                         let shared = shared_self.clone();
 
@@ -70,41 +70,37 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                         spawn_local(async move {
                             shared.write().await.update(msg).await;
 
-                            // let vdom = shared.read().await.view(shared.clone()).await;
-
                             #[cfg(target_arch = "wasm32")]
                             crate::redraw_root().await;
                         });
                     });
 
+                    let mut events: Vec<Msg> = vec![#(Msg::#variants),*];
+
                     let mut html = #html;
 
                     match html {
-                        VElement::Tag(ref mut tag) => {
-                            tag.push_attr(VAttribute::new("__component".into(), VAttributeValue::String("".into())));
+                        VirtualNode::Element(ref mut tag) => {
+                            tag.attrs.insert("__component".into(), "".into());
                         },
                         _ => {}
                     }
-
-                    let events: Vec<Msg> = vec![#(Msg::#variants),*];
-
-                    html.fix_events(&mut 0, &events, callback);
 
                     html
                 }
             }
 
-            use comet::prelude::vdom::VElement;
+            use comet::prelude::VirtualNode;
 
-            impl Into<VElement> for #name {
-                fn into(self) -> VElement {
+            impl Into<VirtualNode> for #name {
+                fn into(self) -> VirtualNode {
                     // FIXME
                     Wrapper(Shared::from(self)).into()
                 }
             }
 
-            impl From<crate::Wrapper<Shared<#name>>> for VElement {
-                fn from(shared: crate::Wrapper<Shared<#name>>) -> VElement {
+            impl From<crate::Wrapper<Shared<#name>>> for VirtualNode {
+                fn from(shared: crate::Wrapper<Shared<#name>>) -> VirtualNode {
                     let shared = shared.0;
 
                     comet::prelude::futures::executor::block_on(async {

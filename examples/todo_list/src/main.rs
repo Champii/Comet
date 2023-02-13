@@ -35,14 +35,14 @@ impl Todo {
     pub async fn list_watch() -> Vec<Todo> {
         use crate::schema::todos;
 
-        todos::table.order(todos::id.desc())
+        todos::table.order(todos::id)
     }
 }
 
 component! {
     Todo {
         div {
-            self.id
+            self.id.to_string()
             self.title.clone()
             self.completed.to_string()
             button click: self.toggle().await {
@@ -71,11 +71,13 @@ impl App {
 component! {
     App {
         div {
-            Todo::list_watch().await
+            for lol in Todo::list_watch().await.into_iter() {
+                div { Shared::from(lol) }
+            }
             button click: self.new_todo().await {
                 "Add"
             }
-            input value: self.title.clone() {}
+            input {}
         }
     }
 }

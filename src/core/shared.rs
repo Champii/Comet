@@ -1,3 +1,4 @@
+use crate::prelude::VirtualNode;
 use std::ops::Deref;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -22,5 +23,14 @@ impl<T> Deref for Shared<T> {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl<T> Into<VirtualNode> for Shared<T>
+where
+    T: Into<VirtualNode> + Clone,
+{
+    fn into(self) -> VirtualNode {
+        (*self.0.blocking_read()).clone().into()
     }
 }

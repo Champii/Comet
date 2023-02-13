@@ -1,6 +1,9 @@
-use crate::prelude::vdom::{Html, VElement};
+// use crate::prelude::vdom::{Html, VElement};
 use async_trait::async_trait;
+use percy_dom::prelude::*;
 use wasm_bindgen_futures::spawn_local;
+
+pub type Html = VirtualNode;
 
 use crate::prelude::Shared;
 
@@ -27,5 +30,5 @@ where
 }
 
 pub trait ToVElement {
-    fn to_velement(self) -> VElement;
+    fn to_velement(self) -> VirtualNode;
 }

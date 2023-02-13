@@ -107,8 +107,41 @@ impl ToTokens for Tag {
 
         extend_id_classes(&mut attrs, &id, &classes);
 
+        let mut attrs2: Vec<Attribute> = vec![];
+        let mut events = vec![];
+
+        for attr in attrs {
+            if attr.name == "click" {
+                match &attr.value {
+                    AttrsOrExpr::Expr(_event) => events.push(quote! { {
+                        let (name, closure) = #attr;
+                        Rc::new(RefCell::new(closure))
+                    }}),
+                    AttrsOrExpr::Attrs(_attr) => panic!("click event can't have attributes"),
+                }
+            } else {
+                attrs2.push(attr);
+            }
+        }
+
         let res = quote! {
-            VTag::new(#name.to_string(), vec![#(#attrs),*], vec![#(#children),*])
+            {
+                let mut velem = VElement::new(#name.to_string());
+
+                let event_vec: Vec<Rc<RefCell<FnMut() -> ()>>> = vec![#(#events),*];
+
+                for closure in event_vec {
+                    velem.events.insert_no_args(comet::prelude::percy_dom::event::EventName::ONCLICK, closure);
+                }
+
+                let attrs_vec: Vec<(String, AttributeValue)> = vec![#(#attrs2),*];
+                velem.attrs.extend(attrs_vec);
+
+                let children_vec: Vec<VirtualNode> = vec![#(#children),*];
+                velem.children.extend(children_vec);
+
+                velem
+            }
         };
 
         res.to_tokens(tokens);
@@ -157,9 +190,19 @@ impl Parse for AttrsOrExpr {
 impl ToTokens for AttrsOrExpr {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         match self {
-            AttrsOrExpr::Expr(expr) => quote! {
-                #expr
-            },
+            AttrsOrExpr::Expr(_expr) => {
+                quote! {
+                    {
+                        let msg = events.remove(0);
+                        let callback = callback.clone();
+                        move || {
+                            let callback = callback.clone();
+                            let msg = msg.clone();
+                            callback(msg);
+                        }
+                    }
+                }
+            }
             AttrsOrExpr::Attrs(attrs) => quote! {
                 vec![#(#attrs),*]
             },
@@ -175,13 +218,13 @@ impl ToTokens for Attribute {
 
         let res = match name.as_str() {
             "click" => {
-                quote! {VAttribute::new(#name.to_string(), VAttributeValue::Event(None))}
+                quote! {(#name.to_string(), #value)}
             }
             "style" => {
-                quote! {VAttribute::new(#name.to_string(), VAttributeValue::Attributes(#value))}
+                quote! {(#name.to_string(), #value)}
             }
             _ => {
-                quote! {VAttribute::new(#name.to_string(), VAttributeValue::String(#value.to_string()))}
+                quote! {(#name.to_string(), #value.to_string())}
             }
         };
 
@@ -228,10 +271,10 @@ pub enum Element {
 impl ToTokens for Element {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         match self {
-            Element::Tag(tag) => quote! { VElement::Tag(#tag) }.to_tokens(tokens),
+            Element::Tag(tag) => quote! { VirtualNode::Element(#tag) }.to_tokens(tokens),
             Element::Call(call) => quote! { #call.into() }.to_tokens(tokens),
             Element::Into(expr) => {
-                quote! { VElement::from(crate::Wrapper(#expr.clone())) }.to_tokens(tokens)
+                quote! { VirtualNode::from(crate::Wrapper(#expr.clone())) }.to_tokens(tokens)
             }
             Element::If(expr_if) => quote! { #expr_if.into() }.to_tokens(tokens),
             Element::For(expr_for) => quote! {#expr_for.into() }.to_tokens(tokens),
@@ -370,7 +413,10 @@ impl ToTokens for For {
                     arr.push(#block);
                 }
 
-                arr
+                let mut elem = VElement::new("div");
+                elem.children = arr;
+
+                VirtualNode::from(elem)
             }
         }
         .to_tokens(tokens)

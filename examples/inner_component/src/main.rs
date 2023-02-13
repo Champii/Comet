@@ -8,7 +8,7 @@ pub struct Counter {
 component! {
     Counter {
         button click: self.value += 1 {
-            self.value
+            self.value.to_string()
         }
     }
 }
