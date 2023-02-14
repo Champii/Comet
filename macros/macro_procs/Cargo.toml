@@ -1,6 +1,6 @@
 [package]
 name = "comet_macro_procs"
-version = "0.1.3"
+version = "0.1.4"
 description = "Macros for Comet"
 repository = "https://github.com/Champii/Comet"
 license = "MIT"
