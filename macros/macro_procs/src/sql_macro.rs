@@ -178,8 +178,6 @@ pub fn generate_client_sql_watch(
 
                     cache.update(#query_id, model_id, results.clone());
 
-                    comet::console_log!("cache after update {:#?}", *cache);
-
                     results
                 },
             }

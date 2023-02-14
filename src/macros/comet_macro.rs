@@ -140,8 +140,6 @@ macro_rules! run {
                         .update_for_request_id(request_id, events);
 
                     redraw_root().await;
-
-                    comet::console_log!("app run");
                 }
             }
         }

@@ -53,10 +53,7 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
     let msg_enum = generate_msg_enum(&variants);
     let update_match = generate_update_match(&events, &variants);
-    let update_bindings = generate_update_bindings(
-        &binds_map.keys().cloned().collect(),
-        &binds_map.values().cloned().collect(),
-    );
+    let update_bindings = generate_update_bindings(&binds_map.values().cloned().collect());
 
     Ok(quote! {
         mod #mod_name {
@@ -79,16 +76,15 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                     let mut bindings = Shared::from(vec![]);
                     let bindings2 = bindings.clone();
 
-                    let callback = Box::new(move |msg| {
+                    let callback = Box::new(move |msg_opt| {
                         let shared = shared_self.clone();
                         let bindings = bindings2.clone();
 
-                        #[cfg(target_arch = "wasm32")]
-                        comet::console_log!("Callback");
-
                         spawn_local(async move {
                             shared.write().await.update_bindings(bindings).await;
-                            shared.write().await.update(msg).await;
+                            if let Some(msg) = msg_opt {
+                                shared.write().await.update(msg).await;
+                            }
 
                             #[cfg(target_arch = "wasm32")]
                             crate::redraw_root().await;
@@ -160,7 +156,7 @@ fn generate_update_match(events: &Vec<Expr>, variants: &Vec<Expr>) -> proc_macro
     }
 }
 
-fn generate_update_bindings(names: &Vec<String>, binds: &Vec<Expr>) -> proc_macro2::TokenStream {
+fn generate_update_bindings(binds: &Vec<Expr>) -> proc_macro2::TokenStream {
     quote! {
         use comet::prelude::percy_dom::JsCast;
         let document = web_sys::window().unwrap().document().unwrap();

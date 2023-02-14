@@ -115,7 +115,7 @@ impl ToTokens for Tag {
                 match &attr.value {
                     AttrsOrExpr::Expr(_event) => events.push(quote! { {
                         let (name, closure) = #attr;
-                        Rc::new(RefCell::new(closure))
+                        (comet::prelude::percy_dom::event::EventName::ONCLICK, Rc::new(RefCell::new(closure)))
                     }}),
                     AttrsOrExpr::Attrs(_attr) => panic!("click event can't have attributes"),
                 }
@@ -127,6 +127,13 @@ impl ToTokens for Tag {
 
                     binds.push(name.to_string());
                     classes.push(syn::Ident::new(&name, proc_macro2::Span::call_site()));
+
+                    events.push(quote! { {
+                        let closure = move || {
+                            callback(None);
+                        };
+                        (comet::prelude::percy_dom::event::EventName::ONINPUT, Rc::new(RefCell::new(closure)))
+                    }});
                 }
 
                 attrs2.push(attr.clone());
@@ -141,8 +148,8 @@ impl ToTokens for Tag {
 
                 let event_vec = vec![#(#events),*];
 
-                for closure in event_vec {
-                    velem.events.insert_no_args(comet::prelude::percy_dom::event::EventName::ONCLICK, closure);
+                for (event_name, closure) in event_vec {
+                    velem.events.insert_no_args(event_name, closure);
                 }
 
                 let attrs_vec: Vec<(String, AttributeValue)> = vec![#(#attrs2),*];
@@ -236,7 +243,7 @@ impl ToTokens for AttrsOrExpr {
 
                         move || {
                             let msg = msg.clone();
-                            callback(msg);
+                            callback(Some(msg));
                         }
                     }
                 }
@@ -425,7 +432,7 @@ impl Element {
     pub fn collect_bindings(&self) -> HashMap<String, Expr> {
         match self {
             Element::Tag(tag) => tag.collect_bindings(),
-            Element::Call(call) => HashMap::new(),
+            Element::Call(_call) => HashMap::new(),
             Element::Into(_) => HashMap::new(),
             Element::If(expr_if) => expr_if.collect_bindings(),
             Element::For(expr_for) => expr_for.collect_bindings(),

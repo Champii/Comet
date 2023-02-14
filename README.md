@@ -224,7 +224,6 @@ component! {
 ### Bind your variables to `input` fields that react to events
 
 This is exclusive to `input` fields for now  
-The whole component is re-rendered on input's blur event (unfocus).  
 Each binding should be unique, as in a different variable for each one
 
 ```rust
