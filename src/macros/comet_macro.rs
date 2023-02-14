@@ -29,11 +29,11 @@ macro_rules! run {
             }
         }
 
-        /* impl From<Wrapper<()>> for VirtualNode {
-           fn from(wrapper: Wrapper<()>) -> VirtualNode {
-               "".into()
-           }
-        } */
+        impl From<Wrapper<()>> for VirtualNode {
+            fn from(wrapper: Wrapper<()>) -> VirtualNode {
+                "".into()
+            }
+        }
 
         impl<T: Into<VirtualNode>> From<Wrapper<Vec<T>>> for VirtualNode {
             fn from(wrapper: Wrapper<Vec<T>>) -> VirtualNode {

@@ -48,6 +48,7 @@ Visit the [examples](https://github.com/Champii/Comet/tree/master/examples) fold
 
  - Isomorphic client/server
  - Reactive view
+ - Virtual dom
  - Client cache
  - Reactive database with PostgreSQL
  - Auto database generation every time your structs change (Alpha)
