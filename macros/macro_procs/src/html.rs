@@ -264,7 +264,16 @@ impl ToTokens for Attribute {
                 }
             }
             _ => {
-                quote! {(#name.to_string(), #value.to_string())}
+                match value {
+                    AttrsOrExpr::Attrs(_attrs) => {
+                        panic!("Attributes can't have attributes");
+                    }
+                    // preformated string
+                    AttrsOrExpr::Expr(expr) => {
+                        quote! {(#name.to_string(), AttributeValue::String(#expr))}
+                    }
+                }
+                // quote! {(#name.to_string(), #value.to_string())}
             }
         };
 

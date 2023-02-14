@@ -68,10 +68,6 @@ impl App {
     }
 }
 
-pub async fn lol() -> String {
-    "lol".into()
-}
-
 component! {
     App {
         div {
@@ -79,7 +75,8 @@ component! {
             button click: self.new_todo().await {
                 "Add"
             }
-            input {}
+            input value: self.title.clone() {}
+            self.title
         }
     }
 }
