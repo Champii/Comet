@@ -54,7 +54,6 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
             #msg_enum
 
-            // #[async_trait]
             #[async_trait(?Send)]
             impl Component<Msg> for #name {
                 async fn update(&mut self, msg: Msg) {
