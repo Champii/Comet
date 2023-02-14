@@ -178,6 +178,15 @@ pub enum AttrsOrExpr {
     Expr(Expr),
 }
 
+impl AttrsOrExpr {
+    pub fn as_expr(&self) -> &Expr {
+        match self {
+            AttrsOrExpr::Expr(expr) => expr,
+            _ => panic!("AttrsOrExpr is not an Expr"),
+        }
+    }
+}
+
 impl Parse for AttrsOrExpr {
     fn parse(input: syn::parse::ParseStream) -> Result<Self> {
         if let Ok(attrs) = Attribute::parse_braced_inner(&input) {
@@ -222,7 +231,37 @@ impl ToTokens for Attribute {
                 quote! {(#name.to_string(), #value)}
             }
             "style" => {
-                quote! {(#name.to_string(), #value)}
+                match value {
+                    AttrsOrExpr::Attrs(attrs) => {
+                        let (names, exprs): (Vec<String>, Vec<Expr>) = attrs
+                            .iter()
+                            .map(|attr| {
+                                let expr = attr.value.as_expr();
+                                let name = attr.name.to_string();
+
+                                (name.clone(), expr.clone())
+                            })
+                            .unzip();
+
+                        quote! {(#name.to_string(), AttributeValue::String({
+                            let mut s = String::new();
+                            #(
+
+                                let name = #names;
+                                let expr = #exprs;
+                                s.push_str(name);
+                                s.push_str(":");
+                                s.push_str(&expr.to_string());
+                                s.push_str(";");
+                            )*
+                            s
+                        }))}
+                    }
+                    // preformated string
+                    AttrsOrExpr::Expr(expr) => {
+                        quote! {(#name.to_string(), #expr)}
+                    }
+                }
             }
             _ => {
                 quote! {(#name.to_string(), #value.to_string())}
