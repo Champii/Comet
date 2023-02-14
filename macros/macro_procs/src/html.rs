@@ -120,6 +120,13 @@ impl ToTokens for Tag {
                     AttrsOrExpr::Attrs(_attr) => panic!("click event can't have attributes"),
                 }
             } else {
+                if attr.name == "value" {
+                    attrs2.push(Attribute {
+                        name: syn::Ident::new("__ref", proc_macro2::Span::call_site()),
+                        value: AttrsOrExpr::Expr(syn::parse_quote! {"".to_string()}),
+                    });
+                }
+
                 attrs2.push(attr);
             }
         }
@@ -247,11 +254,9 @@ impl ToTokens for Attribute {
                             let mut s = String::new();
                             #(
 
-                                let name = #names;
-                                let expr = #exprs;
-                                s.push_str(name);
+                                s.push_str(#names);
                                 s.push_str(":");
-                                s.push_str(&expr.to_string());
+                                s.push_str(&#exprs.to_string());
                                 s.push_str(";");
                             )*
                             s
@@ -270,7 +275,7 @@ impl ToTokens for Attribute {
                     }
                     // preformated string
                     AttrsOrExpr::Expr(expr) => {
-                        quote! {(#name.to_string(), AttributeValue::String(#expr))}
+                        quote! {(#name.to_string(), AttributeValue::String(#expr.clone()))}
                     }
                 }
                 // quote! {(#name.to_string(), #value.to_string())}
@@ -301,9 +306,14 @@ impl Attribute {
     }
 
     pub fn collect_events(&self) -> Vec<Expr> {
-        match &self.value {
-            AttrsOrExpr::Expr(expr) => vec![expr.clone()],
-            AttrsOrExpr::Attrs(attrs) => attrs.iter().flat_map(Attribute::collect_events).collect(),
+        if self.name.to_string() == "click" {
+            if let AttrsOrExpr::Expr(expr) = &self.value {
+                return vec![expr.clone()];
+            } else {
+                return vec![];
+            }
+        } else {
+            return vec![];
         }
     }
 }

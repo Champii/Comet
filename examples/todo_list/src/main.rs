@@ -75,7 +75,7 @@ component! {
             button click: self.new_todo().await {
                 "Add"
             }
-            input value: self.title.clone() {}
+            input value: self.title {}
             self.title
         }
     }
