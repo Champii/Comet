@@ -128,7 +128,7 @@ impl ToTokens for Tag {
             {
                 let mut velem = VElement::new(#name.to_string());
 
-                let event_vec: Vec<Rc<RefCell<FnMut() -> ()>>> = vec![#(#events),*];
+                let event_vec = vec![#(#events),*];
 
                 for closure in event_vec {
                     velem.events.insert_no_args(comet::prelude::percy_dom::event::EventName::ONCLICK, closure);
@@ -137,8 +137,9 @@ impl ToTokens for Tag {
                 let attrs_vec: Vec<(String, AttributeValue)> = vec![#(#attrs2),*];
                 velem.attrs.extend(attrs_vec);
 
-                let children_vec: Vec<VirtualNode> = vec![#(#children),*];
-                velem.children.extend(children_vec);
+                // let children_vec: Vec<VirtualNode> = vec![#(#children),*];
+
+                velem.children.extend([#(#children),*]);
 
                 velem
             }
@@ -195,8 +196,8 @@ impl ToTokens for AttrsOrExpr {
                     {
                         let msg = events.remove(0);
                         let callback = callback.clone();
+
                         move || {
-                            let callback = callback.clone();
                             let msg = msg.clone();
                             callback(msg);
                         }

@@ -54,7 +54,8 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
             #msg_enum
 
-            #[async_trait]
+            // #[async_trait]
+            #[async_trait(?Send)]
             impl Component<Msg> for #name {
                 async fn update(&mut self, msg: Msg) {
                     #update_match
@@ -77,16 +78,16 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
                     let mut events: Vec<Msg> = vec![#(Msg::#variants),*];
 
-                    let mut html = #html;
+                    let mut root = #html;
 
-                    match html {
+                    match root {
                         VirtualNode::Element(ref mut tag) => {
                             tag.attrs.insert("__component".into(), "".into());
                         },
                         _ => {}
                     }
 
-                    html
+                    root
                 }
             }
 

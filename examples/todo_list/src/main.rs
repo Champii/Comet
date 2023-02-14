@@ -42,7 +42,7 @@ impl Todo {
 component! {
     Todo {
         div {
-            self.id.to_string()
+            self.id
             self.title.clone()
             self.completed.to_string()
             button click: self.toggle().await {
@@ -68,12 +68,14 @@ impl App {
     }
 }
 
+pub async fn lol() -> String {
+    "lol".into()
+}
+
 component! {
     App {
         div {
-            for lol in Todo::list_watch().await.into_iter() {
-                div { Shared::from(lol) }
-            }
+            Todo::list_watch().await
             button click: self.new_todo().await {
                 "Add"
             }

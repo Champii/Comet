@@ -7,7 +7,8 @@ pub type Html = VirtualNode;
 
 use crate::prelude::Shared;
 
-#[async_trait]
+// #[async_trait]
+#[async_trait(?Send)]
 pub trait Component<Msg>: Send + Sync + 'static
 where
     Msg: Clone + 'static,

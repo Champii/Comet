@@ -11,11 +11,11 @@ macro_rules! run {
         #[derive(Clone)]
         pub struct Wrapper<T>(pub T);
 
-        /* impl From<Wrapper<i32>> for VirtualNode {
+        impl From<Wrapper<i32>> for VirtualNode {
             fn from(wrapper: Wrapper<i32>) -> VirtualNode {
-                wrapper.0.into()
+                wrapper.0.to_string().into()
             }
-        } */
+        }
 
         impl From<Wrapper<&str>> for VirtualNode {
             fn from(wrapper: Wrapper<&str>) -> VirtualNode {
@@ -30,17 +30,20 @@ macro_rules! run {
         }
 
         /* impl From<Wrapper<()>> for VirtualNode {
-                   fn from(wrapper: Wrapper<()>) -> VirtualNode {
-                       wrapper.0.into()
-                   }
-               }
+           fn from(wrapper: Wrapper<()>) -> VirtualNode {
+               "".into()
+           }
+        } */
 
-               impl<T: Into<VirtualNode>> From<Wrapper<Vec<T>>> for VirtualNode {
-                   fn from(wrapper: Wrapper<Vec<T>>) -> VirtualNode {
-                       wrapper.0.into()
-                   }
-               }
-        */
+        impl<T: Into<VirtualNode>> From<Wrapper<Vec<T>>> for VirtualNode {
+            fn from(wrapper: Wrapper<Vec<T>>) -> VirtualNode {
+                let mut elem = VElement::new("div");
+                elem.children = wrapper.0.into_iter().map(|child| child.into()).collect();
+
+                VirtualNode::from(elem)
+            }
+        }
+
         generate_rpc_proto! {}
         generate_proto! {}
 
