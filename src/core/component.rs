@@ -13,6 +13,7 @@ where
     Self: Sized,
 {
     async fn update(&mut self, msg: Msg);
+    async fn update_bindings(&mut self, bindings: Shared<Vec<String>>);
     async fn view(&self, shared_self: Shared<Self>) -> Html;
 
     fn callback() -> Box<dyn Fn(Shared<Self>) -> Box<dyn Fn(Msg)>> {

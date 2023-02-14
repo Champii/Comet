@@ -1,5 +1,6 @@
 use derive_syn_parse::Parse;
 use proc_macro::{Span, TokenStream};
+use std::collections::HashMap;
 
 use quote::quote;
 use syn::{parse::Result, parse_macro_input, Expr};
@@ -30,6 +31,10 @@ impl Component {
     pub fn collect_events(&self) -> Vec<Expr> {
         self.html.collect_events()
     }
+
+    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
+        self.html.collect_bindings()
+    }
 }
 
 fn component(component: Component) -> Result<proc_macro2::TokenStream> {
@@ -42,10 +47,16 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
     );
 
     let events = component.collect_events();
+    let binds_map = component.collect_bindings();
+
     let variants = msg_variants(&events);
 
     let msg_enum = generate_msg_enum(&variants);
     let update_match = generate_update_match(&events, &variants);
+    let update_bindings = generate_update_bindings(
+        &binds_map.keys().cloned().collect(),
+        &binds_map.values().cloned().collect(),
+    );
 
     Ok(quote! {
         mod #mod_name {
@@ -60,14 +71,23 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                     #update_match
                 }
 
+                async fn update_bindings(&mut self, bindings: Shared<Vec<String>>) {
+                    #update_bindings
+                }
+
                 async fn view(&self, shared_self: Shared<Self>) -> VirtualNode {
+                    let mut bindings = Shared::from(vec![]);
+                    let bindings2 = bindings.clone();
+
                     let callback = Box::new(move |msg| {
                         let shared = shared_self.clone();
+                        let bindings = bindings2.clone();
 
                         #[cfg(target_arch = "wasm32")]
                         comet::console_log!("Callback");
 
                         spawn_local(async move {
+                            shared.write().await.update_bindings(bindings).await;
                             shared.write().await.update(msg).await;
 
                             #[cfg(target_arch = "wasm32")]
@@ -137,5 +157,25 @@ fn generate_update_match(events: &Vec<Expr>, variants: &Vec<Expr>) -> proc_macro
         match msg {
             #(Msg::#variants => { #events; }),*
         };
+    }
+}
+
+fn generate_update_bindings(names: &Vec<String>, binds: &Vec<Expr>) -> proc_macro2::TokenStream {
+    quote! {
+        use comet::prelude::percy_dom::JsCast;
+        let document = web_sys::window().unwrap().document().unwrap();
+        let mut i = 0;
+        #(
+            let name = bindings.read().await.get(i).unwrap().clone();
+            let elements = document.get_elements_by_class_name(name.as_str());
+
+            let element = elements.item(i as u32).unwrap();
+
+            i += 1;
+
+            let input_elem: comet::prelude::web_sys::HtmlInputElement = element.dyn_into().unwrap();
+
+            #binds = input_elem.value();
+        )*
     }
 }

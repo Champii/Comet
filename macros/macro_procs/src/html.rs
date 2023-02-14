@@ -1,4 +1,5 @@
 use proc_macro::TokenStream;
+use std::collections::HashMap;
 
 use derive_syn_parse::Parse;
 use quote::{quote, ToTokens};
@@ -90,7 +91,7 @@ fn extend_id_classes(
     if attrs.iter().find(|attr| attr.name == "class").is_none() {
         let class_attr = Attribute {
             name: syn::Ident::new("class", proc_macro2::Span::call_site()),
-            value: AttrsOrExpr::Expr(syn::parse_quote! {#classes_str}),
+            value: AttrsOrExpr::Expr(syn::parse_quote! {#classes_str.to_string()}),
         };
 
         attrs.push(class_attr);
@@ -100,17 +101,16 @@ fn extend_id_classes(
 impl ToTokens for Tag {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let name = &self.name.to_string();
-        let mut attrs = self.attrs.clone();
+        let attrs = self.attrs.clone();
         let children = &self.children;
         let id = &self.id;
-        let classes = &self.classes;
-
-        extend_id_classes(&mut attrs, &id, &classes);
+        let mut classes = self.classes.clone();
 
         let mut attrs2: Vec<Attribute> = vec![];
         let mut events = vec![];
+        let mut binds: Vec<String> = vec![];
 
-        for attr in attrs {
+        for attr in &attrs {
             if attr.name == "click" {
                 match &attr.value {
                     AttrsOrExpr::Expr(_event) => events.push(quote! { {
@@ -121,15 +121,19 @@ impl ToTokens for Tag {
                 }
             } else {
                 if attr.name == "value" {
-                    attrs2.push(Attribute {
-                        name: syn::Ident::new("__ref", proc_macro2::Span::call_site()),
-                        value: AttrsOrExpr::Expr(syn::parse_quote! {"".to_string()}),
-                    });
+                    let uuid = uuid::Uuid::new_v4().to_string();
+                    let uuid = uuid.replace("-", "");
+                    let name = format!("_{}", uuid);
+
+                    binds.push(name.to_string());
+                    classes.push(syn::Ident::new(&name, proc_macro2::Span::call_site()));
                 }
 
-                attrs2.push(attr);
+                attrs2.push(attr.clone());
             }
         }
+
+        extend_id_classes(&mut attrs2, &id, &classes);
 
         let res = quote! {
             {
@@ -144,7 +148,10 @@ impl ToTokens for Tag {
                 let attrs_vec: Vec<(String, AttributeValue)> = vec![#(#attrs2),*];
                 velem.attrs.extend(attrs_vec);
 
-                // let children_vec: Vec<VirtualNode> = vec![#(#children),*];
+                {
+                    let mut bindings = bindings.write().await;
+                    #(bindings.push(#binds.to_string());)*
+                }
 
                 velem.children.extend([#(#children),*]);
 
@@ -166,6 +173,20 @@ impl Tag {
 
         for child in &self.children {
             res.extend(child.collect_events());
+        }
+
+        res
+    }
+
+    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
+        let mut res = HashMap::new();
+
+        for attr in &self.attrs {
+            res.extend(attr.collect_bindings());
+        }
+
+        for child in &self.children {
+            res.extend(child.collect_bindings());
         }
 
         res
@@ -316,6 +337,18 @@ impl Attribute {
             return vec![];
         }
     }
+
+    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
+        let mut res = HashMap::new();
+
+        if self.name.to_string() == "value" {
+            if let AttrsOrExpr::Expr(expr) = &self.value {
+                res.insert("value".to_string(), expr.clone());
+            }
+        }
+
+        res
+    }
 }
 
 #[derive(Debug)]
@@ -388,6 +421,16 @@ impl Element {
             Element::For(expr_for) => expr_for.collect_events(),
         }
     }
+
+    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
+        match self {
+            Element::Tag(tag) => tag.collect_bindings(),
+            Element::Call(call) => HashMap::new(),
+            Element::Into(_) => HashMap::new(),
+            Element::If(expr_if) => expr_if.collect_bindings(),
+            Element::For(expr_for) => expr_for.collect_bindings(),
+        }
+    }
 }
 
 #[derive(Parse, Debug)]
@@ -442,6 +485,18 @@ impl If {
 
         res
     }
+
+    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
+        let mut res = HashMap::new();
+
+        res.extend(self.then.collect_bindings());
+
+        if let Some(else_) = &self.else_ {
+            res.extend(else_.collect_bindings());
+        }
+
+        res
+    }
 }
 
 #[derive(Parse, Debug)]
@@ -485,5 +540,9 @@ impl ToTokens for For {
 impl For {
     pub fn collect_events(&self) -> Vec<Expr> {
         self.block.collect_events()
+    }
+
+    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
+        self.block.collect_bindings()
     }
 }

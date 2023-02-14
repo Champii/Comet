@@ -18,3 +18,4 @@ quote = "1.0.21"
 itertools = "0.10.5"
 lazy_static = "1.4.0"
 derive-syn-parse = "0.1.5"
+uuid = { version = "1.3.0", features = ["v4", "js"] }
