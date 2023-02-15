@@ -66,7 +66,7 @@ fn build(verbose: bool) {
         "wasm-pack",
         &[
             "--log-level",
-            "warn",
+            "error",
             "build",
             "--target",
             "web",

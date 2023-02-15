@@ -165,13 +165,15 @@ fn generate_update_bindings(binds: &Vec<Expr>) -> proc_macro2::TokenStream {
             let name = bindings.read().await.get(i).unwrap().clone();
             let elements = document.get_elements_by_class_name(name.as_str());
 
-            let element = elements.item(i as u32).unwrap();
+            let element = elements.item(0 as u32).unwrap();
 
             i += 1;
 
-            let input_elem: comet::prelude::web_sys::HtmlInputElement = element.dyn_into().unwrap();
-
-            #binds = input_elem.value();
+            if let Ok(input_elem) = element.clone().dyn_into::<web_sys::HtmlInputElement>() {
+                #binds = input_elem.value().parse().unwrap_or_default();
+            } else if let Ok(input_elem) = element.dyn_into::<web_sys::HtmlSelectElement>() {
+                #binds = input_elem.value().parse().unwrap_or_default();
+            }
         )*
     }
 }
