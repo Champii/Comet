@@ -1,6 +1,5 @@
 use derive_syn_parse::Parse;
 use proc_macro::{Span, TokenStream};
-use std::collections::HashMap;
 
 use quote::quote;
 use syn::{parse::Result, parse_macro_input, Expr};
@@ -32,7 +31,7 @@ impl Component {
         self.html.collect_events()
     }
 
-    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
+    pub fn collect_bindings(&self) -> Vec<Expr> {
         self.html.collect_bindings()
     }
 }
@@ -53,7 +52,7 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
     let msg_enum = generate_msg_enum(&variants);
     let update_match = generate_update_match(&events, &variants);
-    let update_bindings = generate_update_bindings(&binds_map.values().cloned().collect());
+    let update_bindings = generate_update_bindings(&binds_map);
 
     Ok(quote! {
         mod #mod_name {
@@ -108,20 +107,21 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
             use comet::prelude::VirtualNode;
 
-            impl Into<VirtualNode> for #name {
-                fn into(self) -> VirtualNode {
+            #[async_trait(?Send)]
+            impl ToVirtualNode for #name {
+                async fn to_virtual_node(self) -> VirtualNode {
                     // FIXME
-                    Wrapper(Shared::from(self)).into()
+                    Wrapper(Shared::from(self)).to_virtual_node().await
                 }
             }
 
-            impl From<crate::Wrapper<Shared<#name>>> for VirtualNode {
-                fn from(shared: crate::Wrapper<Shared<#name>>) -> VirtualNode {
-                    let shared = shared.0;
-
-                    comet::prelude::futures::executor::block_on(async {
-                        shared.0.read().await.view(shared.clone()).await
-                    })
+            #[async_trait(?Send)]
+            impl ToVirtualNode for Wrapper<Shared<#name>> {
+                async fn to_virtual_node(self) -> VirtualNode {
+                    let shared = self.0.clone();
+                    let shared2 = shared.clone();
+                    let cmp = shared.0.read().await;
+                    cmp.view(shared2.clone()).await
                 }
             }
         }

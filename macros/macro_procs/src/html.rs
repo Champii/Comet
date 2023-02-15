@@ -1,5 +1,4 @@
 use proc_macro::TokenStream;
-use std::collections::HashMap;
 
 use derive_syn_parse::Parse;
 use quote::{quote, ToTokens};
@@ -120,7 +119,7 @@ impl ToTokens for Tag {
                     AttrsOrExpr::Attrs(_attr) => panic!("click event can't have attributes"),
                 }
             } else {
-                if attr.name == "value" {
+                let attr = if attr.name == "bind" {
                     let uuid = uuid::Uuid::new_v4().to_string();
                     let uuid = uuid.replace("-", "");
                     let name = format!("_{}", uuid);
@@ -129,12 +128,30 @@ impl ToTokens for Tag {
                     classes.push(syn::Ident::new(&name, proc_macro2::Span::call_site()));
 
                     events.push(quote! { {
+                        let callback = callback.clone();
+
                         let closure = move || {
                             callback(None);
                         };
                         (comet::prelude::percy_dom::event::EventName::ONINPUT, Rc::new(RefCell::new(closure)))
                     }});
-                }
+
+                    let mut attr = attr.clone();
+                    attr.name = syn::Ident::new("value", proc_macro2::Span::call_site());
+                    attr
+                } else {
+                    attr.clone()
+                };
+
+                let attr = if attr.name == "r#type" {
+                    let attr = attr.clone();
+                    Attribute {
+                        name: syn::Ident::new("type", proc_macro2::Span::call_site()),
+                        value: attr.value,
+                    }
+                } else {
+                    attr.clone()
+                };
 
                 attrs2.push(attr.clone());
             }
@@ -160,7 +177,11 @@ impl ToTokens for Tag {
                     #(bindings.push(#binds.to_string());)*
                 }
 
-                velem.children.extend([#(#children),*]);
+                // velem.children.extend([#(#children),*]);
+                #(
+                    // let arr = vec![#children].into_iter().flatten().collect::<Vec<VirtualNode>>();
+                    velem.children.extend(#children);
+                )*
 
                 velem
             }
@@ -185,8 +206,8 @@ impl Tag {
         res
     }
 
-    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
-        let mut res = HashMap::new();
+    pub fn collect_bindings(&self) -> Vec<Expr> {
+        let mut res = vec![];
 
         for attr in &self.attrs {
             res.extend(attr.collect_bindings());
@@ -303,7 +324,7 @@ impl ToTokens for Attribute {
                     }
                     // preformated string
                     AttrsOrExpr::Expr(expr) => {
-                        quote! {(#name.to_string(), AttributeValue::String(#expr.clone()))}
+                        quote! {(#name.to_string(), AttributeValue::String(#expr.to_string()))}
                     }
                 }
                 // quote! {(#name.to_string(), #value.to_string())}
@@ -345,12 +366,12 @@ impl Attribute {
         }
     }
 
-    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
-        let mut res = HashMap::new();
+    pub fn collect_bindings(&self) -> Vec<Expr> {
+        let mut res = vec![];
 
-        if self.name.to_string() == "value" {
+        if self.name.to_string() == "bind" {
             if let AttrsOrExpr::Expr(expr) = &self.value {
-                res.insert("value".to_string(), expr.clone());
+                res.push(expr.clone());
             }
         }
 
@@ -373,10 +394,11 @@ impl ToTokens for Element {
             Element::Tag(tag) => quote! { VirtualNode::Element(#tag) }.to_tokens(tokens),
             Element::Call(call) => quote! { #call.into() }.to_tokens(tokens),
             Element::Into(expr) => {
-                quote! { VirtualNode::from(crate::Wrapper(#expr.clone())) }.to_tokens(tokens)
+                quote! { vec![crate::Wrapper(#expr.clone()).to_virtual_node().await] }
+                    .to_tokens(tokens)
             }
             Element::If(expr_if) => quote! { #expr_if.into() }.to_tokens(tokens),
-            Element::For(expr_for) => quote! {#expr_for.into() }.to_tokens(tokens),
+            Element::For(expr_for) => quote! { #expr_for }.to_tokens(tokens),
         }
     }
 }
@@ -429,11 +451,11 @@ impl Element {
         }
     }
 
-    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
+    pub fn collect_bindings(&self) -> Vec<Expr> {
         match self {
             Element::Tag(tag) => tag.collect_bindings(),
-            Element::Call(_call) => HashMap::new(),
-            Element::Into(_) => HashMap::new(),
+            Element::Call(_call) => vec![],
+            Element::Into(_) => vec![],
             Element::If(expr_if) => expr_if.collect_bindings(),
             Element::For(expr_for) => expr_for.collect_bindings(),
         }
@@ -493,8 +515,8 @@ impl If {
         res
     }
 
-    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
-        let mut res = HashMap::new();
+    pub fn collect_bindings(&self) -> Vec<Expr> {
+        let mut res = vec![];
 
         res.extend(self.then.collect_bindings());
 
@@ -534,10 +556,11 @@ impl ToTokens for For {
                     arr.push(#block);
                 }
 
-                let mut elem = VElement::new("div");
+                /* let mut elem = VElement::new("div");
                 elem.children = arr;
 
-                VirtualNode::from(elem)
+                VirtualNode::from(elem) */
+                arr
             }
         }
         .to_tokens(tokens)
@@ -549,7 +572,7 @@ impl For {
         self.block.collect_events()
     }
 
-    pub fn collect_bindings(&self) -> HashMap<String, Expr> {
+    pub fn collect_bindings(&self) -> Vec<Expr> {
         self.block.collect_bindings()
     }
 }

@@ -138,7 +138,7 @@ This will download and install the tools it needs to build and run your crate.
  -> Listening on 0.0.0.0:8080
 ```
 
-Then go go to [http://localhost:8080](http://localhost:8080)
+Then go to [http://localhost:8080](http://localhost:8080)
 
 ---
 
@@ -236,7 +236,7 @@ struct MyStruct {
 component! {
     MyStruct {
 	div {
-	    input value: self.value {}
+	    input bind: self.value {}
 	    self.value
 	}
     }
@@ -261,7 +261,7 @@ component! {
 }
 
 struct Parent {
-    // You need to wrap your components with a Shared<T> that is basically a Rc<RefCell<T>>
+    // You need to wrap your components with a Shared<T> that is basically an Arc<RwLock<T>>
     // This is necessary for your states to persist and be available between each render
     child: Shared<Child>,
 }
@@ -415,7 +415,6 @@ impl Todo {
 - Allow for iterators inside html
 - Have a ComponentId that allows to fetch the corresponding root dom element
 - Find a way for global inter-component message passing
-- Allow for real time value binding for input element without losing focus (might need a real virtual dom for this one)
 
 - Separate all the reusable features in different crates:
   - [ ] Comet crate

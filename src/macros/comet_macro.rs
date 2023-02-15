@@ -11,34 +11,57 @@ macro_rules! run {
         #[derive(Clone)]
         pub struct Wrapper<T>(pub T);
 
-        impl From<Wrapper<i32>> for VirtualNode {
-            fn from(wrapper: Wrapper<i32>) -> VirtualNode {
-                wrapper.0.to_string().into()
+        #[async_trait(?Send)]
+        impl ToVirtualNode for Wrapper<i32> {
+            async fn to_virtual_node(self) -> VirtualNode {
+                self.0.to_string().into()
             }
         }
 
-        impl From<Wrapper<&str>> for VirtualNode {
-            fn from(wrapper: Wrapper<&str>) -> VirtualNode {
-                wrapper.0.into()
+        #[async_trait(?Send)]
+        impl ToVirtualNode for Wrapper<i64> {
+            async fn to_virtual_node(self) -> VirtualNode {
+                self.0.to_string().into()
             }
         }
 
-        impl From<Wrapper<String>> for VirtualNode {
-            fn from(wrapper: Wrapper<String>) -> VirtualNode {
-                wrapper.0.into()
+        #[async_trait(?Send)]
+        impl ToVirtualNode for Wrapper<String> {
+            async fn to_virtual_node(self) -> VirtualNode {
+                self.0.clone().into()
             }
         }
 
-        impl From<Wrapper<()>> for VirtualNode {
-            fn from(wrapper: Wrapper<()>) -> VirtualNode {
+        #[async_trait(?Send)]
+        impl ToVirtualNode for Wrapper<&str> {
+            async fn to_virtual_node(self) -> VirtualNode {
+                self.0.to_string().into()
+            }
+        }
+
+        #[async_trait(?Send)]
+        impl ToVirtualNode for Wrapper<()> {
+            async fn to_virtual_node(self) -> VirtualNode {
                 "".into()
             }
         }
 
-        impl<T: Into<VirtualNode>> From<Wrapper<Vec<T>>> for VirtualNode {
-            fn from(wrapper: Wrapper<Vec<T>>) -> VirtualNode {
+        #[async_trait(?Send)]
+        impl ToVirtualNode for Wrapper<bool> {
+            async fn to_virtual_node(self) -> VirtualNode {
+                self.0.to_string().into()
+            }
+        }
+
+        #[async_trait(?Send)]
+        impl<T: ToVirtualNode> ToVirtualNode for Wrapper<Vec<T>> {
+            async fn to_virtual_node(self) -> VirtualNode {
                 let mut elem = VElement::new("div");
-                elem.children = wrapper.0.into_iter().map(|child| child.into()).collect();
+
+                for child in self.0.into_iter() {
+                    let child = child.to_virtual_node().await;
+                    elem.children.push(child);
+                }
 
                 VirtualNode::from(elem)
             }
@@ -82,8 +105,6 @@ macro_rules! run {
             });
 
             REDRAW_CHANNEL.write().await.replace(tx);
-
-            println!("HERE");
         }
 
         #[cfg(target_arch = "wasm32")]

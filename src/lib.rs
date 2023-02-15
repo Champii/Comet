@@ -27,5 +27,5 @@ where
     Comp: Component<Msg>,
     Msg: Clone + 'static,
 {
-    App::new(_root.into())
+    App::new(Shared::from(_root))
 }

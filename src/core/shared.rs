@@ -1,4 +1,6 @@
+use crate::prelude::ToVirtualNode;
 use crate::prelude::VirtualNode;
+use async_trait::async_trait;
 use std::ops::Deref;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -26,11 +28,13 @@ impl<T> Deref for Shared<T> {
     }
 }
 
-impl<T> Into<VirtualNode> for Shared<T>
+#[async_trait(?Send)]
+impl<T> ToVirtualNode for Shared<T>
 where
-    T: Into<VirtualNode> + Clone,
+    T: ToVirtualNode + Clone,
 {
-    fn into(self) -> VirtualNode {
-        (*self.0.blocking_read()).clone().into()
+    async fn to_virtual_node(self) -> VirtualNode {
+        let new_self = self.0.read().await.clone();
+        new_self.to_virtual_node().await
     }
 }

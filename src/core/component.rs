@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use percy_dom::prelude::*;
-use wasm_bindgen_futures::spawn_local;
 
 pub type Html = VirtualNode;
 
@@ -15,20 +14,9 @@ where
     async fn update(&mut self, msg: Msg);
     async fn update_bindings(&mut self, bindings: Shared<Vec<String>>);
     async fn view(&self, shared_self: Shared<Self>) -> Html;
-
-    fn callback() -> Box<dyn Fn(Shared<Self>) -> Box<dyn Fn(Msg)>> {
-        Box::new(move |shared| {
-            Box::new(move |msg| {
-                let shared = shared.clone();
-
-                spawn_local(async move {
-                    shared.write().await.update(msg).await;
-                });
-            })
-        })
-    }
 }
 
-pub trait ToVElement {
-    fn to_velement(self) -> VirtualNode;
+#[async_trait(?Send)]
+pub trait ToVirtualNode {
+    async fn to_virtual_node(self) -> VirtualNode;
 }
