@@ -151,6 +151,8 @@ Then go to [http://localhost:8080](http://localhost:8080)
   - [Database persistence for free](#database-persistence-for-free)
   - [Remote procedure calls](#remote-procedure-calls)
   - [Database queries](#database-queries)
+  - [Full chat example](#full-chat-example)
+
 
 ### Easy definition of the dom
 
@@ -418,6 +420,74 @@ impl Todo {
         todos::table.select(todos::all_columns).limit(limit as i64)
     }
 }
+```
+
+### Full chat example
+
+This is a client/server fully reactive chat room
+
+There is a more elaborate multi-channel chat in the examples folder
+
+```rust
+use comet::prelude::*;
+
+#[model]
+pub struct Message {
+    pub sender: String,
+    pub content: String,
+}
+
+#[sql]
+impl Message {
+    #[watch]
+    pub async fn list_watch() -> Vec<Message> {
+        use crate::schema::messages;
+        messages::table.select(messages::all_columns)
+    }
+}
+
+component! {
+    Message {
+        div {
+            self.sender.to_owned() + ": " + &self.content
+        }
+    }
+}
+
+#[derive(Default)]
+pub struct App {
+    pub sender: String,
+    pub content: String,
+}
+
+impl App {
+    async fn send_message(&mut self) {
+        let mut message = Message {
+            id: -1,
+            sender: self.sender.clone(),
+            content: self.content.clone(),
+        };
+
+        self.content = "".into();
+
+        message.save().await.unwrap();
+    }
+}
+
+component! {
+    App {
+        div {
+            Message::list_watch().await
+            input bind: self.sender {}
+            input bind: self.content {}
+            button click: self.send_message().await {
+                "Send"
+            }
+        }
+    }
+}
+
+comet::run!(App::default());
 ```
 
 ---

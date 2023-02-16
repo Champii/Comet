@@ -173,7 +173,8 @@ pub fn generate_client_sql_watch(
             use std::hash::{Hash, Hasher};
 
             let mut hasher = DefaultHasher::new();
-            vec![#(#query_args),*].hash(&mut hasher);
+            let v: Vec<u64> = vec![#(#query_args),*];
+            v.hash(&mut hasher);
             hasher.finish()
         }
     };
@@ -184,7 +185,6 @@ pub fn generate_client_sql_watch(
 
     let client_wrap: syn::Block = syn::parse_quote! {
         {
-
             let args_hash = #hash;
 
             let mut cache = crate::CACHE.write().await;
@@ -194,7 +194,6 @@ pub fn generate_client_sql_watch(
                     // FIXME: Beware of data races with next request id if another request is
                     // issued in between
                     let request_id = crate::SOCKET.read().await.as_ref().map(|socket| socket.get_next_request_id()).unwrap();
-
 
                     cache.register_request(request_id, #query_id, args_hash);
 
