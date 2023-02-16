@@ -223,21 +223,33 @@ component! {
 
 ### Bind your variables to `input` fields that react to events
 
-This is exclusive to `input` fields for now  
-Each binding should be unique, as in a different variable for each one
+This is exclusive to `input` and `select` fields for now  
+Each binding should be unique, as in a different variable for each one, or you will experience conflicts
 
 ```rust
 use comet::prelude::*;
 
 struct MyStruct {
     value: String,
+    current_id: i32,
 }
 
 component! {
     MyStruct {
 	div {
 	    input bind: self.value {}
+            select bind: self.current_id {
+                option value: 0 {
+                    "-- Choose a value --"
+                }
+                for id in 1..9 {
+                    option value: (id) {
+                        id
+                    }
+                }
+            }
 	    self.value
+            self.current_id
 	}
     }
 }
@@ -415,6 +427,11 @@ impl Todo {
 - Allow for iterators inside html
 - Have a ComponentId that allows to fetch the corresponding root dom element
 - Find a way for global inter-component message passing
+- Use the cache for non-watched rpc queries (because this cause a lot of traffic on each redraw)
+- Find a way to have a global state
+- Postgres pool and reusable connections
+- Implement ToVirtualNode for Option<T> and Result<T, Error>
+- Add an extensible error system
 
 - Separate all the reusable features in different crates:
   - [ ] Comet crate
