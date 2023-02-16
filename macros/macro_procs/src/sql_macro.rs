@@ -3,7 +3,7 @@ use proc_macro::TokenStream;
 use std::sync::{Arc, RwLock};
 
 use quote::quote;
-use syn::{parse::Result, parse_macro_input, ImplItem};
+use syn::{parse::Result, parse_macro_input, Expr, ImplItem};
 
 lazy_static! {
     // TODO: replace with atomics
@@ -152,21 +152,51 @@ pub fn generate_client_sql_watch(
     query_id: u64,
 ) -> Result<proc_macro2::TokenStream> {
     let mut client_fn = mcall.clone();
+
+    let query_args = mcall
+        .sig
+        .inputs
+        .iter()
+        .map(|arg| match arg {
+            syn::FnArg::Receiver(_) => quote! { self },
+            syn::FnArg::Typed(c) => {
+                let pat = &c.pat;
+
+                quote! { #pat }
+            }
+        })
+        .collect::<Vec<_>>();
+
+    let hash: Expr = syn::parse_quote! {
+        {
+            use std::collections::hash_map::DefaultHasher;
+            use std::hash::{Hash, Hasher};
+
+            let mut hasher = DefaultHasher::new();
+            vec![#(#query_args),*].hash(&mut hasher);
+            hasher.finish()
+        }
+    };
+
     let mut stmts = client_fn.block.stmts.clone();
 
     let stmt = stmts.pop().unwrap();
 
     let client_wrap: syn::Block = syn::parse_quote! {
         {
+
+            let args_hash = #hash;
+
             let mut cache = crate::CACHE.write().await;
-            match cache.query(#query_id) {
+            match cache.query(#query_id, args_hash) {
                 Some(results) => return results,
                 None => {
                     // FIXME: Beware of data races with next request id if another request is
                     // issued in between
                     let request_id = crate::SOCKET.read().await.as_ref().map(|socket| socket.get_next_request_id()).unwrap();
 
-                    cache.register_request(request_id, #query_id);
+
+                    cache.register_request(request_id, #query_id, args_hash);
 
                     let results = #stmt;
 
@@ -176,7 +206,7 @@ pub fn generate_client_sql_watch(
                         ModelId::default()
                     };
 
-                    cache.update(#query_id, model_id, results.clone());
+                    cache.update(#query_id, args_hash, model_id, results.clone());
 
                     results
                 },

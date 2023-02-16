@@ -18,6 +18,7 @@ pub fn generate_cache() -> Result<proc_macro2::TokenStream> {
             use crate::ModelId;
             use crate::Model;
             use comet::prelude::*;
+            use crate::RPCQuery;
 
             //tmp
             pub type QueryId = u64;
@@ -26,8 +27,9 @@ pub fn generate_cache() -> Result<proc_macro2::TokenStream> {
             #[derive(Debug)]
             pub struct Cache {
                 models: BTreeMap<ModelId, BTreeMap<i32, Model>>,
-                requests: BTreeMap<RequestId, QueryId>, // request_id -> query_id
-                queries: BTreeMap<QueryId, (ModelId, BTreeSet<i32>)>, // query_id -> (model_id, ids)
+                // requests: BTreeMap<RequestId, QueryId>, // request_id -> query_id
+                requests: BTreeMap<RequestId, (QueryId, u64)>, // request_id -> (query_id, args_hash)
+                queries: BTreeMap<(QueryId, u64), (ModelId, BTreeSet<i32>)>, // (query_id, args_hash) -> (model_id, ids)
             }
 
             impl Cache {
@@ -39,9 +41,9 @@ pub fn generate_cache() -> Result<proc_macro2::TokenStream> {
                     }
                 }
 
-                pub fn query<T: From<Model> + Debug>(&self, query_id: QueryId) -> Option<Vec<T>> {
-                    trace!("Cache query: query_id: {:?}", query_id);
-                    let (model_id, ids) = self.queries.get(&query_id)?;
+                pub fn query<T: From<Model> + Debug>(&self, query_id: QueryId, args_hash: u64) -> Option<Vec<T>> {
+                    trace!("Cache query: query_id: {:?} args_hash: {}", query_id, args_hash);
+                    let (model_id, ids) = self.queries.get(&(query_id, args_hash))?;
 
                     debug!("Cache query: model_id: {:?} ids: {:?}", model_id, ids);
 
@@ -57,9 +59,9 @@ pub fn generate_cache() -> Result<proc_macro2::TokenStream> {
                     Some(res)
                 }
 
-                pub fn update<T: Into<Model> + Debug>(&mut self, query_id: QueryId, model_id: ModelId, models: Vec<T>) {
-                    trace!("Cache update: query_id: {:?} model_id: {:?} models: {:?}", query_id, model_id, models);
-                    let (model_id_query, ids) = self.queries.get_mut(&query_id).unwrap();
+                pub fn update<T: Into<Model> + Debug>(&mut self, query_id: QueryId, args_hash: u64, model_id: ModelId, models: Vec<T>) {
+                    trace!("Cache update: query_id: {:?} args_hash {:?} model_id: {:?} models: {:?}", query_id, args_hash, model_id, models);
+                    let (model_id_query, ids) = self.queries.get_mut(&(query_id, args_hash)).unwrap();
 
                     debug!("Cache update query: model_id_query: {:?} ids: {:?}", model_id_query, ids);
 
@@ -85,8 +87,8 @@ pub fn generate_cache() -> Result<proc_macro2::TokenStream> {
 
                 }
 
-                pub fn delete(&mut self, query_id: QueryId, model_id: ModelId, ids: Vec<i32>) {
-                    trace!("Cache delete: query_id: {:?} model_id: {:?} ids: {:?}", query_id, model_id, ids);
+                pub fn delete(&mut self, query_id: QueryId, args_hash: u64, model_id: ModelId, ids: Vec<i32>) {
+                    trace!("Cache delete: query_id: {:?} args_hash: {:?} model_id: {:?} ids: {:?}", query_id, args_hash, model_id, ids);
                     self.models
                         .entry(model_id)
                         .or_insert_with(BTreeMap::new)
@@ -97,8 +99,8 @@ pub fn generate_cache() -> Result<proc_macro2::TokenStream> {
 
                 pub fn update_for_request_id(&mut self, request_id: RequestId, events: Vec<Event<Model>>) {
                     trace!("Cache update_for_request_id: request_id: {:?} events: {:?}", request_id, events);
-                    let query_id = if let Some(query_id) = self.requests.get(&request_id) {
-                        *query_id
+                    let (query_id, args_hash) = if let Some((query_id, args_hash)) = self.requests.get(&request_id) {
+                        (*query_id, *args_hash)
                     } else {
                         return;
                     };
@@ -131,19 +133,19 @@ pub fn generate_cache() -> Result<proc_macro2::TokenStream> {
 
                         debug!("Cache update_for_request_id model_id: {:?}", model_id);
 
-                        self.update(query_id, model_id, events);
-                        self.delete(query_id, model_id, deletes);
+                        self.update(query_id, args_hash, model_id, events);
+                        self.delete(query_id, args_hash, model_id, deletes);
                     }
                 }
 
-                pub fn register_request(&mut self, request_id: RequestId, query_id: QueryId) {
-                    trace!("Cache register_request: request_id: {:?} query_id: {:?}", request_id, query_id);
-                    if self.queries.contains_key(&query_id) {
+                pub fn register_request(&mut self, request_id: RequestId, query_id: QueryId, args_hash: u64) {
+                    trace!("Cache register_request: request_id: {:?} query_id: {:?} args_hash {:?}", request_id, query_id, args_hash);
+                    if self.queries.contains_key(&(query_id, args_hash)) {
                         return;
                     }
 
-                    self.requests.insert(request_id, query_id);
-                    self.queries.insert(query_id, (ModelId::default(), BTreeSet::new()));
+                    self.requests.insert(request_id, (query_id, args_hash));
+                    self.queries.insert((query_id, args_hash), (ModelId::default(), BTreeSet::new()));
                 }
             }
         }
