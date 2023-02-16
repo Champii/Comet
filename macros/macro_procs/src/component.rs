@@ -94,6 +94,8 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
 
                     let mut root = #html;
 
+                    let mut root = root.pop().unwrap();
+
                     match root {
                         VirtualNode::Element(ref mut tag) => {
                             tag.attrs.insert("__component".into(), "".into());
@@ -112,6 +114,14 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                 async fn to_virtual_node(self) -> VirtualNode {
                     // FIXME
                     Wrapper(Shared::from(self)).to_virtual_node().await
+                }
+            }
+
+            #[async_trait(?Send)]
+            impl ToVirtualNode for Wrapper<#name> {
+                async fn to_virtual_node(self) -> VirtualNode {
+                    // FIXME
+                    Wrapper(Shared::from(self.0)).to_virtual_node().await
                 }
             }
 

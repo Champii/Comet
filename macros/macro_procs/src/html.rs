@@ -118,6 +118,14 @@ impl ToTokens for Tag {
                     }}),
                     AttrsOrExpr::Attrs(_attr) => panic!("click event can't have attributes"),
                 }
+            } else if attr.name == "change" {
+                match &attr.value {
+                    AttrsOrExpr::Expr(_event) => events.push(quote! { {
+                        let (name, closure) = #attr;
+                        ("onchange".into(), Rc::new(RefCell::new(closure)))
+                    }}),
+                    AttrsOrExpr::Attrs(_attr) => panic!("click event can't have attributes"),
+                }
             } else {
                 let attr = if attr.name == "bind" {
                     let uuid = uuid::Uuid::new_v4().to_string();
@@ -163,11 +171,10 @@ impl ToTokens for Tag {
             {
                 let mut velem = VElement::new(#name.to_string());
 
-                let event_vec = vec![#(#events),*];
-
-                for (event_name, closure) in event_vec {
-                    velem.events.insert_no_args(event_name, closure);
-                }
+                #(
+                    let (name, closure) = #events;
+                    velem.events.insert_no_args(name, closure);
+                )*
 
                 let attrs_vec: Vec<(String, AttributeValue)> = vec![#(#attrs2),*];
                 velem.attrs.extend(attrs_vec);
@@ -177,9 +184,7 @@ impl ToTokens for Tag {
                     #(bindings.push(#binds.to_string());)*
                 }
 
-                // velem.children.extend([#(#children),*]);
                 #(
-                    // let arr = vec![#children].into_iter().flatten().collect::<Vec<VirtualNode>>();
                     velem.children.extend(#children);
                 )*
 
@@ -286,6 +291,9 @@ impl ToTokens for Attribute {
             "click" => {
                 quote! {(#name.to_string(), #value)}
             }
+            "change" => {
+                quote! {(#name.to_string(), #value)}
+            }
             "style" => {
                 match value {
                     AttrsOrExpr::Attrs(attrs) => {
@@ -355,7 +363,7 @@ impl Attribute {
     }
 
     pub fn collect_events(&self) -> Vec<Expr> {
-        if self.name.to_string() == "click" {
+        if self.name.to_string() == "click" || self.name.to_string() == "change" {
             if let AttrsOrExpr::Expr(expr) = &self.value {
                 return vec![expr.clone()];
             } else {
@@ -391,13 +399,13 @@ pub enum Element {
 impl ToTokens for Element {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         match self {
-            Element::Tag(tag) => quote! { VirtualNode::Element(#tag) }.to_tokens(tokens),
-            Element::Call(call) => quote! { #call.into() }.to_tokens(tokens),
+            Element::Tag(tag) => quote! { vec![VirtualNode::Element(#tag)] }.to_tokens(tokens),
+            Element::Call(call) => quote! { #call.to_virtual_node().await }.to_tokens(tokens),
             Element::Into(expr) => {
                 quote! { vec![crate::Wrapper(#expr.clone()).to_virtual_node().await] }
                     .to_tokens(tokens)
             }
-            Element::If(expr_if) => quote! { #expr_if.into() }.to_tokens(tokens),
+            Element::If(expr_if) => quote! { #expr_if }.to_tokens(tokens),
             Element::For(expr_for) => quote! { #expr_for }.to_tokens(tokens),
         }
     }
@@ -553,13 +561,9 @@ impl ToTokens for For {
                 let mut arr = vec![];
 
                 for #pat in #cond {
-                    arr.push(#block);
+                    arr.extend(#block);
                 }
 
-                /* let mut elem = VElement::new("div");
-                elem.children = arr;
-
-                VirtualNode::from(elem) */
                 arr
             }
         }
