@@ -37,7 +37,7 @@ impl Client {
         self.session_id = session_id;
     }
 
-    pub async fn handle_msg<P: ProtoTrait + Send + Serialize + DeserializeOwned>(
+    pub async fn handle_msg<P: ProtoTrait + Send + Serialize + DeserializeOwned + Debug>(
         &self,
         msg: Vec<u8>,
     ) where
@@ -45,17 +45,24 @@ impl Client {
         P: ProtoTrait<Client = Self>,
     {
         if msg.is_empty() {
-            // FIXME: add warning log
+            warn!("{}: Empty message", self.session_id);
+
             return;
         }
 
         let msg = crate::Message::from_bytes(&msg);
 
+        trace!("{}: Message: {:?}", self.session_id, msg);
+
         let proto = P::from_bytes(&msg.msg);
+
+        debug!("{}: Proto: {:?}", self.session_id, proto);
 
         let response = proto.dispatch(msg.request_id, self.clone()).await;
 
         if let Some(response) = response {
+            debug!("{}: Response: {:?}", self.session_id, response);
+
             let response = response.to_bytes();
 
             let msg = crate::Message {
@@ -65,6 +72,8 @@ impl Client {
             };
 
             let response = msg.to_bytes();
+
+            trace!("{}: Sending: {:?}", self.session_id, msg);
 
             self.out
                 .write()
@@ -86,6 +95,8 @@ impl Client {
 
         *self.next_request_id.write().await += 1;
 
+        debug!("{}: Sending: {:?}", self.session_id, msg);
+
         self.out
             .write()
             .await
@@ -95,11 +106,15 @@ impl Client {
     }
 
     pub async fn add_query(&self, request_id: u64, handle: JoinHandle<()>) {
+        debug!("{}: Adding query: {}", self.session_id, request_id);
+
         self.queries.write().await.insert(request_id, handle);
     }
 
     pub async fn abort_queries(&self) {
         for (_, handle) in self.queries.write().await.iter() {
+            warn!("{}, aborting query", self.session_id);
+
             handle.abort();
         }
     }

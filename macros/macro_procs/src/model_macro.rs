@@ -90,7 +90,7 @@ fn impl_model_macro(
                     use super::*;
 
                     #(#derives)*
-                    #[derive(Serialize, Deserialize, Clone)]
+                    #[derive(Serialize, Deserialize, Clone, Debug)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     pub struct #name {
                         pub id: i32,
@@ -98,7 +98,7 @@ fn impl_model_macro(
                     }
 
                     // #(#derives2)*
-                    #[derive(Clone, Serialize, Deserialize)]
+                    #[derive(Clone, Serialize, Deserialize, Debug)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     #item_struct
                 }
@@ -114,7 +114,7 @@ fn impl_model_macro(
                     use crate::schema::#table_name_ident;
 
                     #(#derives2)*
-                    #[derive(Identifiable, Serialize, Deserialize, Queryable, Clone, AsChangeset)]
+                    #[derive(Identifiable, Serialize, Deserialize, Queryable, Clone, AsChangeset, Debug)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     // #[diesel(table_name = #table_name)]
                     #[diesel(treat_none_as_null = true)]
@@ -123,7 +123,7 @@ fn impl_model_macro(
                         #named
                     }
 
-                    #[derive(Insertable, Clone, Serialize, Deserialize, AsChangeset)]
+                    #[derive(Insertable, Clone, Serialize, Deserialize, AsChangeset, Debug)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     #[diesel(table_name = #table_name_ident)]
                     #[diesel(treat_none_as_null = true)]

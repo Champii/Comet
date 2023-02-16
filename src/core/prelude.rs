@@ -5,8 +5,8 @@ pub use async_trait::async_trait;
 pub use futures;
 pub use lazy_static::lazy_static;
 
-pub use diesel;
-pub use diesel::prelude::*;
+// pub use log;
+pub use crate::log::*;
 
 pub use paste::paste;
 pub use percy_dom;

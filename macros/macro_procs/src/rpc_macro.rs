@@ -158,14 +158,19 @@ pub fn register_rpc(
 
     let query_args2 = query_args.clone();
     let query_args3 = query_args.clone();
+    let fn_name_ident_str = fn_name_ident.to_string();
 
     let client_wrap: syn::Block = syn::parse_quote! {
         {
             let response = if let Some(socket) = crate::SOCKET.write().await.as_mut() {
-                socket.rpc(Proto::RPCQuery(RPCQuery::#query_variant_real(#(#query_args.clone()),*))).await
+                let query = Proto::RPCQuery(RPCQuery::#query_variant_real(#(#query_args.clone()),*));
+                debug!("RPC: {}::{}({:#?})", #model_name, #fn_name_ident_str, query);
+                socket.rpc(query).await
             } else {
                     panic!("No socket")
             };
+
+            debug!("RPC: {}::{}({:#?})", #model_name, #fn_name_ident_str, response);
 
             let response = match response {
                 Proto::RPCResponse(RPCResponse::#response_variant_real(#(#response_self,)* response)) => { #(*self = #response_self2;)* response},

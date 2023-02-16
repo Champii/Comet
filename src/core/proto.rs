@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde::Serialize;
+use std::fmt::Debug;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Message {
@@ -22,7 +23,7 @@ impl Message {
 
 #[async_trait]
 pub trait ProtoTrait {
-    type Response: ProtoTrait + Send + Serialize + DeserializeOwned;
+    type Response: ProtoTrait + Send + Serialize + DeserializeOwned + Debug;
     type Client;
 
     async fn dispatch(self, _request_id: u64, _client: Self::Client) -> Option<Self::Response>

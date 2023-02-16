@@ -163,7 +163,7 @@ pub fn generate_client_sql_watch(
                 Some(results) => return results,
                 None => {
                     // FIXME: Beware of data races with next request id if another request is
-                    // issued between
+                    // issued in between
                     let request_id = crate::SOCKET.read().await.as_ref().map(|socket| socket.get_next_request_id()).unwrap();
 
                     cache.register_request(request_id, #query_id);

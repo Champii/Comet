@@ -1,11 +1,13 @@
 #[macro_export]
 macro_rules! run {
     ($e:expr) => {
+        // pub use comet::prelude::log::*;
         pub use comet::prelude::*;
 
         #[cfg(target_arch = "wasm32")]
         use std::panic;
 
+        #[cfg(not(target_arch = "wasm32"))]
         mod schema;
 
         #[derive(Clone)]
@@ -80,6 +82,9 @@ macro_rules! run {
         #[wasm_bindgen(start)]
         pub fn main() {
             panic::set_hook(Box::new(comet::prelude::console_error_panic_hook::hook));
+            comet::prelude::wasm_logger::init(wasm_logger::Config::new(Level::Trace));
+
+            info!("Starting app...");
 
             spawn_local(async { main_async().await });
         }
@@ -94,12 +99,17 @@ macro_rules! run {
 
             let mut app = comet::_run($e).await;
 
+            debug!("First render");
+
             let mut vdom = app.run().await;
+
+            trace!("App rendered");
 
             let (tx, mut rx) = tokio::sync::mpsc::channel(1);
 
             spawn_local(async move {
                 while let Some(_) = rx.recv().await {
+                    trace!("Rerender");
                     app.update(&mut vdom).await;
                 }
             });
@@ -125,6 +135,7 @@ macro_rules! run {
 
         #[cfg(target_arch = "wasm32")]
         pub async fn redraw_root() {
+            trace!("Redrawing root");
             crate::REDRAW_CHANNEL
                 .write()
                 .await
@@ -141,6 +152,8 @@ macro_rules! run {
 
             let addr = "ws://localhost:8080/ws".to_string();
 
+            info!("Connecting to {}", addr);
+
             let mut socket: Socket<Proto> = Socket::connect(addr).await;
 
             let mut rx = socket.take_receiver().unwrap();
@@ -149,10 +162,12 @@ macro_rules! run {
 
             ready.send(()).unwrap();
 
+            debug!("Socket ready");
+
             while let Some(msg) = rx.next().await {
                 let proto = Proto::from_bytes(&msg.msg);
 
-                // comet::console_log!("packet {:#?}", proto);
+                debug!("packet {:#?}", proto);
 
                 if let Proto::Event(request_id, events) = proto {
                     CACHE
@@ -175,6 +190,8 @@ macro_rules! run {
 
             let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
+            trace!("New db connection: {}", database_url);
+
             PgConnection::establish(&database_url)
                 .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
         }
@@ -182,6 +199,10 @@ macro_rules! run {
         #[cfg(not(target_arch = "wasm32"))]
         #[tokio::main]
         pub async fn main() {
+            pretty_env_logger::init();
+
+            debug!("Staring server");
+
             comet::server::server::run::<Proto>().await;
         }
     };
