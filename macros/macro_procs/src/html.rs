@@ -167,6 +167,17 @@ impl ToTokens for Tag {
 
         extend_id_classes(&mut attrs2, &id, &classes);
 
+        let bind_block = if !binds.is_empty() {
+            quote! {
+                {
+                    let mut bindings = bindings.write().await;
+                    #(bindings.push(#binds.to_string());)*
+                }
+            }
+        } else {
+            quote! {}
+        };
+
         let res = quote! {
             {
                 let mut velem = VElement::new(#name.to_string());
@@ -179,10 +190,7 @@ impl ToTokens for Tag {
                 let attrs_vec: Vec<(String, AttributeValue)> = vec![#(#attrs2),*];
                 velem.attrs.extend(attrs_vec);
 
-                {
-                    let mut bindings = bindings.write().await;
-                    #(bindings.push(#binds.to_string());)*
-                }
+                #bind_block
 
                 #(
                     velem.children.extend(#children);

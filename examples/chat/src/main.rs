@@ -110,9 +110,7 @@ impl App {
 component! {
     App {
         div {
-            if let Some(chan) = &self.current_channel {
-                chan
-            }
+            self.current_channel
             select
               bind: self.channel_id
               change: self.update_current_channel() {

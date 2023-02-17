@@ -500,7 +500,7 @@ comet::run!(App::default());
 - Use the cache for non-watched rpc queries (because this cause a lot of traffic on each redraw)
 - Find a way to have a global state
 - Postgres pool and reusable connections
-- Implement ToVirtualNode for Option<T> and Result<T, Error>
+- Implement ToVirtualNode for Result<T, Error>
 - Add an extensible error system
 
 - Separate all the reusable features in different crates:
