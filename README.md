@@ -151,6 +151,7 @@ Then go to [http://localhost:8080](http://localhost:8080)
   - [Database persistence for free](#database-persistence-for-free)
   - [Remote procedure calls](#remote-procedure-calls)
   - [Database queries](#database-queries)
+  - [HTML view](#html-view)
   - [Full chat example](#full-chat-example)
 
 
@@ -172,7 +173,7 @@ component! {
 	div #my_id.class1.class2 {
 	    span {
 		// You can access your context anywhere
-		self.my_value
+		self.my_value.as_str()
 	    }
 	    // Define style properties
 	    div style: { height: self.my_height } {
@@ -210,7 +211,7 @@ component! {
 		// Use a for-like loop.
 		for (key, value) in self.value {
 		    div {
-			key
+			key.as_str()
 			value
 		    }
 		}
@@ -250,7 +251,7 @@ component! {
                     }
                 }
             }
-	    self.value
+	    self.value.as_str()
             self.current_id
 	}
     }
@@ -284,7 +285,7 @@ component! {
     Parent {
 	div {
 	    // To include a component, just include it like any other variable
-	    self.child
+	    self.child.clone()
 	}
     }
 }
@@ -332,7 +333,7 @@ component! {
     Todo {
 	div {
 	    self.id
-	    self.title
+	    self.title.as_str()
 	    self.completed
             button click: self.toggle().await {
                "Toggle"
@@ -421,6 +422,35 @@ impl Todo {
     }
 }
 ```
+
+### HTML view
+
+Until now, we always used components to manage our views and logic.  
+Whenever you define a component using the `component!` macro, you define bits of HTML directly inside the macro.  
+Under the hood, we call the `html!` macro that is a lot simpler in term of features.
+
+```rust
+// You can define basic function that return an HTML
+pub async fn my_view(my_arg: MyType) -> Html {
+    html! {
+        div {
+            my_arg.my_property
+        }
+    }
+}
+
+// Then you can call it from a component, or another existing html view.
+component! {
+    SomeComponent {
+        div {
+            my_view(self.some_value).await
+        }
+    }
+}
+```
+
+Please note that the `html!` macro does not support input bindings (`bind`) or event bindings (`click`, `change`), 
+at least for now.
 
 ### Full chat example
 
