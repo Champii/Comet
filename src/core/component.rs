@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use percy_dom::prelude::*;
 
-pub type Html = Vec<VirtualNode>;
+pub type Html = VirtualNode;
 
 use crate::prelude::Shared;
 
@@ -13,7 +13,7 @@ where
 {
     async fn update(&mut self, msg: Msg);
     async fn update_bindings(&mut self, bindings: Shared<Vec<String>>);
-    async fn view(&self, shared_self: Shared<Self>) -> VirtualNode;
+    async fn view(&self, shared_self: Shared<Self>) -> Html;
 }
 
 #[async_trait(?Send)]

@@ -12,7 +12,7 @@ pub fn perform(input: TokenStream) -> TokenStream {
     let input2: Element = parse_macro_input!(input as Element);
 
     quote! {
-        #input2
+        (#input2).pop().unwrap()
     }
     .into()
 }
@@ -398,7 +398,7 @@ impl Attribute {
 #[derive(Debug)]
 pub enum Element {
     Tag(Tag),
-    Call(Expr),
+    // Call(Expr),
     Into(Expr),
     If(If),
     For(For),
@@ -408,10 +408,9 @@ impl ToTokens for Element {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         match self {
             Element::Tag(tag) => quote! { vec![VirtualNode::Element(#tag)] }.to_tokens(tokens),
-            Element::Call(call) => quote! { #call.to_virtual_node().await }.to_tokens(tokens),
+            // Element::Call(call) => quote! { #call.to_virtual_node().await }.to_tokens(tokens),
             Element::Into(expr) => {
-                quote! { vec![crate::Wrapper(#expr.clone()).to_virtual_node().await] }
-                    .to_tokens(tokens)
+                quote! { vec![crate::Wrapper(#expr).to_virtual_node().await] }.to_tokens(tokens)
             }
             Element::If(expr_if) => quote! { #expr_if }.to_tokens(tokens),
             Element::For(expr_for) => quote! { #expr_for }.to_tokens(tokens),
@@ -438,7 +437,7 @@ impl Parse for Element {
                 let expr: Expr = input.parse()?;
 
                 Ok(match expr {
-                    Expr::Call(_) => Element::Call(expr),
+                    // Expr::Call(_) => Element::Call(expr),
                     _ => Element::Into(expr),
                 })
             }
@@ -460,7 +459,7 @@ impl Element {
     pub fn collect_events(&self) -> Vec<Expr> {
         match self {
             Element::Tag(tag) => tag.collect_events(),
-            Element::Call(call) => vec![call.clone()],
+            // Element::Call(call) => vec![call.clone()],
             Element::Into(_) => Vec::new(),
             Element::If(expr_if) => expr_if.collect_events(),
             Element::For(expr_for) => expr_for.collect_events(),
@@ -470,7 +469,7 @@ impl Element {
     pub fn collect_bindings(&self) -> Vec<Expr> {
         match self {
             Element::Tag(tag) => tag.collect_bindings(),
-            Element::Call(_call) => vec![],
+            // Element::Call(_call) => vec![],
             Element::Into(_) => vec![],
             Element::If(expr_if) => expr_if.collect_bindings(),
             Element::For(expr_for) => expr_for.collect_bindings(),

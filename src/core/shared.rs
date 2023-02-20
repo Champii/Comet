@@ -38,3 +38,14 @@ where
         new_self.to_virtual_node().await
     }
 }
+
+/* #[async_trait(?Send)]
+impl<T> ToVirtualNode for Shared<T>
+where
+    T: ToVirtualNode + Clone,
+{
+    async fn to_virtual_node(self) -> VirtualNode {
+        let new_self = self.0.read().await.clone();
+        new_self.to_virtual_node().await
+    }
+} */

@@ -82,12 +82,12 @@ macro_rules! run {
             }
         }
 
-        /* #[async_trait(?Send)]
+        #[async_trait(?Send)]
         impl ToVirtualNode for Wrapper<VirtualNode> {
             async fn to_virtual_node(self) -> VirtualNode {
                 self.0
             }
-        } */
+        }
 
         generate_rpc_proto! {}
         generate_proto! {}

@@ -1,7 +1,7 @@
 use comet::prelude::*;
 
 #[model]
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct Todo {
     pub title: String,
     pub completed: bool,
@@ -76,7 +76,7 @@ component! {
                 "Add"
             }
             input bind: self.title {}
-            self.title
+            self.title.as_ref()
         }
     }
 }
