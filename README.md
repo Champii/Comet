@@ -1,6 +1,6 @@
 # Comet
 
-[![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://docs.rs/comet-web/0.1.3/comet)
+[![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://docs.rs/comet-web/0.1.6/comet)
 [![GitHub license](https://img.shields.io/github/license/Champii/Comet.svg)](https://github.com/Champii/Comet/blob/master/LICENSE.md)
 [![GitHub release](https://img.shields.io/github/tag/Champii/Comet.svg)](https://GitHub.com/Champii/Comet/tags/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
@@ -82,7 +82,7 @@ $> comet new my_counter && cd my_counter
 There is already the dependency setup in the Cargo.toml:
 
 ```toml
-comet-web = "0.1.5"
+comet-web = "0.1.6"
 ```
 
 This newly generated project contains all you need to get started. Your journey starts with `src/main.rs`.  
