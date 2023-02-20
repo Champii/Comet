@@ -227,7 +227,7 @@ dependencies = [
 
 [[package]]
 name = "comet_macro_procs"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "derive-syn-parse",
  "itertools",
