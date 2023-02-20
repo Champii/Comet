@@ -69,6 +69,26 @@ macro_rules! run {
             }
         }
 
+        #[async_trait(?Send)]
+        impl<T> ToVirtualNode for Wrapper<Option<T>>
+        where
+            Wrapper<T>: ToVirtualNode,
+        {
+            async fn to_virtual_node(self) -> VirtualNode {
+                match self.0 {
+                    Some(child) => Wrapper(child).to_virtual_node().await,
+                    None => "".to_string().into(),
+                }
+            }
+        }
+
+        #[async_trait(?Send)]
+        impl ToVirtualNode for Wrapper<VirtualNode> {
+            async fn to_virtual_node(self) -> VirtualNode {
+                self.0
+            }
+        }
+
         generate_rpc_proto! {}
         generate_proto! {}
 

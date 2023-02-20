@@ -71,7 +71,7 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
                     #update_bindings
                 }
 
-                async fn view(&self, shared_self: Shared<Self>) -> VirtualNode {
+                async fn view(&self, shared_self: Shared<Self>) -> Html {
                     let mut bindings = Shared::from(vec![]);
                     let bindings2 = bindings.clone();
 

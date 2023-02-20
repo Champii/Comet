@@ -22,8 +22,8 @@ pub struct App {
 component! {
     App {
         div {
-            self.counter
-            self.counter2
+            self.counter.clone()
+            self.counter2.clone()
         }
     }
 }

@@ -173,8 +173,9 @@ pub fn generate_client_sql_watch(
             use std::hash::{Hash, Hasher};
 
             let mut hasher = DefaultHasher::new();
-            let v: Vec<u64> = vec![#(#query_args),*];
-            v.hash(&mut hasher);
+            #(
+                #query_args.hash(&mut hasher);
+            )*
             hasher.finish()
         }
     };
