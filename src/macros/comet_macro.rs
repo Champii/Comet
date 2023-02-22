@@ -56,12 +56,15 @@ macro_rules! run {
         }
 
         #[async_trait(?Send)]
-        impl<T: ToVirtualNode> ToVirtualNode for Wrapper<Vec<T>> {
+        impl<T> ToVirtualNode for Wrapper<Vec<T>>
+        where
+            Wrapper<T>: ToVirtualNode,
+        {
             async fn to_virtual_node(self) -> VirtualNode {
                 let mut elem = VElement::new("div");
 
                 for child in self.0.into_iter() {
-                    let child = child.to_virtual_node().await;
+                    let child = Wrapper(child).to_virtual_node().await;
                     elem.children.push(child);
                 }
 

@@ -41,7 +41,10 @@ fn component(component: Component) -> Result<proc_macro2::TokenStream> {
     let html = &component.html;
 
     let mod_name = syn::Ident::new(
-        &format!("__component_{}", quote! {#name}.to_string().to_lowercase()),
+        &format!(
+            "__component_{}",
+            quote! {#name}.to_string().to_ascii_lowercase()
+        ),
         Span::call_site().into(),
     );
 

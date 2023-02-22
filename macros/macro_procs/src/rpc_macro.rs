@@ -45,7 +45,7 @@ pub fn register_rpcs(mut mcall: syn::ItemImpl) -> Result<proc_macro2::TokenStrea
         .map(|item| syn::parse_quote! { #item })
         .collect();
 
-    let lower_model_name = quote! { #self_type }.to_string().to_lowercase();
+    let lower_model_name = quote! { #self_type }.to_string().to_ascii_lowercase();
     let wrapper_mod_name = format!("__{}_rpcs_{}", lower_model_name, RPCS.read().unwrap().len());
     let wrapper_mod_name: syn::Ident = syn::parse_str(&wrapper_mod_name).unwrap();
 

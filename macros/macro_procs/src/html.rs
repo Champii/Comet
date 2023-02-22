@@ -398,7 +398,6 @@ impl Attribute {
 #[derive(Debug)]
 pub enum Element {
     Tag(Tag),
-    // Call(Expr),
     Into(Expr),
     If(If),
     For(For),
@@ -408,7 +407,6 @@ impl ToTokens for Element {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         match self {
             Element::Tag(tag) => quote! { vec![VirtualNode::Element(#tag)] }.to_tokens(tokens),
-            // Element::Call(call) => quote! { #call.to_virtual_node().await }.to_tokens(tokens),
             Element::Into(expr) => {
                 quote! { vec![crate::Wrapper(#expr).to_virtual_node().await] }.to_tokens(tokens)
             }
@@ -427,8 +425,6 @@ impl Parse for Element {
 
             Ok(Element::Tag(tag))
         } else {
-            // let input_forked = input.fork();
-
             if let Ok(if_) = input.parse() {
                 Ok(Element::If(if_))
             } else if let Ok(for_) = input.parse() {
@@ -437,7 +433,6 @@ impl Parse for Element {
                 let expr: Expr = input.parse()?;
 
                 Ok(match expr {
-                    // Expr::Call(_) => Element::Call(expr),
                     _ => Element::Into(expr),
                 })
             }
@@ -459,7 +454,6 @@ impl Element {
     pub fn collect_events(&self) -> Vec<Expr> {
         match self {
             Element::Tag(tag) => tag.collect_events(),
-            // Element::Call(call) => vec![call.clone()],
             Element::Into(_) => Vec::new(),
             Element::If(expr_if) => expr_if.collect_events(),
             Element::For(expr_for) => expr_for.collect_events(),
@@ -469,7 +463,6 @@ impl Element {
     pub fn collect_bindings(&self) -> Vec<Expr> {
         match self {
             Element::Tag(tag) => tag.collect_bindings(),
-            // Element::Call(_call) => vec![],
             Element::Into(_) => vec![],
             Element::If(expr_if) => expr_if.collect_bindings(),
             Element::For(expr_for) => expr_for.collect_bindings(),

@@ -29,16 +29,6 @@ impl Todo {
     }
 }
 
-#[sql]
-impl Todo {
-    #[watch]
-    pub async fn list_watch() -> Vec<Todo> {
-        use crate::schema::todos;
-
-        todos::table.order(todos::id)
-    }
-}
-
 component! {
     Todo {
         div {

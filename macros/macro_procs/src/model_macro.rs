@@ -116,7 +116,7 @@ fn impl_model_macro(
                     #(#derives2)*
                     #[derive(Identifiable, Serialize, Deserialize, Queryable, Clone, AsChangeset, Debug)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
-                    // #[diesel(table_name = #table_name)]
+                    #[diesel(table_name = #table_name_ident)]
                     #[diesel(treat_none_as_null = true)]
                     pub struct #name {
                         pub id: i32,
@@ -210,6 +210,21 @@ fn impl_model_macro(
                         let mut conn = crate::establish_connection();
 
                         #table_name_ident::table.filter(#table_name_ident::dsl::id.eq(id_given)).first::<#name>(&mut conn).map_err(|e| "Error fetch".to_string())
+                    }
+
+                }
+
+                #[sql]
+                impl #name {
+                    // watchable methods
+                    #[watch]
+                    pub async fn list_watch() -> Vec<#name> {
+                        use crate::schema::#table_name_ident;
+
+                        let mut conn = crate::establish_connection();
+
+                        #table_name_ident::table
+                            .order(#table_name_ident::dsl::id)
                     }
                 }
 

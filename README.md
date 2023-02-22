@@ -301,6 +301,10 @@ Deriving with the `#[model]` macro gives you access to many default DB methods i
     - async Self::list()      -> Result<Vec<T>, String>;  
     - async self.save()       -> Result<(), String>;
     - async Self::delete(i32) -> Result<(), String>;
+
+    // And a watchable list method, see 'Database Queries'
+
+    - async Self::list_watch() -> Vec<T>;
 ```
 
 The `String` error type is meant to change into a real error type soon.
@@ -467,15 +471,6 @@ pub struct Message {
     pub content: String,
 }
 
-#[sql]
-impl Message {
-    #[watch]
-    pub async fn list_watch() -> Vec<Message> {
-        use crate::schema::messages;
-        messages::table.select(messages::all_columns)
-    }
-}
-
 component! {
     Message {
         div {
@@ -532,6 +527,10 @@ comet::run!(App::default());
 - Postgres pool and reusable connections
 - Implement ToVirtualNode for Result<T, Error>
 - Add an extensible error system
+- Allow for events in html! macro
+- Don't generate the main function, let an entry point for custom init code
+- Add default watchable sql queries like list_watch and fetch_watch
+
 
 - Separate all the reusable features in different crates:
   - [ ] Comet crate
