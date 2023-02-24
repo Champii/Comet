@@ -5,7 +5,6 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 
 mod component;
-mod db_macro;
 mod generate_cache;
 mod generate_hash;
 mod generate_migrations;
@@ -32,11 +31,6 @@ pub fn generate_update(input: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn generate_hash(input: TokenStream) -> TokenStream {
     generate_hash::perform(input)
-}
-
-#[proc_macro_attribute]
-pub fn db(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    db_macro::perform(input)
 }
 
 #[proc_macro]

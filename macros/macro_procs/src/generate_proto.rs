@@ -13,7 +13,7 @@ pub fn perform(input: TokenStream) -> TokenStream {
 pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> {
     use quote::ToTokens;
 
-    let (models, _inner): (Vec<_>, Vec<_>) = crate::db_macro::MODELS
+    let (models, _inner): (Vec<_>, Vec<_>) = crate::model_macro::MODELS
         .read()
         .unwrap()
         .iter()
@@ -26,15 +26,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
         .unzip();
 
     // FIXME: This is insane
-    let models2 = models.clone();
-    let models3 = models.clone();
-    let models4 = models.clone();
-    let models5 = models.clone();
-    let models6 = models.clone();
-    let models7 = models.clone();
-    let _models8 = models.clone();
-    let models9 = models.clone();
-    let models10 = models.clone();
+    let models = &models;
 
     let models_ids = 0..models.len() as u64;
 
@@ -44,21 +36,21 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
         #[derive(Serialize, Deserialize, Debug, Clone)]
         #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
         pub enum Model {
-            #(#models(#models2)),*
+            #(#models(#models)),*
         }
 
         #(
-            impl From<#models3> for Model {
-                fn from(m: #models4) -> Self {
-                    Model::#models5(m)
+            impl From<#models> for Model {
+                fn from(m: #models) -> Self {
+                    Model::#models(m)
                 }
             }
 
-            impl From<Model> for #models6 {
+            impl From<Model> for #models {
                 fn from(m: Model) -> Self {
                     #[allow(unreachable_code)]
                     match m {
-                        Model::#models7(m) => m,
+                        Model::#models(m) => m,
                         _ => panic!("Invalid model type"),
                     }
                 }
@@ -69,7 +61,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
             pub fn id(&self) -> i32 {
                 match self {
                     #(
-                        Model::#models9(m) => m.id,
+                        Model::#models(m) => m.id,
                     )*
                     _ => 0
                 }
@@ -78,7 +70,7 @@ pub fn exprs_to_idents(_mcall: TokenStream) -> Result<proc_macro2::TokenStream> 
             pub fn model_id(&self) -> ModelId {
                 match self {
                     #(
-                        Model::#models10(m) => #models_ids,
+                        Model::#models(m) => #models_ids,
                     )*
                     _ => 0
                 }

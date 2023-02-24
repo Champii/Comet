@@ -35,7 +35,7 @@ pub struct Channel {
 component! {
     Channel {
         h1 {
-            self.name
+            self.name.as_str()
         }
     }
 }
@@ -110,7 +110,7 @@ impl App {
 component! {
     App {
         div {
-            self.current_channel
+            self.current_channel.clone()
             select
               bind: self.channel_id
               change: self.update_current_channel() {

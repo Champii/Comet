@@ -12,7 +12,7 @@ pub struct RpcEntry {
     query_variant: String,
     query_types: Vec<(bool, String)>, // (is_mut, type)
     response_variant: String,
-    response_type: (bool, String), // (is mut self, ret)
+    response_type: (bool, String), // (is self mut, ret)
 }
 
 lazy_static! {
@@ -156,8 +156,8 @@ pub fn register_rpc(
         })
         .collect::<Vec<_>>();
 
-    let query_args2 = query_args.clone();
-    let query_args3 = query_args.clone();
+    let query_args = &query_args;
+
     let fn_name_ident_str = fn_name_ident.to_string();
 
     let client_wrap: syn::Block = syn::parse_quote! {
@@ -200,7 +200,7 @@ pub fn register_rpc(
             #[watch]
             pub async fn #watch_wrapper_fn_name(#(#wrapper_fn_args,)*) -> #response_type_orig {
                 #( #server_fn_stmts )*;
-                #self_type::#fn_name_ident(#(#query_args2.clone()),*).await
+                #self_type::#fn_name_ident(#(#query_args.clone()),*).await
             }
         };
 
@@ -219,7 +219,7 @@ pub fn register_rpc(
 
         let new_client_fn_body: syn::Block = syn::parse_quote! {
             {
-                #self_type::#watch_wrapper_fn_name(#(#query_args3.clone()),*).await
+                #self_type::#watch_wrapper_fn_name(#(#query_args.clone()),*).await
             }
         };
 
@@ -299,9 +299,8 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
 
     let (response_variants, response_types): (Vec<_>, Vec<_>) = response.into_iter().unzip();
 
-    let query_variants2 = query_variants.clone();
-    let response_variants2 = response_variants.clone();
-    let response_variants3 = response_variants.clone();
+    let query_variants = &query_variants;
+    let response_variants = &response_variants;
 
     let query_params_with_ref = models
         .iter()
@@ -381,7 +380,7 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
             }
         })
         .collect::<Vec<Vec<syn::Ident>>>();
-    let response_self2 = response_self.clone();
+    let response_self = &response_self;
 
     let proto = quote! {
         #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -411,16 +410,13 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
             where Self::Client: Send,
             {
                 match self {
-                    #(RPCQuery::#query_variants2(#(#query_params),*) => {
+                    #(RPCQuery::#query_variants(#(#query_params),*) => {
                         let res = #models::#methods(#(#query_params_with_ref),*).await;
-                        Some(Proto::RPCResponse(RPCResponse::#response_variants2(#(#response_self,)* res)))
+                        Some(Proto::RPCResponse(RPCResponse::#response_variants(#(#response_self,)* res)))
                     }),*
                     _ => todo!(),
                 }
             }
-        }
-
-        impl RPCResponse {
         }
 
         #[async_trait]
@@ -436,7 +432,7 @@ pub fn generate_rpc_proto(_input: TokenStream) -> TokenStream {
             where Self::Client: Send,
             {
                 match self {
-                    #(RPCResponse::#response_variants3(#(#response_self2,)* arg) => {
+                    #(RPCResponse::#response_variants(#(#response_self,)* arg) => {
                         None
                     }),*
                     _ => todo!(),

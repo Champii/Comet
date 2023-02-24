@@ -1,7 +1,13 @@
+use lazy_static::lazy_static;
 use proc_macro::TokenStream;
+use std::sync::{Arc, RwLock};
 
 use quote::quote;
 use syn::{parse::Result, parse_macro_input, Fields, ItemStruct};
+
+lazy_static! {
+    pub static ref MODELS: Arc<RwLock<Vec<String>>> = Arc::new(RwLock::new(Vec::new()));
+}
 
 pub fn perform(table_name: String, input: TokenStream) -> TokenStream {
     let mcall = parse_macro_input!(input as syn::ItemStruct);
@@ -18,12 +24,7 @@ fn impl_model_macro(
 ) -> Result<proc_macro2::TokenStream> {
     let name = item_struct.ident.clone();
 
-    super::db_macro::MODELS
-        .write()
-        .unwrap()
-        .push(name.to_string());
-
-    // let name2 = ast.ident.clone();
+    MODELS.write().unwrap().push(name.to_string());
 
     crate::generate_migrations::register_migration(item_struct.clone());
 
@@ -97,7 +98,6 @@ fn impl_model_macro(
                         #named
                     }
 
-                    // #(#derives2)*
                     #[derive(Clone, Serialize, Deserialize, Debug)]
                     #[serde(crate = "comet::prelude::serde")] // must be below the derive attribute
                     #item_struct
@@ -137,8 +137,6 @@ fn impl_model_macro(
                         }
                     }
                 }
-
-                // use crate::{RPCQuery, RPCResult, Proto};
 
                 #[rpc]
                 impl #name {

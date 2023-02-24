@@ -28,7 +28,6 @@ pub use crate::core::utils::*;
 
 pub use crate::run;
 pub use comet_macro_procs::component;
-pub use comet_macro_procs::db;
 pub use comet_macro_procs::generate_cache;
 pub use comet_macro_procs::generate_migrations;
 pub use comet_macro_procs::generate_proto;
