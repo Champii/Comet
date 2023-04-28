@@ -63,10 +63,9 @@ path = "src/main.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-comet-web = "{{version}}"
-        "#
-        .replace("{{name}}", name)
-        .replace("{{version}}", env!("CARGO_PKG_VERSION")),
+comet-web = "{{version}}""#
+            .replace("{{name}}", name)
+            .replace("{{version}}", env!("CARGO_PKG_VERSION")),
     );
 
     create_file(
@@ -85,9 +84,8 @@ comet-web = "{{version}}"
       run();
     </script>
   </body>
-</html>
-        "#
-        .replace("{{name}}", name),
+</html>"#
+            .replace("{{name}}", name),
     );
 
     create_file("README.md", "");
